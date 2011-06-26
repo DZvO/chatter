@@ -1,0 +1,2 @@
+*Makefile
+*async. i/o (through boost::thread ^.^)
