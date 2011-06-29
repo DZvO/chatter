@@ -3,13 +3,15 @@
 Buffer::Buffer()
 {
 	capacity = 1024;
-	buffer = new char[capacity];
+	//buffer = new char[capacity];
+	packets.push_back(new char[capacity]);
 	byteCount = 0;
+	packetCount = 1;
 	putPointer = 0;
 	getPointer = 0;
 }
 
-void Buffer::add(char c)
+void Buffer::put(const char& c)
 {
 	if(byteCount > 1024 && byteCount % 1024 == 0)
 	{
@@ -32,22 +34,12 @@ void Buffer::add(char c)
 	byteCount++;
 }
 
-void Buffer::put(char c)
-{
-	add(c);
-}
-
 char Buffer::get()
 {
 	//if(getPointer > 0)
 		//--getPointer;
 	//cout << "get \"" << (int)buffer[getPointer] << "\" at [" << getPointer << "]" << endl;
 	return buffer[getPointer++];
-}
-
-void Buffer::put(const char& c)
-{
-	add(c);
 }
 
 void Buffer::get(char& c)
@@ -64,10 +56,10 @@ void Buffer::put(const int& i)
 	unsigned char c3 = (bigE & 0x0000ff00) >> 8;
 	unsigned char c4 = (bigE & 0x000000ff);			//least significant (on big-endian)
 
-	add(c1);
-	add(c2);
-	add(c3);
-	add(c4);
+	put(c1);
+	put(c2);
+	put(c3);
+	put(c4);
 }
 
 void Buffer::get(int& i)
@@ -148,6 +140,6 @@ unsigned int Buffer::getCapacity()
 
 char* Buffer::end()
 {
-	this->add('\0');
+	this->put('\0');
 	return buffer;
 }

@@ -7,7 +7,7 @@
 #include <string>
 using namespace std;
 
-#include "socket.hpp"
+#include "motor/socket.hpp"
 
 void sleep(unsigned int sec, unsigned int usec)
 {

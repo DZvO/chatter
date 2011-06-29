@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+#Program('hello.c')
+#Object('hello.c')
+#Program('new_hello', 'hello.c')
+#Program('program', Glob('*.c'))
+#Program('hello', ['file1.c', 'file2.c'])
+#Program('program', Split('main.c file1.c file2.c'))
+
+#Library('foo', ['f1.c', 'f2.c', 'f3.c'])
+
+#Library('foo', ['f1.c', 'f2.c', 'f3.c'])
+#Program('prog.c', LIBS=['foo', 'bar'], LIBPATH='.')
+
+libmotor = Environment()
+libmotor.Library('motor', map(lambda x: "motor/" + x + ".cpp", Split("address buffer socket")))
+
+env = Environment(CC = 'g++', CCFLAGS = '-O2 -Wall -g')
+conf = Configure(env)
+#check for headers n stuff :D
+if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):
+	print("Please install boost first")
+	Exit(1)
+env = conf.Finish()
+
+client = env.Clone()
+client.Program('server.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
+
+server = env.Clone()
+client.Program('client.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
+
