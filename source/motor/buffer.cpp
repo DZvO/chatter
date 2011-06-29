@@ -2,36 +2,30 @@
 
 Buffer::Buffer()
 {
-	capacity = 1024;
 	//buffer = new char[capacity];
-	packets.push_back(new char[capacity]);
-	byteCount = 0;
+	packets.push_back(new char[PACKET_SIZE]);
+	capacity = PACKET_SIZE;
 	packetCount = 1;
+
+	byteCount = 0;
 	putPointer = 0;
 	getPointer = 0;
 }
 
 void Buffer::put(const char& c)
 {
-	if(byteCount > 1024 && byteCount % 1024 == 0)
+	if(byteCount == capacity)
 	{
-		//reallocate
-		char* oldBuffer = buffer;
-		buffer = NULL;
-		capacity += 1024;
-		char* newBuffer = new char[capacity];
-		//void *memcpy(void *dest, const void *src, size_t n);
-		memcpy(newBuffer, oldBuffer, byteCount);
-		delete [] oldBuffer;
-		buffer = newBuffer;
-		clog << "reallocated" << '\n';
+		packets.push_back(new char[PACKET_SIZE]);
+		capacity += PACKET_SIZE;
+		packetCount += 1;
+		//write header to new packet? TODO
 	}
-	//byteCount++;
-	putPointer++;
-	//getPointer++;// = putPointer;
-	buffer[byteCount] = c;
+	byteCount += 1;
+	packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
+	cout << "add \"" << (int)packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]" << endl;
+	//whew long line ^.^
 	//cout << "add \"" << (int)buffer[byteCount] << "\" at [" << byteCount << "]" << endl;
-	byteCount++;
 }
 
 char Buffer::get()
@@ -39,13 +33,14 @@ char Buffer::get()
 	//if(getPointer > 0)
 		//--getPointer;
 	//cout << "get \"" << (int)buffer[getPointer] << "\" at [" << getPointer << "]" << endl;
-	return buffer[getPointer++];
+	//return buffer[getPointer++];
+	return 0;
 }
 
 void Buffer::get(char& c)
 {
 	//getPointer--;
-	c = buffer[getPointer++];
+	//c = buffer[getPointer++];
 }
 
 void Buffer::put(const int& i)
