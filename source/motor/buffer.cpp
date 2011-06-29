@@ -22,18 +22,34 @@ void Buffer::put(const char& c)
 		//write header to new packet? TODO
 	}
 	byteCount += 1;
-	packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
-	cout << "add \"" << (int)packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]" << endl;
+	packets.back()[byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
+	//cout << "add \"" << (int)packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]" << endl;
 	//whew long line ^.^
 	//cout << "add \"" << (int)buffer[byteCount] << "\" at [" << byteCount << "]" << endl;
+	putPointer += 1;
+	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
 }
+
+//helper[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
+//
+// packetNum starts at 0, byteNum is relative and goes from 0 to PACKET_SIZE-1
+char Buffer::get(unsigned int packetNum, unsigned int byteNum)
+{
+	list<char*>::iterator it = packets.begin(); //why no random_access_iterator std::list? why? :(
+	for(int i = 0; i < packetNum; i++)
+	{
+		it++;
+	}
+	return (*it)[byteNum];
+}
+//helper]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+
 
 char Buffer::get()
 {
-	//if(getPointer > 0)
-		//--getPointer;
+	char c;
+	c = 0;//TODO
 	//cout << "get \"" << (int)buffer[getPointer] << "\" at [" << getPointer << "]" << endl;
-	//return buffer[getPointer++];
 	return 0;
 }
 
@@ -118,9 +134,14 @@ void Buffer::get (double& d)
 	d = out;
 }
 
-char* Buffer::getBuffer()
+char* Buffer::getPacket(int n)
 {
-	return buffer;
+	return NULL;
+}
+
+list<char*>* getPackets()
+{
+	return NULL;
 }
 
 unsigned int Buffer::getByteCount()
@@ -133,8 +154,7 @@ unsigned int Buffer::getCapacity()
 	return capacity;
 }
 
-char* Buffer::end()
+list<char*>* Buffer::end()
 {
-	this->put('\0');
-	return buffer;
+	return &packets;
 }

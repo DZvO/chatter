@@ -44,5 +44,7 @@ class Buffer
 		unsigned int putPointer;
 		unsigned int getPointer;
 		static const unsigned short PACKET_SIZE = 1024;
+
+		char get(unsigned int packetNum, unsigned int byteNum);
 };
 
