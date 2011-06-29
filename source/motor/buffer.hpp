@@ -10,12 +10,9 @@ class Buffer
 {
 	public:
 		Buffer();
-		void add(char c);
 
-		void put(char c);
+		void put(const char& c);
 		char get();
-
-		void put (const char& c);
 		void get (char& c);
 
 		void put (const int& i);			//32 bit int
@@ -30,6 +27,7 @@ class Buffer
 		void put (const double& d);		//64 bit
 		void get (double& d);					//64 bit
 
+		//remember - every time you add something there is a chance the buffer gets reallocated and the pointer you got before wont be valid later
 		char* getBuffer();
 		unsigned int getByteCount();
 		unsigned int getCapacity();
@@ -38,7 +36,6 @@ class Buffer
 
 	private:
 		char *buffer;
-		//list<char[1024]> buffer; TODO
 		unsigned int capacity;
 		unsigned int byteCount;
 

@@ -3,17 +3,15 @@
 Buffer::Buffer()
 {
 	capacity = 1024;
-	//buffer = new char[capacity];
-	packets.push_back(new char[capacity]);
+	buffer = new char[capacity];
 	byteCount = 0;
-	packetCount = 1;
 	putPointer = 0;
 	getPointer = 0;
 }
 
 void Buffer::put(const char& c)
 {
-	if(byteCount > 1024 && byteCount % 1024 == 0)
+	if(byteCount == capacity)
 	{
 		//reallocate
 		char* oldBuffer = buffer;
@@ -25,6 +23,7 @@ void Buffer::put(const char& c)
 		delete [] oldBuffer;
 		buffer = newBuffer;
 		clog << "reallocated" << '\n';
+		//TODO what about protocol stuff?
 	}
 	//byteCount++;
 	putPointer++;
@@ -140,6 +139,5 @@ unsigned int Buffer::getCapacity()
 
 char* Buffer::end()
 {
-	this->put('\0');
 	return buffer;
 }
