@@ -111,14 +111,24 @@ int sokket::receive(string& output, Address& sender)
 
 void sokket::send(Buffer& buf, Address receiver)
 {
-	list<char*>* list = buf.getPackets();
-	list<char*>::iterator it = (*list).begin();
-	//list<char*>::iterator it = list->begin();
+	std::list<char*>* list = buf.getPackets();
+	std::list<char*>::iterator it;
+
+	for(it = list->begin(); it != list->end(); it++)
+	{
+		this->send(*it, AGREED_BUF_SIZE, receiver);
+	}
 }
 
 void sokket::receive(Buffer& buf, Address& sender)
 {
-
+	char* data = NULL;
+	int recvBytes = this->receive(data, recvBytes, sender);
+	if(recvBytes > 0)
+	{
+		buf.add(data, recvBytes);
+	}
+	delete [] data;
 }
 
 void sokket::close()

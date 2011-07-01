@@ -14,6 +14,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
+#include <list>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
