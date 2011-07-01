@@ -11,16 +11,16 @@
 #Library('foo', ['f1.c', 'f2.c', 'f3.c'])
 #Program('prog.c', LIBS=['foo', 'bar'], LIBPATH='.')
 
-libmotor = Environment()
-libmotor.Library('motor', map(lambda x: "motor/" + x + ".cpp", Split("address buffer socket")))
-
-env = Environment(CC = 'g++', CCFLAGS = '-O2 -Wall -g')
+env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g')
 conf = Configure(env)
 #check for headers n stuff :D
 if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):
 	print("Please install boost first")
 	Exit(1)
 env = conf.Finish()
+
+libmotor = env.Clone()
+libmotor.Library('motor', map(lambda x: "motor/" + x + ".cpp", Split("address buffer socket")))
 
 client = env.Clone()
 client.Program('server.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')

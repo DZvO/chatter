@@ -109,14 +109,26 @@ int sokket::receive(string& output, Address& sender)
 	return recvBytes;
 }
 
-void sokket::send(const Buffer& buf, Address receiver)
+void sokket::send(Buffer& buf, Address receiver)
 {
+	std::list<char*>* list = buf.getPackets();
+	std::list<char*>::iterator it;
 
+	for(it = list->begin(); it != list->end(); it++)
+	{
+		this->send(*it, AGREED_BUF_SIZE, receiver);
+	}
 }
 
 void sokket::receive(Buffer& buf, Address& sender)
 {
-
+	char* data = NULL;
+	int recvBytes = this->receive(data, recvBytes, sender);
+	if(recvBytes > 0)
+	{
+		buf.add(data, recvBytes);
+	}
+	delete [] data;
 }
 
 void sokket::close()

@@ -14,6 +14,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <iostream>
+#include <list>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -38,7 +39,7 @@ class sokket //'heavily abstracted and oo class :)
 		int send(const string input, Address receiver);
 		int receive(string& output, Address& sender);
 
-		void send(const Buffer& buf, Address to);//sends buf
+		void send(Buffer& buf, Address to);//sends buf
 		void receive(Buffer& buf, Address& from);//return buf
 
 		void close();
