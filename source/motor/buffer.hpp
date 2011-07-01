@@ -27,7 +27,10 @@ class Buffer
 		void put (const double& d);		//64 bit double
 		void get (double& d);					//64 bit double
 
+		//make a deep copy of data, you can delete[] it aftewards
+		void add(char* data, int length);
 		char* getPacket(int n);
+
 		list<char*>* getPackets();
 		unsigned int getByteCount();
 		unsigned int getCapacity();

@@ -1,6 +1,6 @@
 #include "buffer.hpp"
 
-Buffer::Buffer()
+Buffer::Buffer ()
 {
 	//buffer = new char[capacity];
 	packets.push_back(new char[PACKET_SIZE]);
@@ -12,7 +12,7 @@ Buffer::Buffer()
 	getPointer = 0;
 }
 
-void Buffer::put(const char& c)
+void Buffer::put (const char& c)
 {
 	if(byteCount == capacity)
 	{
@@ -26,6 +26,7 @@ void Buffer::put(const char& c)
 	//cout << "add \"" << (int)packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]" << endl;
 	//whew long line ^.^
 	//cout << "add \"" << (int)buffer[byteCount] << "\" at [" << byteCount << "]" << endl;
+	cout << "add \"" << (int)c << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]\n";
 	putPointer += 1;
 	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
 }
@@ -33,7 +34,7 @@ void Buffer::put(const char& c)
 //helper[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
 //
 // packetNum starts at 0, byteNum is relative and goes from 0 to PACKET_SIZE-1
-char Buffer::get(unsigned int packetNum, unsigned int byteNum)
+char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
 	list<char*>::iterator it = packets.begin(); //why no random_access_iterator std::list? why? :(
 	for(int i = 0; i < packetNum; i++)
@@ -45,21 +46,26 @@ char Buffer::get(unsigned int packetNum, unsigned int byteNum)
 //helper]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
 
 
-char Buffer::get()
+char Buffer::get ()
 {
-	char c;
-	c = 0;//TODO
-	//cout << "get \"" << (int)buffer[getPointer] << "\" at [" << getPointer << "]" << endl;
-	return 0;
+	int listNum = getPointer / 1024;
+	int buffNum = getPointer % 1024;
+	getPointer--;
+	//cout << "listNum = " << listNum << " buffnum = " << buffNum << endl;
+	//cout << "getPointer = " << getPointer << endl;
+	cout << "get \"" << (int)get(listNum, buffNum) << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
+	
+	return get(listNum, buffNum);
 }
 
-void Buffer::get(char& c)
+void Buffer::get (char& c)
 {
 	//getPointer--;
 	//c = buffer[getPointer++];
+	c = get();
 }
 
-void Buffer::put(const int& i)
+void Buffer::put (const int& i)
 {
 	unsigned int bigE = htonl(i);
 	unsigned char c1 = (bigE & 0xff000000) >> 24;//most significant (on big-endian)
@@ -67,24 +73,24 @@ void Buffer::put(const int& i)
 	unsigned char c3 = (bigE & 0x0000ff00) >> 8;
 	unsigned char c4 = (bigE & 0x000000ff);			//least significant (on big-endian)
 
-	put(c1);
-	put(c2);
-	put(c3);
-	put(c4);
+	this->put((char)c1);
+	this->put((char)c2);
+	this->put((char)c3);
+	this->put((char)c4);
 }
 
-void Buffer::get(int& i)
+void Buffer::get (int& i)
 {
-	unsigned char c1 = get();
-	unsigned char c2 = get();
-	unsigned char c3 = get();
 	unsigned char c4 = get();
+	unsigned char c3 = get();
+	unsigned char c2 = get();
+	unsigned char c1 = get();
 
 	i = (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
 	i = ntohl(i);
 }
 
-void Buffer::put(const long long& l)
+void Buffer::put (const long long& l)
 {
 	//long long mask1 = 0xffffffffffffffff;
 	int i1 = int((l & 0x00000000ffffffff));
@@ -93,7 +99,7 @@ void Buffer::put(const long long& l)
 	this->put(i1);
 }
 
-void Buffer::get(long long& l)
+void Buffer::get (long long& l)
 {
 	//cout << "segfault incomming" << endl;
 	long long l1 = 0;
@@ -134,27 +140,35 @@ void Buffer::get (double& d)
 	d = out;
 }
 
-char* Buffer::getPacket(int n)
+void Buffer::add(char* data, int length)
+{
+	for(int i = 0; i < length; i++)
+	{
+		this->put(data[i]);
+	}
+}
+
+char* Buffer::getPacket (int n)
 {
 	return NULL;
 }
 
-list<char*>* getPackets()
+list<char*>* Buffer::getPackets ()
 {
 	return NULL;
 }
 
-unsigned int Buffer::getByteCount()
+unsigned int Buffer::getByteCount ()
 {
 	return byteCount;
 }
 
-unsigned int Buffer::getCapacity()
+unsigned int Buffer::getCapacity ()
 {
 	return capacity;
 }
 
-list<char*>* Buffer::end()
+list<char*>* Buffer::end ()
 {
 	return &packets;
 }
