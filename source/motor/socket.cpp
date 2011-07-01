@@ -109,9 +109,11 @@ int sokket::receive(string& output, Address& sender)
 	return recvBytes;
 }
 
-void sokket::send(const Buffer& buf, Address receiver)
+void sokket::send(Buffer& buf, Address receiver)
 {
-
+	list<char*>* list = buf.getPackets();
+	list<char*>::iterator it = (*list).begin();
+	//list<char*>::iterator it = list->begin();
 }
 
 void sokket::receive(Buffer& buf, Address& sender)

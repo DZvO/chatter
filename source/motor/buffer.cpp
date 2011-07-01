@@ -37,7 +37,7 @@ void Buffer::put (const char& c)
 char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
 	list<char*>::iterator it = packets.begin(); //why no random_access_iterator std::list? why? :(
-	for(int i = 0; i < packetNum; i++)
+	for(unsigned int i = 0; i < packetNum; i++)
 	{
 		it++;
 	}
@@ -101,12 +101,16 @@ void Buffer::put (const long long& l)
 
 void Buffer::get (long long& l)
 {
-	//cout << "segfault incomming" << endl;
-	long long l1 = 0;
-	long long l2 = 0;
-	this->get((int&)l2);
-	this->get((int&)l1);
-	l = (l2 << 32) | l1;
+	int i1 = 0;
+	int i2 = 0;
+	this->get(i2);
+	this->get(i1);
+
+	//long long l1 = 0;
+	//long long l2 = 0;
+	//this->get((int&)l2);
+	//this->get((int&)l1);
+	l = ((long long)i2 << 32) | (long long)i1;
 }
 
 void Buffer::put (const float& f)
@@ -122,7 +126,9 @@ void Buffer::get (float& f)
 	int i = 0;
 	this->get(i);
 	//cout << "itof " << i << endl;
-	f = *(reinterpret_cast<float*>(&i));
+	float* flp = reinterpret_cast<float*>(&i);
+	f = *flp;
+	//f = *(reinterpret_cast<float*>(&i));
 	//cout << f << endl;
 }
 
@@ -136,8 +142,11 @@ void Buffer::get (double& d)
 {
 	long long o = 0;
 	this->get(o);
-	double out = *(reinterpret_cast<double*>(&o));
-	d = out;
+
+	double* dbp = reinterpret_cast<double*>(&o);
+	d = *dbp;	
+	//double out = *(reinterpret_cast<double*>(&o));
+	//d = out;
 }
 
 void Buffer::add(char* data, int length)
@@ -155,7 +164,12 @@ char* Buffer::getPacket (int n)
 
 list<char*>* Buffer::getPackets ()
 {
-	return NULL;
+	return &packets;
+}
+
+unsigned int Buffer::getPacketCount ()
+{
+	return packetCount;
 }
 
 unsigned int Buffer::getByteCount ()

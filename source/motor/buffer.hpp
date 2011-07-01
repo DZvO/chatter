@@ -32,6 +32,7 @@ class Buffer
 		char* getPacket(int n);
 
 		list<char*>* getPackets();
+		unsigned int getPacketCount();
 		unsigned int getByteCount();
 		unsigned int getCapacity();
 
