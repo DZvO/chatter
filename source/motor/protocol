@@ -1,0 +1,4 @@
+HEADER:
+	32 byte buffer identifier (hash, of whole buffer?)
+	16 byte time stamp
+	16 byte packet number (2^16 * 1024 = max bytes)
