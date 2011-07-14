@@ -1,21 +1,9 @@
 #!/usr/bin/env python
-#Program('hello.c')
-#Object('hello.c')
-#Program('new_hello', 'hello.c')
-#Program('program', Glob('*.c'))
-#Program('hello', ['file1.c', 'file2.c'])
-#Program('program', Split('main.c file1.c file2.c'))
-
-#Library('foo', ['f1.c', 'f2.c', 'f3.c'])
-
-#Library('foo', ['f1.c', 'f2.c', 'f3.c'])
-#Program('prog.c', LIBS=['foo', 'bar'], LIBPATH='.')
-
 env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g')
 conf = Configure(env)
 #check for headers n stuff :D
 if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):
-	print("Please install boost first")
+	print("Please install (lib)boost -> http://www.boost.org/")
 	Exit(1)
 env = conf.Finish()
 

@@ -8,8 +8,8 @@ Buffer::Buffer ()
 	packetCount = 1;
 
 	byteCount = 0;
-	putPointer = 0;
-	getPointer = 0;
+	putPointer = HEADER_SIZE;
+	getPointer = putPointer;
 }
 
 void Buffer::put (const char& c)
@@ -19,41 +19,34 @@ void Buffer::put (const char& c)
 		packets.push_back(new char[PACKET_SIZE]);
 		capacity += PACKET_SIZE;
 		packetCount += 1;
-		//write header to new packet? TODO
+		
+		for(int i = 0; i < HEADER_SIZE; i++)
+			this->put(0);
 	}
 	byteCount += 1;
 	packets.back()[byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
-	//cout << "add \"" << (int)packets[packetCount - 1][byteCount - ((packetCount - 1) * PACKET_SIZE)] << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]" << endl;
-	//whew long line ^.^
-	//cout << "add \"" << (int)buffer[byteCount] << "\" at [" << byteCount << "]" << endl;
-	cout << "add \"" << (int)c << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]\n";
+	//cout << "add \"" << (int)c << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]\n";
 	putPointer += 1;
 	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
 }
 
-//helper[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
-//
 // packetNum starts at 0, byteNum is relative and goes from 0 to PACKET_SIZE-1
 char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
-	list<char*>::iterator it = packets.begin(); //why no random_access_iterator std::list? why? :(
+	list<char*>::iterator it = packets.begin();
 	for(unsigned int i = 0; i < packetNum; i++)
 	{
 		it++;
 	}
 	return (*it)[byteNum];
 }
-//helper]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
-
 
 char Buffer::get ()
 {
 	int listNum = getPointer / 1024;
 	int buffNum = getPointer % 1024;
 	getPointer--;
-	//cout << "listNum = " << listNum << " buffnum = " << buffNum << endl;
-	//cout << "getPointer = " << getPointer << endl;
-	cout << "get \"" << (int)get(listNum, buffNum) << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
+	//cout << "get \"" << (int)get(listNum, buffNum) << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
 	
 	return get(listNum, buffNum);
 }
