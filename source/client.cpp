@@ -18,17 +18,12 @@ void sleep(unsigned int sec, unsigned int usec)
 int main(int argc, char* argv[])
 {
 	Buffer buf;
-	//int in = 105153;
-	//int out = 0;
-	//buf.put(in);
-	//buf.get(out);
-	//cout << out << endl;
-	
-	//float inf = 1.23456f;
-	//float outf = 0.00f;
-	//buf.put(inf);
-	//buf.get(outf);
-	//cout << outf << endl;
+	float inf = 1.23456f;
+	buf.put(inf);
+
+	sokket skt = sokket(1337, false);
+	Address server = Address(argv[1]);
+	skt.send(buf, server);
 
 	/*long long l = 0x0fffffffffffffff;
 	cout << l << endl;
@@ -49,7 +44,7 @@ int main(int argc, char* argv[])
 	cout << dout << endl;*/
 
 
-	sokket skt = sokket(1337, false);
+/*	sokket skt = sokket(1337, false);
 	Address server = Address(argv[1]);
 	skt.send(argv[2], server);
 
@@ -64,6 +59,7 @@ int main(int argc, char* argv[])
 	while(skt.receive(buffer, sender) < 0) { sleep(0, 50000); }
 	cout << "client: received \"" << buffer << "\"\n";
 	skt.close();
+*/
 
 	return 0;
 }

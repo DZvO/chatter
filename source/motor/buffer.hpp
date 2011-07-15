@@ -11,6 +11,7 @@ class Buffer
 {
 	public:
 		Buffer();
+		~Buffer();
 		void put (const char& c);
 		char get ();
 		void get (char& c);
@@ -47,9 +48,9 @@ class Buffer
 
 		unsigned int putPointer;
 		unsigned int getPointer;
-		static const unsigned short PACKET_SIZE = 1024;
 		static const unsigned short HEADER_SIZE = 8;
-		static const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
+		static const unsigned short PACKET_SIZE = 1024 - HEADER_SIZE;
+		//static const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
 
 		char get(unsigned int packetNum, unsigned int byteNum);
 };

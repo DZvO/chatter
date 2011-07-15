@@ -8,20 +8,29 @@ Buffer::Buffer ()
 	packetCount = 1;
 
 	byteCount = 0;
-	putPointer = HEADER_SIZE;
+	putPointer = 0;//HEADER_SIZE;
 	getPointer = putPointer;
+}
+
+Buffer::~Buffer()
+{
+	for(list<char*>::iterator it = packets.begin(); it != packets.end();)
+	{
+		delete [] *it;
+		it++;
+	}
 }
 
 void Buffer::put (const char& c)
 {
-	if(byteCount == capacity)
+	if(byteCount == capacity - 1)
 	{
 		packets.push_back(new char[PACKET_SIZE]);
 		capacity += PACKET_SIZE;
 		packetCount += 1;
 		
-		for(int i = 0; i < HEADER_SIZE; i++)
-			this->put(0);
+		//for(int i = 0; i < HEADER_SIZE; i++)
+			//this->put(0);
 	}
 	byteCount += 1;
 	packets.back()[byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
@@ -43,12 +52,14 @@ char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 
 char Buffer::get ()
 {
-	int listNum = getPointer / 1024;
-	int buffNum = getPointer % 1024;
+	int listNum = getPointer / PACKET_SIZE;
+	int buffNum = getPointer % PACKET_SIZE;
 	getPointer--;
-	//cout << "get \"" << (int)get(listNum, buffNum) << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
+
+	char rv = get(listNum, buffNum);
+	//cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
 	
-	return get(listNum, buffNum);
+	return rv;
 }
 
 void Buffer::get (char& c)
