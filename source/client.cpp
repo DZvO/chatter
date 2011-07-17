@@ -18,8 +18,12 @@ void sleep(unsigned int sec, unsigned int usec)
 int main(int argc, char* argv[])
 {
 	Buffer buf;
-	float inf = 1.23456f;
-	buf.put(inf);
+	//float inf = 1.47256f;
+	buf.put('a');
+	buf.put('b');
+	buf.put('c');
+	buf.put('d');
+	buf.put('e');
 
 	sokket skt = sokket(1337, false);
 	Address server = Address(argv[1]);

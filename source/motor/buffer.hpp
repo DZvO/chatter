@@ -5,6 +5,8 @@
 #include <cstring>
 using namespace std;
 
+#include <boost/functional/hash.hpp>
+
 #include <netinet/in.h>
 
 class Buffer
@@ -36,8 +38,13 @@ class Buffer
 		unsigned int getPacketCount();
 		unsigned int getByteCount();
 		unsigned int getCapacity();
+		unsigned int getChecksum();
 
-		list<char*>* end();
+		list<char*>* finish();
+
+		static const unsigned short HEADER_SIZE = 6;
+		static const unsigned short PACKET_SIZE = 1024;
+		static const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
 
 	private:
 		//char *buffer;
@@ -48,9 +55,6 @@ class Buffer
 
 		unsigned int putPointer;
 		unsigned int getPointer;
-		static const unsigned short HEADER_SIZE = 8;
-		static const unsigned short PACKET_SIZE = 1024 - HEADER_SIZE;
-		//static const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
 
 		char get(unsigned int packetNum, unsigned int byteNum);
 };

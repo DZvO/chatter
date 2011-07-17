@@ -3,8 +3,9 @@
 Buffer::Buffer ()
 {
 	//buffer = new char[capacity];
-	packets.push_back(new char[PACKET_SIZE]);
-	capacity = PACKET_SIZE;
+	packets.push_back(new char[PAYLOAD_SIZE]);
+	memset(packets.back(), 0, PAYLOAD_SIZE);
+	capacity = PAYLOAD_SIZE;
 	packetCount = 1;
 
 	byteCount = 0;
@@ -25,21 +26,23 @@ void Buffer::put (const char& c)
 {
 	if(byteCount == capacity - 1)
 	{
-		packets.push_back(new char[PACKET_SIZE]);
-		capacity += PACKET_SIZE;
+		packets.push_back(new char[PAYLOAD_SIZE]);
+		memset(packets.back(), 0, PAYLOAD_SIZE);
+		capacity += PAYLOAD_SIZE;
 		packetCount += 1;
+		cout << "its a new one!" << endl;
 		
 		//for(int i = 0; i < HEADER_SIZE; i++)
 			//this->put(0);
 	}
+	packets.back()[byteCount - ((packetCount - 1) * PAYLOAD_SIZE)] = c;
+	cout << "add \"" << (int)c << "\"(\'" << c << "\') at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PAYLOAD_SIZE) << "]\n";
 	byteCount += 1;
-	packets.back()[byteCount - ((packetCount - 1) * PACKET_SIZE)] = c;
-	//cout << "add \"" << (int)c << "\" at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PACKET_SIZE) << "]\n";
 	putPointer += 1;
 	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
 }
 
-// packetNum starts at 0, byteNum is relative and goes from 0 to PACKET_SIZE-1
+// packetNum starts at 0, byteNum is relative and goes from 0 to PAYLOAD_SIZE-1
 char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
 	list<char*>::iterator it = packets.begin();
@@ -52,12 +55,12 @@ char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 
 char Buffer::get ()
 {
-	int listNum = getPointer / PACKET_SIZE;
-	int buffNum = getPointer % PACKET_SIZE;
+	int listNum = getPointer / PAYLOAD_SIZE;
+	int buffNum = getPointer % PAYLOAD_SIZE;
 	getPointer--;
 
 	char rv = get(listNum, buffNum);
-	//cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
+	cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
 	
 	return rv;
 }
@@ -186,7 +189,18 @@ unsigned int Buffer::getCapacity ()
 	return capacity;
 }
 
-list<char*>* Buffer::end ()
+unsigned int Buffer::getChecksum ()
+{
+	std::size_t chk = 0;
+	for(std::list<char*>::iterator it = packets.begin(); it != packets.end(); it++)
+	{
+		std::string str(*it);
+		boost::hash_combine(chk, str);
+	}
+	return chk;
+}
+
+list<char*>* Buffer::finish ()
 {
 	return &packets;
 }

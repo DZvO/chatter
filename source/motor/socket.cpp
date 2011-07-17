@@ -111,12 +111,35 @@ int sokket::receive(string& output, Address& sender)
 
 void sokket::send(Buffer& buf, Address receiver)
 {
+	unsigned int checksum = buf.getChecksum();//dont need to use htonl/ntohl because i use bit shifting ?
+	unsigned short timestamp = 0; //value that gets incremented every packet (1024 bytes)
+
+	unsigned int packet_size = Buffer::PACKET_SIZE;
+	unsigned int payload_size = Buffer::PAYLOAD_SIZE;
+	unsigned int header_size = Buffer::HEADER_SIZE;
+
 	std::list<char*>* list = buf.getPackets();
 	std::list<char*>::iterator it;
-
 	for(it = list->begin(); it != list->end(); it++)
 	{
-		this->send(*it, AGREED_BUF_SIZE, receiver);
+		char* payload = *it;
+
+		char* packet = new char[packet_size];
+		//memset(packet, 0, packet_size);
+
+		packet[0] = (checksum & 0x000000ff);
+		packet[1] = (checksum & 0x0000ff00) >> 8;
+		packet[2] = (checksum & 0x00ff0000) >> 16;
+		packet[3] = (checksum & 0xff000000) >> 24;
+
+		packet[4] = (timestamp & 0x00ff);
+		packet[5] = (timestamp & 0xff00) >> 8;
+
+		memcpy(packet + (header_size-1), payload, payload_size);
+
+		this->send(packet, packet_size, receiver);
+		delete [] packet;
+		timestamp++;
 	}
 }
 
