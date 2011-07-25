@@ -56,17 +56,16 @@ int sokket::send(const char* input, int length, Address receiver)
 	return sentBytes;
 }
 
-int sokket::receive(char* output, int& length, Address& sender)
+int sokket::receive(char*& output, int& length, Address& sender)
 {
 	int recvBytes = 0;
-	char* buffer = new char[AGREED_BUF_SIZE];
+	char* buffer = new char[MAX_BUF_LEN];
+	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
 	sender.addr_len = sizeof(sender.addr);
-	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN - 1, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
 	if(recvBytes > 0)
 	{
-		buffer[recvBytes] = '\0';
 		output = buffer;
-		//clog << "DEBUG: sender family " << sender.addr.ss_family << endl;
+		cout << "received succesfully" << endl;
 	}
 	length = recvBytes;
 	return recvBytes;
@@ -97,7 +96,7 @@ int sokket::receive(string& output, Address& sender)
 	}
 	return retVal;*/
 
-	int recvBytes = 0;
+	/*int recvBytes = 0;
 	char buffer[AGREED_BUF_SIZE];
 	sender.addr_len = sizeof(sender.addr);
 	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN - 1, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
@@ -107,22 +106,26 @@ int sokket::receive(string& output, Address& sender)
 		output = buffer;
 	}
 	return recvBytes;
+	*/
+	cout << "ERROR: Not implemented." << endl;
+	return 0;
 }
 
 void sokket::send(Buffer& buf, Address receiver)
 {
-	unsigned int checksum = buf.getChecksum();//dont need to use htonl/ntohl because i use bit shifting ?
-	unsigned short timestamp = 0; //value that gets incremented every packet (1024 bytes)
+	unsigned int checksum = buf.getChecksum();	//dont need to use htonl/ntohl because i use bit shifting ?
+	unsigned short timestamp = 0;	//value that gets incremented every packet (1024 bytes)
+	unsigned short flags = 0;	//flags, for example what the data should be used for TODO currently un-used -> use for re-send requests?
 
-	unsigned int packet_size = Buffer::PACKET_SIZE;
-	unsigned int payload_size = Buffer::PAYLOAD_SIZE;
-	unsigned int header_size = Buffer::HEADER_SIZE;
+	unsigned int packet_size = PACKET_SIZE;
+	unsigned int payload_size = PAYLOAD_SIZE;
+	unsigned int header_size = HEADER_SIZE;
 
-	std::list<char*>* list = buf.getPackets();
-	std::list<char*>::iterator it;
+	std::list<Packet*>* list = buf.getPackets();
+	std::list<Packet*>::iterator it;
 	for(it = list->begin(); it != list->end(); it++)
 	{
-		char* payload = *it;
+		char* payload = (*it)->payload;
 
 		char* packet = new char[packet_size];
 		//memset(packet, 0, packet_size);
@@ -134,24 +137,39 @@ void sokket::send(Buffer& buf, Address receiver)
 
 		packet[4] = (timestamp & 0x00ff);
 		packet[5] = (timestamp & 0xff00) >> 8;
+		
+		packet[6] = (flags & 0x00ff);
+		packet[7] = (flags & 0xff00) >> 8;
 
 		memcpy(packet + (header_size-1), payload, payload_size);
 
 		this->send(packet, packet_size, receiver);
+		for(unsigned int i = 0; i < packet_size; i++)
+		{
+			if(packet[i] != 0)
+				cout << "sent \"" << (int)packet[i] << "\"\n";
+		}
 		delete [] packet;
 		timestamp++;
 	}
 }
 
-void sokket::receive(Buffer& buf, Address& sender)
+int sokket::receive(Buffer& buf, Address& sender)
 {
 	char* data = NULL;
 	int recvBytes = this->receive(data, recvBytes, sender);
 	if(recvBytes > 0)
 	{
-		buf.add(data, recvBytes);
+		for(int i = 0; i < recvBytes; i++)
+		{
+			if(data[i] != 0)
+				cout << "recv \"" << (int)data[i] << "\"\n";
+		}
+		buf.add((unsigned char*)data, recvBytes);//be naive and pretend we always receive the complete packet?
+		clog << "received " << recvBytes << " bytes(should be: " << PACKET_SIZE << ')' << '\n';
 	}
 	delete [] data;
+	return recvBytes;
 }
 
 void sokket::close()

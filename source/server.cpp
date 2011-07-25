@@ -17,28 +17,28 @@ void sleep(unsigned int sec, unsigned int usec)
 
 int main(int argc, char* argv[])
 {
-	//::buffer buf;
-	//buf << 10;
-
 	sokket skt(1337, true);
 	string response = "Hey client!";
-	string buffer;
+	Buffer buf;
 
 	while(true)
 	{
 		Address sender;
-		int returned = skt.receive(buffer, sender);
+		int returned = skt.receive(buf, sender);
 		if(returned > 0)
 		{
-			clog << "server: received \"" << buffer << "\" from\n" << sender << '\n';
-			//TODO everything now kinda works. but check again to make sure it wont randomly break/crash
-			skt.send(response, sender);
+			clog << "server: received " << returned << " bytes, from\n" << sender << '\n';
+			cout << endl;
+			cout << buf.get() << endl;
+			cout << buf.get() << endl;
+			cout << buf.get() << endl;
+			cout << buf.get() << endl;
+			cout << buf.get() << endl;
 		}
 		else
 		{
-			sleep(0, 40000);
+			sleep(0, 35000);
 		}
 	}
-
 	return 0;
 }

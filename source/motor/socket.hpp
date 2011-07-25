@@ -25,8 +25,12 @@ using namespace std;
 #include "buffer.hpp"
 #include "address.hpp"
 
-const unsigned int AGREED_BUF_SIZE = 1024;
-const unsigned int MAX_BUF_LEN = AGREED_BUF_SIZE;
+extern const unsigned int AGREED_BUF_SIZE;
+extern const unsigned int MAX_BUF_LEN;
+
+extern const unsigned short HEADER_SIZE; 
+extern const unsigned short PACKET_SIZE; 
+extern const unsigned short PAYLOAD_SIZE; 
 
 class sokket //'heavily abstracted and oo class :)
 {
@@ -34,13 +38,13 @@ class sokket //'heavily abstracted and oo class :)
 		sokket(unsigned short port = 1337, bool bind = false);
 
 		int send(const char* input, int length, Address receiver);
-		int receive(char* output, int& length, Address& sender);
+		int receive(char*& output, int& length, Address& sender);
 
 		int send(const string input, Address receiver);
-		int receive(string& output, Address& sender);
+		int receive(string& output, Address& sender);//dumb, because std::string wont save through '0'
 
 		void send(Buffer& buf, Address to);//sends buf
-		void receive(Buffer& buf, Address& from);//return buf
+		int receive(Buffer& buf, Address& from);//return buf
 
 		void close();
 

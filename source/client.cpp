@@ -7,6 +7,7 @@
 #include <string>
 using namespace std;
 
+#include "motor/address.hpp"
 #include "motor/socket.hpp"
 
 void sleep(unsigned int sec, unsigned int usec)
@@ -19,15 +20,20 @@ int main(int argc, char* argv[])
 {
 	Buffer buf;
 	//float inf = 1.47256f;
-	buf.put('a');
-	buf.put('b');
-	buf.put('c');
-	buf.put('d');
-	buf.put('e');
+	for(char c('a'); c <= 'e'; c++)
+		buf.put(c);
 
-	sokket skt = sokket(1337, false);
-	Address server = Address(argv[1]);
-	skt.send(buf, server);
+	for(int i(1); i <= 5; i++)
+		buf.get();
+
+	if(argc > 1)
+	{
+		sokket skt = sokket(1337, false);
+		Address server = Address(argv[1]);
+
+		cout << "sending buffer with \"" << buf.getChecksum() << "\" (" << hex << buf.getChecksum() << dec << " as checksum" << endl;
+		skt.send(buf, server);
+	}
 
 	/*long long l = 0x0fffffffffffffff;
 	cout << l << endl;

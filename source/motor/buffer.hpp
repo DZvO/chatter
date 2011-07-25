@@ -1,3 +1,4 @@
+/* TODO name the variables "byteCount", "putPointer", "getPointer", "capacity" more meaningfull. right now i dont know what they really mean anymore (because of the change to using Packet)
 #include <iostream>
 #include <vector>
 #include <list>
@@ -6,8 +7,27 @@
 using namespace std;
 
 #include <boost/functional/hash.hpp>
-
 #include <netinet/in.h>
+
+const unsigned int AGREED_BUF_SIZE = 1024;
+const unsigned int MAX_BUF_LEN = AGREED_BUF_SIZE;
+const unsigned short HEADER_SIZE = 8;
+const unsigned short PACKET_SIZE = 1024;
+const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
+
+class Packet
+{
+	public:
+		unsigned int checksum;
+		unsigned short timestamp;
+		unsigned short flags;
+		char* payload;
+
+		Packet();
+		~Packet();
+
+		void allocate();// payload = new char[PAYLOAD_SIZE];
+};
 
 class Buffer
 {
@@ -31,24 +51,20 @@ class Buffer
 		void get (double& d);					//64 bit double
 
 		//make a deep copy of data, you can delete[] it aftewards
-		void add(char* data, int length);
-		char* getPacket(int n);
+		void add(unsigned char* data, int length);
+		Packet* getPacket(int n);
 
-		list<char*>* getPackets();
+		list<Packet*>* getPackets();
 		unsigned int getPacketCount();
 		unsigned int getByteCount();
 		unsigned int getCapacity();
 		unsigned int getChecksum();
 
-		list<char*>* finish();
-
-		static const unsigned short HEADER_SIZE = 6;
-		static const unsigned short PACKET_SIZE = 1024;
-		static const unsigned short PAYLOAD_SIZE = PACKET_SIZE - HEADER_SIZE;
+		list<Packet*>* finish();
 
 	private:
 		//char *buffer;
-		list<char*> packets;
+		list<Packet*> packets;
 		unsigned int capacity;
 		unsigned int byteCount;
 		unsigned int packetCount;

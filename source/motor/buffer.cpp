@@ -1,10 +1,27 @@
 #include "buffer.hpp"
 
+Packet::Packet ()
+{
+	checksum = timestamp = 0;
+	payload = NULL;
+}
+
+Packet::~Packet ()
+{
+	delete [] payload;
+}
+
+void Packet::allocate()
+{
+	payload = new char[PAYLOAD_SIZE];
+}
+
 Buffer::Buffer ()
 {
-	//buffer = new char[capacity];
-	packets.push_back(new char[PAYLOAD_SIZE]);
-	memset(packets.back(), 0, PAYLOAD_SIZE);
+	Packet* pkt = new Packet();
+	pkt->allocate();
+	packets.push_back(pkt);
+	memset(packets.back()->payload, 0, PAYLOAD_SIZE);
 	capacity = PAYLOAD_SIZE;
 	packetCount = 1;
 
@@ -15,9 +32,9 @@ Buffer::Buffer ()
 
 Buffer::~Buffer()
 {
-	for(list<char*>::iterator it = packets.begin(); it != packets.end();)
+	for(list<Packet*>::iterator it = packets.begin(); it != packets.end();)
 	{
-		delete [] *it;
+		delete (*it);
 		it++;
 	}
 }
@@ -26,17 +43,18 @@ void Buffer::put (const char& c)
 {
 	if(byteCount == capacity - 1)
 	{
-		packets.push_back(new char[PAYLOAD_SIZE]);
-		memset(packets.back(), 0, PAYLOAD_SIZE);
+		Packet* pkt = new Packet();
+		pkt->allocate();
+		packets.push_back(pkt);
+		memset(packets.back()->payload, 0, PAYLOAD_SIZE);
 		capacity += PAYLOAD_SIZE;
 		packetCount += 1;
-		cout << "its a new one!" << endl;
 		
 		//for(int i = 0; i < HEADER_SIZE; i++)
 			//this->put(0);
 	}
-	packets.back()[byteCount - ((packetCount - 1) * PAYLOAD_SIZE)] = c;
-	cout << "add \"" << (int)c << "\"(\'" << c << "\') at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PAYLOAD_SIZE) << "]\n";
+	packets.back()->payload[byteCount - ((packetCount - 1) * PAYLOAD_SIZE)] = c;
+	//cout << "add \"" << (int)c << "\"(\'" << c << "\') at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PAYLOAD_SIZE) << "]\n";
 	byteCount += 1;
 	putPointer += 1;
 	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
@@ -45,22 +63,22 @@ void Buffer::put (const char& c)
 // packetNum starts at 0, byteNum is relative and goes from 0 to PAYLOAD_SIZE-1
 char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
-	list<char*>::iterator it = packets.begin();
+	list<Packet*>::iterator it = packets.begin();
 	for(unsigned int i = 0; i < packetNum; i++)
 	{
 		it++;
 	}
-	return (*it)[byteNum];
+	return (*it)->payload[byteNum];
 }
 
 char Buffer::get ()
 {
+	getPointer--;
 	int listNum = getPointer / PAYLOAD_SIZE;
 	int buffNum = getPointer % PAYLOAD_SIZE;
-	getPointer--;
 
 	char rv = get(listNum, buffNum);
-	cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
+	//cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
 	
 	return rv;
 }
@@ -156,20 +174,39 @@ void Buffer::get (double& d)
 	//d = out;
 }
 
-void Buffer::add(char* data, int length)
+void Buffer::add(unsigned char* data, int length)
 {
-	for(int i = 0; i < length; i++)
-	{
-		this->put(data[i]);
-	}
+	unsigned int got_checksum = 0;
+	unsigned short got_timestamp = 0;
+	unsigned short got_flags = 0;
+
+	got_checksum = (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0];
+	got_timestamp = (data[5] << 8) | (data[4]);
+	got_flags = (data[7] << 8) | (data[6]);
+	Packet* pkt = new Packet();
+	pkt->allocate();
+
+	pkt->checksum = got_checksum;
+	pkt->timestamp = got_timestamp;
+	pkt->flags = got_flags;
+	memcpy(pkt->payload, data + HEADER_SIZE - 1, PAYLOAD_SIZE); 
+
+	packets.push_back(pkt);
+
+	//TODO add put/get pointer incremention TODO//
+
+	//for(int i = 0; i < length; i++)
+	//{
+		//this->put(data[i]);
+	//}
 }
 
-char* Buffer::getPacket (int n)
+Packet* Buffer::getPacket (int n)
 {
 	return NULL;
 }
 
-list<char*>* Buffer::getPackets ()
+list<Packet*>* Buffer::getPackets ()
 {
 	return &packets;
 }
@@ -192,15 +229,22 @@ unsigned int Buffer::getCapacity ()
 unsigned int Buffer::getChecksum ()
 {
 	std::size_t chk = 0;
-	for(std::list<char*>::iterator it = packets.begin(); it != packets.end(); it++)
+	for(std::list<Packet*>::iterator it = packets.begin(); it != packets.end(); it++)
 	{
-		std::string str(*it);
+		std::string str((*it)->payload);
 		boost::hash_combine(chk, str);
 	}
 	return chk;
 }
 
-list<char*>* Buffer::finish ()
+list<Packet*>* Buffer::finish ()
 {
+	unsigned int chekksum = this->getChecksum();
+	unsigned short timestamp = 0; 
+	for(std::list<Packet*>::iterator it = packets.begin(); it != packets.end(); it++)
+	{
+		(*it)->checksum = chekksum;
+		(*it)->timestamp = timestamp;
+	}
 	return &packets;
 }
