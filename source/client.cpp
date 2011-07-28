@@ -20,18 +20,13 @@ int main(int argc, char* argv[])
 {
 	Buffer buf;
 	//float inf = 1.47256f;
-	for(char c('a'); c <= 'e'; c++)
-		buf.put(c);
-
-	for(int i(1); i <= 5; i++)
-		buf.get();
-
+	buf.put(string("hello world"));
 	if(argc > 1)
 	{
 		sokket skt = sokket(1337, false);
 		Address server = Address(argv[1]);
 
-		cout << "sending buffer with \"" << buf.getChecksum() << "\" (" << hex << buf.getChecksum() << dec << " as checksum" << endl;
+		cout << "sending buffer with \"" << buf.getChecksum() << "\" (" << hex << buf.getChecksum() << dec << " as checksum)" << endl;
 		skt.send(buf, server);
 	}
 

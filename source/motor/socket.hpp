@@ -1,3 +1,6 @@
+#ifndef _SOCKET_HPP
+#define _SOCKET_HPP
+
 #include <unistd.h>
 #include <errno.h>
 
@@ -38,7 +41,7 @@ class sokket //'heavily abstracted and oo class :)
 		sokket(unsigned short port = 1337, bool bind = false);
 
 		int send(const char* input, int length, Address receiver);
-		int receive(char*& output, int& length, Address& sender);
+		int receive(unsigned char*& output, Address& sender);//length should always be PACKET_SIZE
 
 		int send(const string input, Address receiver);
 		int receive(string& output, Address& sender);//dumb, because std::string wont save through '0'
@@ -52,3 +55,4 @@ class sokket //'heavily abstracted and oo class :)
 		int sockfd;
 		Address m_address;
 };
+#endif

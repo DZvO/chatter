@@ -56,18 +56,13 @@ int sokket::send(const char* input, int length, Address receiver)
 	return sentBytes;
 }
 
-int sokket::receive(char*& output, int& length, Address& sender)
+int sokket::receive(unsigned char*& output, Address& sender)
 {
 	int recvBytes = 0;
-	char* buffer = new char[MAX_BUF_LEN];
-	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
+	//unsigned char* buffer = new unsigned char[MAX_BUF_LEN];
 	sender.addr_len = sizeof(sender.addr);
-	if(recvBytes > 0)
-	{
-		output = buffer;
-		cout << "received succesfully" << endl;
-	}
-	length = recvBytes;
+	recvBytes = recvfrom(sockfd, output, MAX_BUF_LEN, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
+	sender.addr_len = sizeof(sender.addr);
 	return recvBytes;
 }
 
@@ -141,14 +136,14 @@ void sokket::send(Buffer& buf, Address receiver)
 		packet[6] = (flags & 0x00ff);
 		packet[7] = (flags & 0xff00) >> 8;
 
-		memcpy(packet + (header_size-1), payload, payload_size);
+		memcpy(packet + header_size, payload, payload_size);
 
 		this->send(packet, packet_size, receiver);
-		for(unsigned int i = 0; i < packet_size; i++)
+		/*for(unsigned int i = 0; i < packet_size; i++)
 		{
 			if(packet[i] != 0)
 				cout << "sent \"" << (int)packet[i] << "\"\n";
-		}
+		}*/
 		delete [] packet;
 		timestamp++;
 	}
@@ -156,17 +151,17 @@ void sokket::send(Buffer& buf, Address receiver)
 
 int sokket::receive(Buffer& buf, Address& sender)
 {
-	char* data = NULL;
-	int recvBytes = this->receive(data, recvBytes, sender);
+	unsigned char* data = new unsigned char[MAX_BUF_LEN];
+	int recvBytes = this->receive(data, sender);
 	if(recvBytes > 0)
 	{
-		for(int i = 0; i < recvBytes; i++)
+		/*for(int i = 0; i < recvBytes; i++)
 		{
 			if(data[i] != 0)
-				cout << "recv \"" << (int)data[i] << "\"\n";
-		}
-		buf.add((unsigned char*)data, recvBytes);//be naive and pretend we always receive the complete packet?
-		clog << "received " << recvBytes << " bytes(should be: " << PACKET_SIZE << ')' << '\n';
+				clog << "recv \"" << (int)data[i] << "\"\n";
+		}*/
+		buf.add(data);//be naive and pretend we always receive the complete packet?
+		//clog << "received " << recvBytes << " bytes(should be: " << PACKET_SIZE << ")" << '\n';
 	}
 	delete [] data;
 	return recvBytes;

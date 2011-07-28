@@ -1,3 +1,4 @@
+//TODO fix some valgrind errors -> "Invalid read of size 8"
 #include "address.hpp"
 
 Address::Address()
@@ -25,6 +26,7 @@ Address::Address(string targetAddr, unsigned short port)
 	this->port = port;
 	this->addr = *((sockaddr_storage*)servinfo->ai_addr);
 	this->addr_len = servinfo->ai_addrlen;
+	freeaddrinfo(servinfo);
 }
 
 std::ostream& operator<< (std::ostream& stream, const Address adr)
@@ -32,9 +34,9 @@ std::ostream& operator<< (std::ostream& stream, const Address adr)
 	char addressBuffer[INET6_ADDRSTRLEN];
 	if(inet_ntop(AF_INET, Helper::getInAddr((sockaddr*)&adr.addr), addressBuffer, INET6_ADDRSTRLEN) != NULL)
 	{
-		stream << "family:\t" << adr.addr.ss_family << '\n';
-		stream << "port:\t" << adr.port << '\n';
-		stream << "addr:\t" << (const char*) addressBuffer << endl;
+		stream << "{family: " << adr.addr.ss_family << ',';
+		stream << "port: " << adr.port << ',';
+		stream << "addr: " << (const char*) addressBuffer << '}';
 	}
 	else
 	{

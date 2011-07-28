@@ -11,23 +11,24 @@ Packet::~Packet ()
 	delete [] payload;
 }
 
-void Packet::allocate()
+void Packet::allocate ()
 {
 	payload = new char[PAYLOAD_SIZE];
 }
 
 Buffer::Buffer ()
 {
-	Packet* pkt = new Packet();
-	pkt->allocate();
-	packets.push_back(pkt);
-	memset(packets.back()->payload, 0, PAYLOAD_SIZE);
-	capacity = PAYLOAD_SIZE;
-	packetCount = 1;
+	packetCount = 0;
+	payloadPutPointer = 0;
+	payloadGetPointer = 0;
+	packetPutPointer = 0;
+	packetGetPointer = 0;
 
-	byteCount = 0;
-	putPointer = 0;//HEADER_SIZE;
-	getPointer = putPointer;
+	//Packet* pkt = new Packet();
+	//pkt->allocate();
+	//packets.push_back(pkt);
+	//memset(packets.back()->payload, 0, PAYLOAD_SIZE);
+	//packetCount++;
 }
 
 Buffer::~Buffer()
@@ -41,52 +42,48 @@ Buffer::~Buffer()
 
 void Buffer::put (const char& c)
 {
-	if(byteCount == capacity - 1)
+	if(payloadPutPointer >= PAYLOAD_SIZE || packetCount == 0)
 	{
 		Packet* pkt = new Packet();
 		pkt->allocate();
 		packets.push_back(pkt);
 		memset(packets.back()->payload, 0, PAYLOAD_SIZE);
-		capacity += PAYLOAD_SIZE;
-		packetCount += 1;
-		
-		//for(int i = 0; i < HEADER_SIZE; i++)
-			//this->put(0);
+		packetCount++;
+
+		packetPutPointer++;
+		payloadPutPointer = 0;
 	}
-	packets.back()->payload[byteCount - ((packetCount - 1) * PAYLOAD_SIZE)] = c;
+	packets.back()->payload[payloadPutPointer] = c;
 	//cout << "add \"" << (int)c << "\"(\'" << c << "\') at [" << packetCount - 1 << "][" << byteCount - ((packetCount - 1) * PAYLOAD_SIZE) << "]\n";
-	byteCount += 1;
-	putPointer += 1;
-	getPointer = putPointer; //TODO temporary, in the future have functions that increment {put, get}Pointer
+	payloadPutPointer++;
+	//payloadGetPointer = payloadPutPointer;
 }
 
 // packetNum starts at 0, byteNum is relative and goes from 0 to PAYLOAD_SIZE-1
 char Buffer::get (unsigned int packetNum, unsigned int byteNum)
 {
-	list<Packet*>::iterator it = packets.begin();
-	for(unsigned int i = 0; i < packetNum; i++)
-	{
-		it++;
-	}
-	return (*it)->payload[byteNum];
+	return getPacket(packetNum)->payload[byteNum];
 }
 
 char Buffer::get ()
 {
-	getPointer--;
-	int listNum = getPointer / PAYLOAD_SIZE;
-	int buffNum = getPointer % PAYLOAD_SIZE;
+	char rv = get(packetGetPointer, payloadGetPointer);
+	if(payloadGetPointer >= PAYLOAD_SIZE)
+	{
+		payloadGetPointer = 0;
+		packetGetPointer += 1;
+	}
+	else
+	{
+		payloadGetPointer += 1;
+	}
 
-	char rv = get(listNum, buffNum);
 	//cout << "get \"" << (int)rv << "\" at [" << listNum << "][" << buffNum << "]" << '\n';
-	
 	return rv;
 }
 
 void Buffer::get (char& c)
 {
-	//getPointer--;
-	//c = buffer[getPointer++];
 	c = get();
 }
 
@@ -117,7 +114,6 @@ void Buffer::get (int& i)
 
 void Buffer::put (const long long& l)
 {
-	//long long mask1 = 0xffffffffffffffff;
 	int i1 = int((l & 0x00000000ffffffff));
 	int i2 = int((l & 0xffffffff00000000) >> 32);
 	this->put(i2);
@@ -131,18 +127,12 @@ void Buffer::get (long long& l)
 	this->get(i2);
 	this->get(i1);
 
-	//long long l1 = 0;
-	//long long l2 = 0;
-	//this->get((int&)l2);
-	//this->get((int&)l1);
 	l = ((long long)i2 << 32) | (long long)i1;
 }
 
 void Buffer::put (const float& f)
 {
-	//cout << "put " << f << endl;
 	int i = *(reinterpret_cast<int*>((float*)&f));
-	//cout << "ftoi " << i << endl;
 	this->put(i);
 }
 
@@ -150,11 +140,8 @@ void Buffer::get (float& f)
 {
 	int i = 0;
 	this->get(i);
-	//cout << "itof " << i << endl;
 	float* flp = reinterpret_cast<float*>(&i);
 	f = *flp;
-	//f = *(reinterpret_cast<float*>(&i));
-	//cout << f << endl;
 }
 
 void Buffer::put (const double& d)
@@ -170,11 +157,26 @@ void Buffer::get (double& d)
 
 	double* dbp = reinterpret_cast<double*>(&o);
 	d = *dbp;	
-	//double out = *(reinterpret_cast<double*>(&o));
-	//d = out;
 }
 
-void Buffer::add(unsigned char* data, int length)
+void Buffer::put (std::string str)
+{
+	//TODO optimize?
+	for(unsigned int i = 0; i < str.length(); i++)
+	{
+		this->put(str[i]);
+	}
+}
+
+void Buffer::get (std::string& str)
+{
+	for(char c = this->get(); c != 0; c = this->get())
+	{
+		str += c;
+	}
+}
+
+void Buffer::add(unsigned char* data)
 {
 	unsigned int got_checksum = 0;
 	unsigned short got_timestamp = 0;
@@ -189,21 +191,22 @@ void Buffer::add(unsigned char* data, int length)
 	pkt->checksum = got_checksum;
 	pkt->timestamp = got_timestamp;
 	pkt->flags = got_flags;
-	memcpy(pkt->payload, data + HEADER_SIZE - 1, PAYLOAD_SIZE); 
-
+	memcpy(pkt->payload, data + HEADER_SIZE - 0, PAYLOAD_SIZE); 
 	packets.push_back(pkt);
-
-	//TODO add put/get pointer incremention TODO//
-
-	//for(int i = 0; i < length; i++)
-	//{
-		//this->put(data[i]);
-	//}
+	
+	payloadPutPointer = 0;
+	packetPutPointer++;
+	packetCount++;
 }
 
-Packet* Buffer::getPacket (int n)
+Packet* Buffer::getPacket (unsigned int n)
 {
-	return NULL;
+	list<Packet*>::iterator it = packets.begin();
+	for(unsigned int i = 0; i < n; i++)
+	{
+		it++;
+	}
+	return (*it);
 }
 
 list<Packet*>* Buffer::getPackets ()
@@ -216,14 +219,34 @@ unsigned int Buffer::getPacketCount ()
 	return packetCount;
 }
 
-unsigned int Buffer::getByteCount ()
+unsigned short Buffer::getPayloadPutPointer()
 {
-	return byteCount;
+	return payloadPutPointer;
 }
 
-unsigned int Buffer::getCapacity ()
+unsigned short Buffer::getPayloadGetPointer()
 {
-	return capacity;
+	return payloadGetPointer;
+}
+
+unsigned int Buffer::getPacketPutPointer()
+{
+	return packetPutPointer;
+}
+
+unsigned int Buffer::getPacketGetPointer()
+{
+	return packetGetPointer;
+}
+
+void Buffer::setPayloadGetPointer(unsigned short i)
+{
+	payloadGetPointer = i;
+}
+
+void Buffer::setPacketGetPointer(unsigned int i)
+{
+	packetGetPointer = i;
 }
 
 unsigned int Buffer::getChecksum ()

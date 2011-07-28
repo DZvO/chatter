@@ -1,5 +1,3 @@
-#include <boost/lexical_cast.hpp>
-
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
@@ -7,6 +5,7 @@
 #include <string>
 using namespace std;
 
+#include "motor/buffer.hpp"
 #include "motor/socket.hpp"
 
 void sleep(unsigned int sec, unsigned int usec)
@@ -27,13 +26,13 @@ int main(int argc, char* argv[])
 		int returned = skt.receive(buf, sender);
 		if(returned > 0)
 		{
-			clog << "server: received " << returned << " bytes, from\n" << sender << '\n';
-			cout << endl;
-			cout << buf.get() << endl;
-			cout << buf.get() << endl;
-			cout << buf.get() << endl;
-			cout << buf.get() << endl;
-			cout << buf.get() << endl;
+			clog << "server: received " << returned << " bytes, from " << sender << '\n';
+			cout << '\"';
+			string str_buffer;
+			buf.get(str_buffer);
+			cout << str_buffer;
+			cout << "\"\n";
+			return 0;
 		}
 		else
 		{

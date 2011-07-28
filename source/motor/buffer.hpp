@@ -1,9 +1,12 @@
-/* TODO name the variables "byteCount", "putPointer", "getPointer", "capacity" more meaningfull. right now i dont know what they really mean anymore (because of the change to using Packet)
+#ifndef _BUFFER_HPP
+#define _BUFFER_HPP
+
 #include <iostream>
 #include <vector>
 #include <list>
 #include <bitset>
 #include <cstring>
+#include <string>
 using namespace std;
 
 #include <boost/functional/hash.hpp>
@@ -37,6 +40,7 @@ class Buffer
 		void put (const char& c);
 		char get ();
 		void get (char& c);
+		char get(unsigned int packetNum, unsigned int byteNum);
 
 		void put (const int& i);			//32 bit int
 		void get (int& i);						//32 bit int
@@ -50,28 +54,37 @@ class Buffer
 		void put (const double& d);		//64 bit double
 		void get (double& d);					//64 bit double
 
-		//make a deep copy of data, you can delete[] it aftewards
-		void add(unsigned char* data, int length);
-		Packet* getPacket(int n);
+		void put (std::string str);		//null terminated string
+		void get (std::string& str);
+
+		//-make a deep copy of data, you can delete[] it aftewards
+		//-it is expected that data points to a full payload of size PAYLOAD_SIZE
+		void add(unsigned char* data);
+		Packet* getPacket(unsigned int n);
 
 		list<Packet*>* getPackets();
 		unsigned int getPacketCount();
-		unsigned int getByteCount();
-		unsigned int getCapacity();
 		unsigned int getChecksum();
+
+		unsigned short getPayloadPutPointer();
+		unsigned short getPayloadGetPointer();
+		unsigned int getPacketPutPointer();
+		unsigned int getPacketGetPointer();
+
+		void setPayloadGetPointer(unsigned short i);
+		void setPacketGetPointer(unsigned int i);
 
 		list<Packet*>* finish();
 
 	private:
 		//char *buffer;
 		list<Packet*> packets;
-		unsigned int capacity;
-		unsigned int byteCount;
 		unsigned int packetCount;
 
-		unsigned int putPointer;
-		unsigned int getPointer;
+		unsigned short payloadPutPointer;
+		unsigned short payloadGetPointer;
+		unsigned int packetPutPointer;
+		unsigned int packetGetPointer;
 
-		char get(unsigned int packetNum, unsigned int byteNum);
 };
-
+#endif
