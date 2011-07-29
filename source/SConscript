@@ -16,3 +16,5 @@ client.Program('server.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
 server = env.Clone()
 client.Program('client.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
 
+test = env.Clone()
+test.Program('test.cpp', LIBS=['boost_thread']);
