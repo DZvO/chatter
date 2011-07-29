@@ -166,6 +166,7 @@ void Buffer::put (std::string str)
 	{
 		this->put(str[i]);
 	}
+	this->put('\0');
 }
 
 void Buffer::get (std::string& str)

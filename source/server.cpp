@@ -28,9 +28,13 @@ int main(int argc, char* argv[])
 		{
 			clog << "server: received " << returned << " bytes, from " << sender << '\n';
 			cout << '\"';
-			string str_buffer;
-			buf.get(str_buffer);
-			cout << str_buffer;
+			{
+				string username("");
+				string message("");
+				buf.get(username);
+				buf.get(message);
+				cout << username << " : " << message;
+			}
 			cout << "\"\n";
 			return 0;
 		}
