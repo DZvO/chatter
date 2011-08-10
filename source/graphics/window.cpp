@@ -16,7 +16,7 @@ void Window::create (const unsigned short width, const unsigned short height, co
 	/* SDL stuff */
 	if(SDL_Init(SDL_INIT_TIMER) < 0 or SDL_Init(SDL_INIT_VIDEO) < 0)
 	{   
-		cout << "Unable to init SDL_TIMER: " << SDL_GetError() << "\nPlease file a bug report on github.com/Compendium/chatter/issues\n";
+		std::cout << "Unable to init SDL_TIMER: " << SDL_GetError() << "\nPlease file a bug report on github.com/Compendium/chatter/issues\n";
 		exit(1);
 	}
 
@@ -47,14 +47,14 @@ void Window::create (const unsigned short width, const unsigned short height, co
 		glShadeModel(GL_SMOOTH);
 	}
 
-	glEnabel(GL_ALPHA_TEST);
+	glEnable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)
 	{
-		cout << "Your graphics card doesn't support Opengl 2.0, and I need it to run properly. Therefore i will now exit in peace." << endl;
+		std::cout << "Your graphics card doesn't support Opengl 2.0, and I need it to run properly. Therefore i will now exit in peace." << std::endl;
 		exit(-1);
 	}
 	/* // OpenGL stuff */

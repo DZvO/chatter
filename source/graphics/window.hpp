@@ -15,7 +15,7 @@ class Window
 		Window();
 		~Window();
 
-		void create (const unsigned short width = 800, const unsigned short height = 600, const char* window_title = "WUB WUB WUB", bool smooth_shading)
+		void create (const unsigned short width = 800, const unsigned short height = 600, const char* window_title = "WUB WUB WUB", bool smooth_shading = true);
 		void resize (const unsigned short width, const unsigned short height);
 
 		void clear();

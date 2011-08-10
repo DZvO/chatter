@@ -28,7 +28,7 @@ libgraphics = env.Clone()
 libgraphics.Library('graphics', splitter("graphics/", "window"), LIBS=['GL', 'GLEW', 'SDL'])
 
 libinput = env.Clone()
-libinput.Library('input', splitter("input/", "kbinput"))
+libinput.Library('input', splitter("input/", "input"))
 # -- ---- --
 
 

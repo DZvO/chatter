@@ -20,9 +20,8 @@ int new_main_pseudocode(int argc, char* argv[])
 	wind->create(800, 600, "chitchat!");
 
 	bool enable_textinput = false;
-	TextInput * txt_input = NULL;
-	std::string * line = NULL;
 	Input * input = new Input();
+	std::string * line = NULL;
 
 	Chatlog * chatlog = new Chatlog();//chatlog only stores strings, has nothing to do with rendering
 	ChatlogRenderer * chatrenderer = new ChatlogRenderer();
@@ -31,6 +30,7 @@ int new_main_pseudocode(int argc, char* argv[])
 	Sokket * socket = new Sokket(1337); // public Sokket(short port = 4242, bool host = false);
 	while(input->closeRequest() == false)
 	{
+		//network -----------------
 		if(socket->receive(man))//received something
 		{
 			if(man->bufferCompleted()) // check if we completed a buffer, or did we only get part of it / scrap?
@@ -43,7 +43,9 @@ int new_main_pseudocode(int argc, char* argv[])
 				delete fresh;
 			}
 		}
+		//-------------------------
 
+		//enable disable textmode -
 		if(input->isPressed(0.2f, Key::kEnter)) //isPressed(float keyDelayInSeconds, Key keyToCheck)
 		{
 			if(enable_textinput)
@@ -62,19 +64,20 @@ int new_main_pseudocode(int argc, char* argv[])
 				}
 
 				delete line;
-				txt_input->disable();
+				input->disableTextMode();
 			}
 			else
 			{
 				enable_textinput = true;
-				txt_input->enable();
+				input->enableTextMode();
 				line = new std::string();
 			}
 		}
+		//-------------------------
 
-		if(enable_textinput) // handle keycode translated stuff, since unicode translation is enabled
+		if(enable_textinput) // handle keycode translated stuff
 		{
-			while( (unsigned char c = txt_input.get()) != 0)
+			while( (unsigned char c = input.getChar()) != 0)
 			{
 				(*line) += c;
 			}

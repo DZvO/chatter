@@ -73,25 +73,7 @@ int sokket::send(const string input, Address receiver)
 
 int sokket::receive(string& output, Address& sender)
 {
-	//TODO cant wrap my head around why this wont work :[
-	/*char* buffer = NULL;
-	int length = 0;
-	this->receive(buffer, length, sender);
-	if(buffer != NULL)
-	{
-		output = buffer;
-	}
-	return length;*/
-	/*char* recvd = NULL;
-	int length = 0;
-	int retVal = receive(recvd, length, sender);
-	if(retVal > 0)
-	{
-		output = recvd;
-	}
-	return retVal;*/
-
-	/*int recvBytes = 0;
+	int recvBytes = 0;
 	char buffer[AGREED_BUF_SIZE];
 	sender.addr_len = sizeof(sender.addr);
 	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN - 1, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
@@ -101,9 +83,6 @@ int sokket::receive(string& output, Address& sender)
 		output = buffer;
 	}
 	return recvBytes;
-	*/
-	cout << "ERROR: Not implemented." << endl;
-	return 0;
 }
 
 void sokket::send(Buffer& buf, Address receiver)

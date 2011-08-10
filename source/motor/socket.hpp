@@ -38,7 +38,7 @@ extern const unsigned short PAYLOAD_SIZE;
 class sokket //'heavily abstracted and oo class :)
 {
 	public:
-		sokket(unsigned short port = 1337, bool bind = false);
+		sokket(unsigned short port = 1337, bool host = false);
 
 		int send(const char* input, int length, Address receiver);
 		int receive(unsigned char*& output, Address& sender);//length should always be PACKET_SIZE
