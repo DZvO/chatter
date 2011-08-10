@@ -1,18 +1,42 @@
 #!/usr/bin/env python
-env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g')
+env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g', LIBPATH='.', CPPPATH='.')
 conf = Configure(env)
-#check for headers n stuff :D
+
 if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):
 	print("Please install (lib)boost -> http://www.boost.org/")
 	Exit(1)
+
+if not conf.CheckLib('GL'):
+	print("Please install (lib)gl, by either:\
+			Linux:\
+				getting mesa -> http://mesa3d.org and a fitting driver for your video card, or by directly downloading a driver from your graphics card vendor.\
+			Windows:\
+				downloading a driver from your video cards vendor.")
+	Exit(1)
+
+#TODO glew/sdl dependency checking ??? since they dont really distribute a installable package(for end-users), maybe i need to ship a copy myself?
 env = conf.Finish()
 
-libmotor = env.Clone()
-libmotor.Library('motor', map(lambda x: "motor/" + x + ".cpp", Split("address buffer socket")))
+def splitter(folder, files):
+	return map(lambda x: folder + x + ".cpp", files.split())
+
+# -- libs --
+libnetwork = env.Clone()
+libnetwork.Library('network', splitter("motor/", "address buffer socket"))
+
+libgraphics = env.Clone()
+libgraphics.Library('graphics', splitter("graphics/", "window"), LIBS=['GL', 'GLEW', 'SDL'])
+
+libinput = env.Clone()
+libinput.Library('input', splitter("input/", "kbinput"))
+# -- ---- --
+
 
 client = env.Clone()
-client.Program('server.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
+client.Program('server.cpp', LIBS=['network'])
+
+guiclient = env.Clone()
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'input'])
 
 server = env.Clone()
-client.Program('client.cpp', LIBS=['motor'], LIBPATH='.', CPPPATH='.')
-
+client.Program('client.cpp', LIBS=['network'])
