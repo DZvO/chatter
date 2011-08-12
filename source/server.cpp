@@ -5,8 +5,8 @@
 #include <string>
 using namespace std;
 
-#include "motor/buffer.hpp"
-#include "motor/socket.hpp"
+#include "network/buffer.hpp"
+#include "network/socket.hpp"
 
 void sleep(unsigned int sec, unsigned int usec)
 {
@@ -16,7 +16,7 @@ void sleep(unsigned int sec, unsigned int usec)
 
 int main(int argc, char* argv[])
 {
-	sokket skt(1337, true);
+	Socket skt(1337, true);
 	string response = "Hey client!";
 	Buffer buf;
 

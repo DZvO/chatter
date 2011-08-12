@@ -39,7 +39,7 @@ unsigned char Input::getChar()
 	}
 	else
 	{
-		std::cout << "Whoow dude, getChar() was called while textmode was disabled! :s" << endl;
+		std::cout << "Whoow dude, getChar() was called while textmode was disabled! :s" << std::endl;
 		return 0;
 	}
 }
@@ -51,7 +51,7 @@ const unsigned char* Input::getKeyState()
 
 bool Input::isPressed(Key k)
 {
-	return (keystate[k]);
+	return (keystate[k] == 1 ? true : false);
 }
 
 bool Input::isReleased(Key k)
@@ -59,7 +59,7 @@ bool Input::isReleased(Key k)
 	return !isPressed(k);
 }
 
-bool Input::closeReq()
+bool Input::closeRequested()
 {
 	return close_requested;
 }
@@ -67,14 +67,30 @@ bool Input::closeReq()
 //private
 int Input::refresh()
 {
-	int rv = SDL_PollEvent(&event);
-	if(rv == 1)//if there are pending events
+	if(textmode)//return directly
 	{
-		if(event.type == SDL_QUIT)
+		int rv = SDL_PollEvent(&event);
+		if(rv == 1)//if there are pending events
 		{
-			close_requested = true;
-			SDL_Quit();
+			if(event.type == SDL_QUIT)
+			{
+				close_requested = true;
+				SDL_Quit();
+			}
 		}
+		return rv;
 	}
-	return rv;
+	else//loop through all the events, 'keystate' already gives information about pressed keys so we dont worry about them
+	{
+		while(SDL_PollEvent(&event))
+		{
+			if(event.type == SDL_QUIT)
+			{
+				close_requested = true;
+				SDL_Quit();
+			}
+			//TODO handle mouse
+		}
+		return 0;
+	}
 }

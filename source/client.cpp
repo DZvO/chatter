@@ -7,8 +7,8 @@
 #include <string>
 using namespace std;
 
-#include "motor/address.hpp"
-#include "motor/socket.hpp"
+#include "network/address.hpp"
+#include "network/socket.hpp"
 
 void sleep(unsigned int sec, unsigned int usec)
 {
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 		Buffer sendBuffer;
 		sendBuffer.put(my_name);
 		sendBuffer.put(message);
-		sokket skt = sokket(1337, false);
+		Socket skt = Socket(1337, false);
 		Address server = Address(argv[1]);
 
 		cout << "sending buffer with \"" << sendBuffer.getChecksum() << "\" (" << hex << sendBuffer.getChecksum() << dec << " as checksum)" << endl;

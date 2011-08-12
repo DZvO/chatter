@@ -22,7 +22,7 @@ def splitter(folder, files):
 
 # -- libs --
 libnetwork = env.Clone()
-libnetwork.Library('network', splitter("motor/", "address buffer socket"))
+libnetwork.Library('network', splitter("network/", "address buffer socket"))
 
 libgraphics = env.Clone()
 libgraphics.Library('graphics', splitter("graphics/", "window"), LIBS=['GL', 'GLEW', 'SDL'])

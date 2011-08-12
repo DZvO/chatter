@@ -1,5 +1,5 @@
 #include "socket.hpp"
-sokket::sokket(unsigned short port, bool bind) : m_address("localhost", port)
+Socket::Socket(unsigned short port, bool bind) : m_address("localhost", port)
 {
 	/*if(bind)
 		{
@@ -43,7 +43,7 @@ sokket::sokket(unsigned short port, bool bind) : m_address("localhost", port)
 	}
 }
 
-int sokket::send(const char* input, int length, Address receiver)
+int Socket::send(const char* input, int length, Address receiver)
 {
 	//return helper::send(input.c_str(), 0, input.length(), &receiver.addr, receiver.addr_len, sockfd);
 	int sentBytes = 0;
@@ -56,7 +56,7 @@ int sokket::send(const char* input, int length, Address receiver)
 	return sentBytes;
 }
 
-int sokket::receive(unsigned char*& output, Address& sender)
+int Socket::receive(unsigned char*& output, Address& sender)
 {
 	int recvBytes = 0;
 	//unsigned char* buffer = new unsigned char[MAX_BUF_LEN];
@@ -66,14 +66,32 @@ int sokket::receive(unsigned char*& output, Address& sender)
 	return recvBytes;
 }
 
-int sokket::send(const string input, Address receiver)
+int Socket::send(const string input, Address receiver)
 {
 	return send(input.c_str(), input.length(), receiver);
 }
 
-int sokket::receive(string& output, Address& sender)
+int Socket::receive(string& output, Address& sender)
 {
-	int recvBytes = 0;
+	//TODO cant wrap my head around why this wont work :[
+	/*char* buffer = NULL;
+	int length = 0;
+	this->receive(buffer, length, sender);
+	if(buffer != NULL)
+	{
+		output = buffer;
+	}
+	return length;*/
+	/*char* recvd = NULL;
+	int length = 0;
+	int retVal = receive(recvd, length, sender);
+	if(retVal > 0)
+	{
+		output = recvd;
+	}
+	return retVal;*/
+
+	/*int recvBytes = 0;
 	char buffer[AGREED_BUF_SIZE];
 	sender.addr_len = sizeof(sender.addr);
 	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN - 1, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
@@ -83,9 +101,12 @@ int sokket::receive(string& output, Address& sender)
 		output = buffer;
 	}
 	return recvBytes;
+	*/
+	cout << "ERROR: Not implemented." << endl;
+	return 0;
 }
 
-void sokket::send(Buffer& buf, Address receiver)
+void Socket::send(Buffer& buf, Address receiver)
 {
 	unsigned int checksum = buf.getChecksum();	//dont need to use htonl/ntohl because i use bit shifting ?
 	unsigned short timestamp = 0;	//value that gets incremented every packet (1024 bytes)
@@ -128,7 +149,7 @@ void sokket::send(Buffer& buf, Address receiver)
 	}
 }
 
-int sokket::receive(Buffer& buf, Address& sender)
+int Socket::receive(Buffer& buf, Address& sender)
 {
 	unsigned char* data = new unsigned char[MAX_BUF_LEN];
 	int recvBytes = this->receive(data, sender);
@@ -146,7 +167,7 @@ int sokket::receive(Buffer& buf, Address& sender)
 	return recvBytes;
 }
 
-void sokket::close()
+void Socket::close()
 {
 	::close(sockfd);
 }

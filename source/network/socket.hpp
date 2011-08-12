@@ -35,10 +35,10 @@ extern const unsigned short HEADER_SIZE;
 extern const unsigned short PACKET_SIZE; 
 extern const unsigned short PAYLOAD_SIZE; 
 
-class sokket //'heavily abstracted and oo class :)
+class Socket //'heavily abstracted and oo class :)
 {
 	public:
-		sokket(unsigned short port = 1337, bool host = false);
+		Socket(unsigned short port = 1337, bool bind = false);
 
 		int send(const char* input, int length, Address receiver);
 		int receive(unsigned char*& output, Address& sender);//length should always be PACKET_SIZE
