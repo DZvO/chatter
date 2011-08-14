@@ -76,8 +76,12 @@ class Input
 	/* --------------- */
 
 	int refresh();
+
 	bool isPressed(Key k);
+	bool isPressedSym(Key k);//directly return -> use keystate array instead of events
+
 	bool isReleased(Key k);
+	bool isReleasedSym(Key k);//directly return -> use keystate array instead of events
 
 	bool closeRequested();
 	//#ifdef USE_SDL

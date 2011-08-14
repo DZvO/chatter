@@ -49,9 +49,21 @@ const unsigned char* Input::getKeyState()
 	return keystate;
 }
 
-bool Input::isPressed(Key k)
+bool Input::isPressedSym(Key k)
 {
 	return (keystate[k] == 1 ? true : false);
+}
+
+bool Input::isPressed(Key k)
+{
+	if(event.type == SDL_KEYDOWN && event.key.keysym.sym == k)
+		return true;
+	return false;
+}
+
+bool Input::isReleasedSym(Key k)
+{
+	return !isPressedSym(k);
 }
 
 bool Input::isReleased(Key k)
@@ -67,30 +79,31 @@ bool Input::closeRequested()
 //private
 int Input::refresh()
 {
-	if(textmode)//return directly
+	//if(textmode)//return directly
+	//{
+	int rv = SDL_PollEvent(&event);
+	if(rv == 1)//if there are pending events
 	{
-		int rv = SDL_PollEvent(&event);
-		if(rv == 1)//if there are pending events
+		if(event.type == SDL_QUIT)
 		{
-			if(event.type == SDL_QUIT)
-			{
-				close_requested = true;
-				SDL_Quit();
-			}
+			close_requested = true;
+			SDL_Quit();
 		}
-		return rv;
 	}
-	else//loop through all the events, 'keystate' already gives information about pressed keys so we dont worry about them
-	{
+	return rv;
+	/*}
+		else//loop through all the events, 'keystate' already gives information about pressed keys so we dont worry about them
+		{
 		while(SDL_PollEvent(&event))
 		{
-			if(event.type == SDL_QUIT)
-			{
-				close_requested = true;
-				SDL_Quit();
-			}
-			//TODO handle mouse
+		if(event.type == SDL_QUIT)
+		{
+		close_requested = true;
+		SDL_Quit();
 		}
-		return 0;
+	//TODO handle mouse
 	}
+	return 0;
+	}
+	*/
 }

@@ -15,8 +15,6 @@ int main (int argc, char * argv[])
 	bool enable_textinput = false;
 	Input * input = new Input();
 	Cooldown * cd = new Cooldown();
-	Event * event = new Event(input);
-	event->add("toggle_textmode", Input::kEnter);
 	std::string * line = NULL;
 
 	//TODO Chatlog * chatlog = new Chatlog();
@@ -27,8 +25,7 @@ int main (int argc, char * argv[])
 
 	while(input->closeRequested() == false)
 	{
-		event->handle();
-		
+
 		// network ------------------
 		//if(sokket->receive(man))//TODO
 		//{
@@ -43,11 +40,11 @@ int main (int argc, char * argv[])
 		//	}
 		//}
 		// --------------------------
-
-		// enable / disable textmode-
-		if(input->isPressed(Input::kEnter))
+		while(input->refresh())
 		{
-			if(event->fired("toggle_textmode")) // reset internal bool to false TODO
+			cout << "event to handle!" << endl;
+			// enable / disable textmode-
+			if(input->isPressed(Input::kEnter))
 			{
 				if(enable_textinput)
 				{
@@ -77,8 +74,8 @@ int main (int argc, char * argv[])
 				}
 				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
+			// --------------------------
 		}
-		// --------------------------
 
 		if(enable_textinput)
 		{
@@ -86,14 +83,6 @@ int main (int argc, char * argv[])
 			while( (c = input->getChar()) != 0)
 			{
 				(*line) += c;
-			}
-		}
-		else//only handle this if textinput is disabled, since the user may want to input a 'q' into his message
-		{
-			input->refresh();
-			if(input->isPressed(Input::kQ))
-			{
-				break;//quit the while loop, and exit the app
 			}
 		}
 	}
