@@ -25,23 +25,10 @@ void Input::disableTextmode()
 
 unsigned char Input::getChar()
 {
-	if(textmode)
-	{
-		if(refresh())
-		{
-			//maybe check for keydown? because now both keydown and keyup events are handled
-			return event.key.keysym.unicode;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-		std::cout << "Whoow dude, getChar() was called while textmode was disabled! :s" << std::endl;
+	if(event.type == SDL_KEYDOWN)
+		return event.key.keysym.unicode;
+	else // dont handle ""
 		return 0;
-	}
 }
 
 const unsigned char* Input::getKeyState()
@@ -79,8 +66,6 @@ bool Input::closeRequested()
 //private
 int Input::refresh()
 {
-	//if(textmode)//return directly
-	//{
 	int rv = SDL_PollEvent(&event);
 	if(rv == 1)//if there are pending events
 	{
@@ -91,19 +76,5 @@ int Input::refresh()
 		}
 	}
 	return rv;
-	/*}
-		else//loop through all the events, 'keystate' already gives information about pressed keys so we dont worry about them
-		{
-		while(SDL_PollEvent(&event))
-		{
-		if(event.type == SDL_QUIT)
-		{
-		close_requested = true;
-		SDL_Quit();
-		}
 	//TODO handle mouse
-	}
-	return 0;
-	}
-	*/
 }

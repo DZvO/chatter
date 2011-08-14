@@ -42,8 +42,6 @@ int main (int argc, char * argv[])
 		// --------------------------
 		while(input->refresh())
 		{
-			cout << "event to handle!" << endl;
-			// enable / disable textmode-
 			if(input->isPressed(Input::kEnter))
 			{
 				if(enable_textinput)
@@ -62,6 +60,7 @@ int main (int argc, char * argv[])
 
 						//			delete sendBuf;
 					}
+					cout << "line is: \"" << *line << "\"\n";
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
@@ -74,20 +73,25 @@ int main (int argc, char * argv[])
 				}
 				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
-			// --------------------------
-		}
-
-		if(enable_textinput)
-		{
-			unsigned char c = 0;
-			while( (c = input->getChar()) != 0)
+			else
 			{
-				(*line) += c;
+				if(enable_textinput)
+				{
+					unsigned char c = input->getChar();
+					if(c != 0)
+					{
+						cout << "adding: \"" << c << "\"\n";
+						(*line) += c;
+					}
+				}
 			}
 		}
 	}
 
 	window->close();
 	delete window;
+	delete input;
+	delete cd;
+	delete socket;
 	return 0;
 }
