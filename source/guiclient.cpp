@@ -5,6 +5,7 @@ using namespace std;
 #include "graphics/window.hpp"
 #include "input/input.hpp"
 #include "network/socket.hpp"
+#include "time/cooldown.hpp"
 
 int main (int argc, char * argv[])
 {
@@ -13,7 +14,7 @@ int main (int argc, char * argv[])
 
 	bool enable_textinput = false;
 	Input * input = new Input();
-	//TODO Cooldown * cd = new Cooldown(); // handles cooldown for e.g input
+	Cooldown * cd = new Cooldown(); // handles cooldown for e.g input
 	std::string * line = NULL;
 
 	//TODO Chatlog * chatlog = new Chatlog();
@@ -40,33 +41,37 @@ int main (int argc, char * argv[])
 		// --------------------------
 
 		// enable / disable textmode-
-		if(input->isPressed(Input::kEnter))// && cd->cool(0.2f, "toggle_textmode"))//TODO
+		if(input->isPressed(Input::kEnter))
 		{
-			if(enable_textinput)
+			if(cd->cool(0.1f, "toggle_textmode"))//TODO
 			{
-				if((*line) != "")
+				if(enable_textinput)
 				{
-		//			Message * sendMessage = new Message();//TODO
-		//			sendMessage->by = "MindKontrol";
-		//			sendMessage->text = *line;
-		//			chatlog.add(sendMessage);//TODO add it to our own chatlog
+					if((*line) != "")
+					{
+						//			Message * sendMessage = new Message();//TODO
+						//			sendMessage->by = "MindKontrol";
+						//			sendMessage->text = *line;
+						//			chatlog.add(sendMessage);//TODO add it to our own chatlog
 
-		//			Buffer * sendBuf = new Buffer();
-		//			sendBuf->add(sendMessage);//TODO
+						//			Buffer * sendBuf = new Buffer();
+						//			sendBuf->add(sendMessage);//TODO
 
-		//			socket->send(sendBuf);
+						//			socket->send(sendBuf);
 
-		//			delete sendBuf;
+						//			delete sendBuf;
+					}
+					delete line;
+					input->disableTextmode();
+					enable_textinput = false;
 				}
-				delete line;
-				input->disableTextmode();
-				enable_textinput = false;
-			}
-			else
-			{
-				enable_textinput = true;
-				input->enableTextmode();
-				line = new std::string();
+				else
+				{
+					enable_textinput = true;
+					input->enableTextmode();
+					line = new std::string();
+				}
+				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
 		}
 		// --------------------------

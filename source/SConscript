@@ -29,6 +29,9 @@ libgraphics.Library('graphics', splitter("graphics/", "window"), LIBS=['GL', 'GL
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))
+
+libtime = env.Clone()
+libtime.Library('time', splitter("time/", "cooldown"))
 # -- ---- --
 
 
@@ -36,7 +39,7 @@ client = env.Clone()
 client.Program('server.cpp', LIBS=['network'])
 
 guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'input'])
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'input', 'time'])
 
 server = env.Clone()
 client.Program('client.cpp', LIBS=['network'])
