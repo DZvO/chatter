@@ -14,7 +14,9 @@ int main (int argc, char * argv[])
 
 	bool enable_textinput = false;
 	Input * input = new Input();
-	Cooldown * cd = new Cooldown(); // handles cooldown for e.g input
+	Cooldown * cd = new Cooldown();
+	Event * event = new Event(input);
+	event->add("toggle_textmode", Input::kEnter);
 	std::string * line = NULL;
 
 	//TODO Chatlog * chatlog = new Chatlog();
@@ -25,6 +27,8 @@ int main (int argc, char * argv[])
 
 	while(input->closeRequested() == false)
 	{
+		event->handle();
+		
 		// network ------------------
 		//if(sokket->receive(man))//TODO
 		//{
@@ -43,7 +47,7 @@ int main (int argc, char * argv[])
 		// enable / disable textmode-
 		if(input->isPressed(Input::kEnter))
 		{
-			if(cd->cool(0.1f, "toggle_textmode"))//TODO
+			if(event->fired("toggle_textmode")) // reset internal bool to false TODO
 			{
 				if(enable_textinput)
 				{
