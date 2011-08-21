@@ -7,6 +7,6 @@ class Message
 {
 	public:
 		string by;
-		string message;
+		string text;
 };
 #endif

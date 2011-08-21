@@ -72,7 +72,6 @@ int Input::refresh()
 		if(event.type == SDL_QUIT)
 		{
 			close_requested = true;
-			SDL_Quit();
 		}
 	}
 	return rv;

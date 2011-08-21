@@ -2,10 +2,25 @@
 #include <string>
 using namespace std;
 
+#include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <SDL/SDL.h>
+
 #include "graphics/window.hpp"
 #include "input/input.hpp"
 #include "network/socket.hpp"
 #include "time/cooldown.hpp"
+
+#include "chat/message.hpp"
+#include "chat/chatlog.hpp"
+
+#include "graphics/textrenderer.hpp"
+
+#include <graphics/glm/glm.hpp>
+#include <graphics/glm/gtc/matrix_transform.hpp>
+#include <graphics/glm/gtx/projection.hpp>
+#include <graphics/glm/gtc/type_ptr.hpp>
 
 int main (int argc, char * argv[])
 {
@@ -17,29 +32,36 @@ int main (int argc, char * argv[])
 	Cooldown * cd = new Cooldown();
 	std::string * line = NULL;
 
-	//TODO Chatlog * chatlog = new Chatlog();
+	Chatlog * chatlog = new Chatlog();
 	//TODO ChatlogRenderer * chatrenderer = new ChatlogRenderer();
-	//
-	//TODO BufferManager * man = new BufferManager();
+
+	//	BufferManager * man = new BufferManager();
 	Socket * socket = new Socket(1337);
+
+	TextRenderer * text = new TextRenderer();
 
 	while(input->closeRequested() == false)
 	{
+		window->clear();
+		text->upload("Hello World\x07\x08\x08", -2.0, -1.0, 2.0);
+		text->draw();
+		window->swap();
+
 
 		// network ------------------
-		//if(sokket->receive(man))//TODO
-		//{
-		//	if(man->bufferCompleted())//TODO
-		//	{
-		//		Buffer * fresh = man->getCompletedBuffer();//TODO
-		//		Message * lastMessage = new Message();//TODO
-		//		lastMessage->by = fresh->getString();//TODO
-		//		lastMessage->text = fresh->getString();//TODO
-		//		chatlog->add(lastMessage);//TODO
-		//		delete fresh;
-		//	}
-		//}
-		// --------------------------
+		/*		if(sokket->receive(man))//TODO
+
+					if(man->bufferCompleted())//TODO
+					{
+					Buffer * fresh = man->getCompletedBuffer();//TODO
+					Message * lastMessage = new Message();
+					lastMessage->by = fresh->getString();
+					lastMessage->text = fresh->getString();
+					chatlog->add(lastMessage);
+					delete fresh;
+					}
+					*/
+		//	--------------------------
 		while(input->refresh())
 		{
 			if(input->isPressed(Input::kEnter))
@@ -48,17 +70,18 @@ int main (int argc, char * argv[])
 				{
 					if((*line) != "")
 					{
-						//			Message * sendMessage = new Message();//TODO
-						//			sendMessage->by = "MindKontrol";
-						//			sendMessage->text = *line;
-						//			chatlog.add(sendMessage);//TODO add it to our own chatlog
+						Message * sendMessage = new Message();
+						sendMessage->by = "MindKontrol";
+						sendMessage->text = *line;
+						chatlog->add(sendMessage);
 
-						//			Buffer * sendBuf = new Buffer();
-						//			sendBuf->add(sendMessage);//TODO
+						Buffer * sendBuf = new Buffer();
+						sendBuf->addString(sendMessage->by);
+						sendBuf->addString(sendMessage->text);
 
-						//			socket->send(sendBuf);
-
-						//			delete sendBuf;
+						Address target("localhost", 1337);
+						socket->send(*sendBuf, target);
+						delete sendBuf;
 					}
 					cout << "line is: \"" << *line << "\"\n";
 					delete line;

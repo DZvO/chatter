@@ -76,6 +76,19 @@ class Buffer
 
 		list<Packet*>* finish();
 
+		// --- new stuff ---
+		inline void addString (std::string str)
+		{
+			put (str);
+		}
+		inline std::string getString()
+		{
+			std::string ret;
+			get(ret);
+			return ret;
+		}
+		// ---           ---
+
 	private:
 		//char *buffer;
 		list<Packet*> packets;

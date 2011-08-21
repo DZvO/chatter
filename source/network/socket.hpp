@@ -27,6 +27,7 @@ using namespace std;
 #include "helper.hpp"
 #include "buffer.hpp"
 #include "address.hpp"
+#include "buffermanager.hpp"
 
 extern const unsigned int AGREED_BUF_SIZE;
 extern const unsigned int MAX_BUF_LEN;
@@ -48,6 +49,7 @@ class Socket //'heavily abstracted and oo class :)
 
 		void send(Buffer& buf, Address to);//sends buf
 		int receive(Buffer& buf, Address& from);//return buf
+		int receive(BufferManager * man);//TODO
 
 		void close();
 

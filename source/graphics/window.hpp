@@ -7,8 +7,6 @@
 #include <GL/glu.h>
 #include <SDL/SDL.h>
 
-const float near_clip = 1.0f, far_clip = 1000.f;
-
 class Window
 {
 	public:
@@ -20,11 +18,19 @@ class Window
 
 		void clear();
 		void swapBuffers();
+		void swap();
 
 		void close ();
 
-		unsigned short getWidth();
-		unsigned short getHeight();
+		unsigned short getWidth()
+		{
+			return width;
+		}
+
+		unsigned short getHeight()
+		{
+			return height;
+		}
 
 	private:
 		unsigned short width, height;

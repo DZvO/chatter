@@ -16,7 +16,7 @@ void Chatlog::add (Message * msg)
 	log.push_back(msg);
 }
 
-list<Message*> * getLog ()
+list<Message*> * Chatlog::getLog ()
 {
 	return &log;
 }

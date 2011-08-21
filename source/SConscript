@@ -25,13 +25,16 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address buffer socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window"), LIBS=['GL', 'GLEW', 'SDL'])
+libgraphics.Library('graphics', splitter("graphics/", "window image textrenderer"), LIBS=['GL', 'GLEW', 'SDL', 'SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))
 
 libtime = env.Clone()
 libtime.Library('time', splitter("time/", "cooldown"))
+
+libchat = env.Clone()
+libchat.Library('chat', splitter("chat/", "chatlog message"))
 # -- ---- --
 
 
@@ -39,7 +42,7 @@ client = env.Clone()
 client.Program('server.cpp', LIBS=['network'])
 
 guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'input', 'time'])
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
 client.Program('client.cpp', LIBS=['network'])
