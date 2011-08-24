@@ -2,7 +2,7 @@
 
 char * loadFile(const char * path);
 
-TextRenderer::TextRenderer()
+TextRenderer::TextRenderer(Window * window)
 {
 	programPointer = vertexPointer = fragmentPointer = 0;
 	programPointer = glCreateProgram();
@@ -25,6 +25,8 @@ TextRenderer::TextRenderer()
 
 	positionAttrib = glGetAttribLocation(programPointer, "position");
 	texcoordAttrib = glGetAttribLocation(programPointer, "texcoord");
+	colorAttrib = glGetAttribLocation(programPointer, "color");
+	cout << positionAttrib << " " << texcoordAttrib << " " << colorAttrib << endl;
 
 	glUseProgram(programPointer);
 
@@ -32,9 +34,9 @@ TextRenderer::TextRenderer()
 	viewUniform = glGetUniformLocation(programPointer, "view");
 	modelUniform = glGetUniformLocation(programPointer, "model");
 
-	projection = glm::perspective(80.0, double(800) / double(600), 0.1, 1000.0);
 	view = glm::mat4(1.0);
 	model = glm::mat4(1.0);
+	projection = window->getProjection();
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 
@@ -51,39 +53,78 @@ TextRenderer::~TextRenderer()
 	unloadShader();
 }
 
-void TextRenderer::upload(std::string msg, float x, float y, float scale)
+glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, float r, float g, float b)
 {
-	//vertexCount = msg.length() * 4;
-	//vertices = new vertex_t [vertexCount];
-	float z = -10;
-	scale = 1 / scale;
+	using glm::vec3; using glm::vec2;
 
 	glGenBuffers(1, &vertexBuffer);
-
 	vertexCount = msg.length() * 4;
 	vertices = new vertex_t[vertexCount];
-	double current_char_offset = 0;
-	for(int vertex = 0, current_char = 0; vertex < vertexCount; vertex += 4)
+
+	const double gap_width = double(TEXTURE_CHAR_GAP) / double(TEXTURE_WIDTH); // the gap width between characters on the texture, in texture (size) units (0 - 1)
+	const double char_width = double(TEXTURE_CHAR_WIDTH) / double(TEXTURE_WIDTH);
+
+	double incrx = 0.05 * scale;
+	double incry = 0.1 * scale;
+	double xl = x, xr = x + incrx;
+	double yu = y, yl = y + incry;
+	for(unsigned int vertex = 0; vertex < vertexCount; vertex += 4)
 	{
-		unsigned char c = msg[current_char];
-		float gap_width = double(TEXTURE_CHAR_GAP) / double(TEXTURE_WIDTH);
-		double pixel_width = 1.0 / double(TEXTURE_WIDTH);
-		float char_width = double(TEXTURE_CHAR_WIDTH) / double(TEXTURE_WIDTH);
+		/* Viewport:
+		 *     -1 y
+		 *       |
+		 * -1 x -o- +1 x
+		 *    	 |
+		 *     +1 y      */
+		unsigned char c = msg[vertex / 4];
+		double texxleft = 0;
+		double texxright = 0;
+		double texyupper = 0;
+		double texylower = 0;
 
-		vertex_t lowerleft = vertex_t(glm::vec3(0 + current_char_offset + x, 0 + y, z * scale), glm::vec2((char_width + gap_width) * c, 1.0));
-		vertices[vertex+0] = lowerleft;
+		vertex_t lowerleft = vertex_t(vec3(xl, yl, 0),
+																	vec2((char_width + gap_width) * c, 1.0),
+																	vec3(r, g, b));
 
-		vertex_t lowerright = vertex_t(glm::vec3(1 + current_char_offset + x - 0.5, 0 + y, z * scale), glm::vec2(((char_width + gap_width) * c) + char_width, 1.0));
-		vertices[vertex+1] = lowerright;
+		vertex_t lowerright = vertex_t(vec3(xr, yl, 0),
+																	 vec2(((char_width + gap_width) * c) + char_width, 1.0),
+																	 vec3(r, g, b));
 
-		vertex_t upperright = vertex_t(glm::vec3(1 + current_char_offset + x - 0.5, 1.0 + y, z * scale), glm::vec2(((char_width + gap_width) * c) + char_width, 0.0));
-		vertices[vertex+2] = upperright;
+		vertex_t upperright = vertex_t(vec3(xr, yu, 0),
+																	 vec2(((char_width + gap_width) * c) + char_width, 0.0),
+																	 vec3(r, g, b));
 
-		vertex_t upperleft = vertex_t(glm::vec3(0 + current_char_offset + x, 1.0 + y, z * scale), glm::vec2((char_width + gap_width) * c, 0.0));
-		vertices[vertex+3] = upperleft;
+		vertex_t upperleft = vertex_t(vec3(xl, yu, 0),
+																	vec2((char_width + gap_width) * c, 0.0),
+																	vec3(r, g, b));
 
-		current_char_offset += 0.50;
-		current_char++;
+		vertices[vertex + 0] = lowerleft;
+		vertices[vertex + 1] = lowerright;
+		vertices[vertex + 2] = upperright;
+		vertices[vertex + 3] = upperleft;
+
+		/* check for line breaks caused by long words */
+		unsigned int cur_pos = vertex / 4;
+		unsigned char cur = 0;
+		double xtest = xr;
+
+		/* handle line breaks */
+		if(xl > 1 || xr > 1 || c == '\n')
+		{
+			//reset x values, "cariage return"
+			xl = x;
+			xr = x + incrx;
+
+			//increment y -> new line
+			yu = yu + incry;
+			yl = yu + incry;
+		}
+		else
+		{
+			xl += incrx;
+			xr += incrx;			
+		}
+
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -95,18 +136,20 @@ void TextRenderer::upload(std::string msg, float x, float y, float scale)
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(0));
 	glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3)));
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	return vec2(0.05 * msg.length() + 0.05, 0.1);
 }
 
 void TextRenderer::draw()
 {
-	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*projection));
 	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
 	glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
 
-	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib);
+	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 	glDrawArrays(GL_QUADS, 0, vertexCount);
-	glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib);
+	glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 }
 
 //private

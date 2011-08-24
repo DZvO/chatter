@@ -7,6 +7,10 @@
 #include <GL/glu.h>
 #include <SDL/SDL.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/projection.hpp"
+
 class Window
 {
 	public:
@@ -32,9 +36,15 @@ class Window
 			return height;
 		}
 
+		glm::mat4 * getProjection()
+		{
+			return &projection;
+		}
+
 	private:
 		unsigned short width, height;
 		SDL_Surface *screen;
+		glm::mat4 projection;
 };
 
 #endif

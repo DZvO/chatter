@@ -49,9 +49,9 @@ void Window::create (const unsigned short width, const unsigned short height, co
 		glShadeModel(GL_SMOOTH);
 	}
 
-	glEnable(GL_ALPHA_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
+	//glEnable(GL_ALPHA_TEST);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)
@@ -59,6 +59,9 @@ void Window::create (const unsigned short width, const unsigned short height, co
 		std::cout << "Your graphics card doesn't support Opengl 2.x, and I need it to run properly. Therefore i will now exit in peace." << std::endl;
 		exit(-1);
 	}
+
+	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
+	projection = glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
 	/* // OpenGL stuff */
 }
 
@@ -67,9 +70,10 @@ void Window::resize (const unsigned short width, const unsigned short height)
 	this->width = width;
 	this->height = height;
 
-	//no need to call SDL_FreeSurface ?
 	screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_DOUBLEBUF);
 	glViewport(0, 0, width, height);
+	projection = glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
+	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 }
 
 void Window::clear ()

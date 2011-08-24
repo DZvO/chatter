@@ -12,13 +12,14 @@ Image::Image(std::string path)
 
 Image::~Image()
 {
+	SDL_FreeSurface(surface);
 	glDeleteTextures(1, &gl_pointer);
 }
 
 void Image::load(std::string path)
 {
 	this->path = path;
-	SDL_Surface * surface = IMG_Load(path.c_str());
+	surface = IMG_Load(path.c_str());
 
 	if(surface == NULL)
 	{
@@ -45,11 +46,15 @@ void Image::load(std::string path)
 	this->width = surface->w;
 	this->height = surface->h;
 	this->bpp = surface->format->BitsPerPixel;
-	SDL_FreeSurface(surface);
 	this->gl_pointer = texture;
 }
 
 unsigned int Image::getGlPointer()
 {
 	return gl_pointer;
+}
+
+unsigned int Image::getPixel(unsigned int x, unsigned int y)
+{
+	return ((unsigned int*)surface->pixels) [(y * surface->w) + x];
 }

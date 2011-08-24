@@ -26,6 +26,7 @@ int main (int argc, char * argv[])
 {
 	Window * window = new Window();
 	window->create(800, 600, "inspector gadget!");
+	TextRenderer * text = new TextRenderer(window);
 
 	bool enable_textinput = false;
 	Input * input = new Input();
@@ -38,12 +39,11 @@ int main (int argc, char * argv[])
 	//	BufferManager * man = new BufferManager();
 	Socket * socket = new Socket(1337);
 
-	TextRenderer * text = new TextRenderer();
 
+	text->upload("This is an example text \x01, it is designed to be very long so i can test automatic line breaks as well as forced ones:\nthis was a linebreak", -1.0, -1.0, 1.0);
 	while(input->closeRequested() == false)
 	{
 		window->clear();
-		text->upload("Hello World\x07\x08\x08", -2.0, -1.0, 2.0);
 		text->draw();
 		window->swap();
 
