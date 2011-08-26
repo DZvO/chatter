@@ -4,6 +4,7 @@ char * loadFile(const char * path);
 
 TextRenderer::TextRenderer(Window * window)
 {
+	vertices = NULL;
 	programPointer = vertexPointer = fragmentPointer = 0;
 	programPointer = glCreateProgram();
 
@@ -26,7 +27,6 @@ TextRenderer::TextRenderer(Window * window)
 	positionAttrib = glGetAttribLocation(programPointer, "position");
 	texcoordAttrib = glGetAttribLocation(programPointer, "texcoord");
 	colorAttrib = glGetAttribLocation(programPointer, "color");
-	cout << positionAttrib << " " << texcoordAttrib << " " << colorAttrib << endl;
 
 	glUseProgram(programPointer);
 
@@ -41,6 +41,9 @@ TextRenderer::TextRenderer(Window * window)
 	//glPolygonMode(GL_FRONT, GL_LINE);
 
 	font = new Image("data/font.png");
+	kerning = new glm::vec2[256];
+	loadKerning();
+
 	fontTextureUniform = glGetUniformLocation(programPointer, "texture");
 
 	glUniform1i(fontTextureUniform, 0);
@@ -51,94 +54,132 @@ TextRenderer::TextRenderer(Window * window)
 TextRenderer::~TextRenderer()
 {
 	unloadShader();
+	delete font;
+	delete [] kerning;
+	delete [] vertices;
 }
 
 glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, float r, float g, float b)
 {
 	using glm::vec3; using glm::vec2;
 
+	vertexBuffer = 0;
 	glGenBuffers(1, &vertexBuffer);
-	vertexCount = msg.length() * 4;
+	//vertexCount = msg.length() * 4;
+	vertexCount = 0;
+	for(unsigned int i = 0; msg[i] != '\0'; i++)
+	{
+		if(msg[i] != ' ')
+			vertexCount++;
+	}
+	vertexCount *= 4;
+	if(vertices != NULL)
+	{
+		delete [] vertices;
+	}
 	vertices = new vertex_t[vertexCount];
 
-	const double gap_width = double(TEXTURE_CHAR_GAP) / double(TEXTURE_WIDTH); // the gap width between characters on the texture, in texture (size) units (0 - 1)
-	const double char_width = double(TEXTURE_CHAR_WIDTH) / double(TEXTURE_WIDTH);
+	const double char_width = double(8) / double(128);
+	const double pixel_size = 1.0 / double(128);
 
-	double incrx = 0.05 * scale;
-	double incry = 0.1 * scale;
-	double xl = x, xr = x + incrx;
+	double incrx = 0.08 * scale;
+	double incry = 0.08 * scale;
+	double xl = x, xr = x;// + (0.08 - ((kerning[(unsigned char)msg[0]].x * 0.01) + (kerning[(unsigned char)msg[0]].y * 0.01)));
 	double yu = y, yl = y + incry;
-	for(unsigned int vertex = 0; vertex < vertexCount; vertex += 4)
+	unsigned int vertex = 0;
+	double offset = 0.0;
+	for(unsigned int i = 0; msg[i] != '\0'; i++)
 	{
-		/* Viewport:
-		 *     -1 y
-		 *       |
-		 * -1 x -o- +1 x
-		 *    	 |
-		 *     +1 y      */
-		unsigned char c = msg[vertex / 4];
-		double texxleft = 0;
-		double texxright = 0;
-		double texyupper = 0;
-		double texylower = 0;
+		 // Viewport:
+		 //     -1 y
+		 //       |
+		 // -1 x -o- +1 x
+		 //    	  |
+		 //     +1 y     
+		unsigned char c = msg[i];
 
-		vertex_t lowerleft = vertex_t(vec3(xl, yl, 0),
-																	vec2((char_width + gap_width) * c, 1.0),
-																	vec3(r, g, b));
-
-		vertex_t lowerright = vertex_t(vec3(xr, yl, 0),
-																	 vec2(((char_width + gap_width) * c) + char_width, 1.0),
-																	 vec3(r, g, b));
-
-		vertex_t upperright = vertex_t(vec3(xr, yu, 0),
-																	 vec2(((char_width + gap_width) * c) + char_width, 0.0),
-																	 vec3(r, g, b));
-
-		vertex_t upperleft = vertex_t(vec3(xl, yu, 0),
-																	vec2((char_width + gap_width) * c, 0.0),
-																	vec3(r, g, b));
-
-		vertices[vertex + 0] = lowerleft;
-		vertices[vertex + 1] = lowerright;
-		vertices[vertex + 2] = upperright;
-		vertices[vertex + 3] = upperleft;
-
-		/* check for line breaks caused by long words */
-		unsigned int cur_pos = vertex / 4;
-		unsigned char cur = 0;
-		double xtest = xr;
-
-		/* handle line breaks */
-		if(xl > 1 || xr > 1 || c == '\n')
+		if(c == ' ')
 		{
-			//reset x values, "cariage return"
+			xl = xr;
+			xr += 0.03;
+		}
+		else if(c == '\n')// || (xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)) + 0.01)) > 1)
+		{
+			yu = yl + 0.01;
+			yl += incry + 0.01;
 			xl = x;
-			xr = x + incrx;
-
-			//increment y -> new line
-			yu = yu + incry;
-			yl = yu + incry;
+			xr = x;
+			offset = 0.0;
 		}
 		else
 		{
-			xl += incrx;
-			xr += incrx;			
-		}
+			unsigned int c_row = (unsigned int)c / 16;
+			unsigned int c_col = (unsigned int)c % 16;
 
+			//line break?
+			if(xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) + 0.01 > 1)
+			{
+				yu = yl + 0.01;
+				yl += incry + 0.01;
+
+				xl = x;
+				xr = x + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)));
+				cout << "line break! at char " << c << endl;
+			}
+			else
+			{
+				//do kerning stuff
+				xl = xr + offset; // 0.01 is a little gap between each character
+				offset = 0.01;
+				xr += (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) + 0.01;
+				//cout << "kerning for char \"" << c << "\"(" << (unsigned int) c << "), left: " << kerning[c].x << ", right: " << kerning[c].y << endl;
+			}
+
+
+			double texxleft = c_col * char_width;
+			texxleft += (kerning[c].x * pixel_size);
+			double texxright = c_col * char_width + char_width;
+			texxright -= (kerning[c].y * pixel_size);
+
+			double texyupper = c_row * char_width;
+			double texylower = c_row * char_width + char_width;
+
+			vertex_t lowerleft = vertex_t(vec3(xl, yl, 0),
+					vec2(texxleft, texylower),
+					vec3(r, g, b));
+
+			vertex_t lowerright = vertex_t(vec3(xr, yl, 0),
+					vec2(texxright, texylower),
+					vec3(r, g, b));
+
+			vertex_t upperright = vertex_t(vec3(xr, yu, 0),
+					vec2(texxright, texyupper),
+					vec3(r, g, b));
+
+			vertex_t upperleft = vertex_t(vec3(xl, yu, 0),
+					vec2(texxleft, texyupper),
+					vec3(r, g, b));
+
+			vertices[vertex++] = lowerleft;
+			vertices[vertex++] = lowerright;
+			vertices[vertex++] = upperright;
+			vertices[vertex++] = upperleft;
+		}
 	}
+	cout << "used " << vertex << " vertices" << endl;
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	GLsizeiptr const vertexSize = vertexCount * sizeof(vertex_t);
 	glBufferData(GL_ARRAY_BUFFER, vertexSize, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-#define _OFFSET(i) ((char *)NULL + (i))
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(0));
 	glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3)));
 	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	return vec2(0.05 * msg.length() + 0.05, 0.1);
+	//return glm::vec2(0.05 * msg.length() + 0.05, 0.1);
+	return glm::vec2(0, 0);
 }
 
 void TextRenderer::draw()
@@ -153,6 +194,53 @@ void TextRenderer::draw()
 }
 
 //private
+void TextRenderer::loadKerning()
+{
+	for(unsigned int row = 0; row <= 15; row++)
+	{
+		for(unsigned int col = 0; col <= 15; col++)
+		{
+			kerning[(row * 16) + col] = glm::vec2(0, 0); // initialize array
+			const unsigned int cellW = 8;//TEXTURE_WH / 16; //default = 8
+			const unsigned int cellH = 8;//TEXTURE_WH / 16; //default = 8
+			//cout << "char (" << (row*16)+col << ")\n";
+
+			//left to right
+			for(unsigned int pixelX = 0; pixelX < 8; pixelX++)
+			{
+				for(unsigned int pixelY = 0; pixelY < 8; pixelY++)
+				{
+					if(font->getPixel((col * 8) + pixelX, (row * 8) + pixelY) != 0)
+					{
+						//cout << "from left in cell @ [" << row << ", " << col << "] pixel at [" << pixelX << ", " << pixelY << "] is not empty! (absolute: [" << (col*8)+pixelX << ", " << (row*8)+pixelY << "]" << endl;
+						kerning[(row * 16) + col].x = pixelX;
+						//break loops
+						pixelX = 8;
+						pixelY = 8;
+					}
+				}
+			}
+
+			//right to left
+			for(int pixelX = 7; pixelX >= 0; pixelX--)
+			{
+				for(int pixelY = 7; pixelY >= 0; pixelY--)
+				{
+					if(font->getPixel((col * 8) + pixelX, (row * 8) + pixelY) != 0)
+					{
+						//cout << "from right in cell @ [" << row << ", " << col << "] pixel at [" << pixelX << ", " << pixelY << "] is not empty! (absolute: [" << (col*8)+pixelX << ", " << (row*8)+pixelY << "]" << endl;
+						kerning[(row * 16) + col].y = 7 - pixelX;
+						//break loops
+						pixelX = -1;
+						pixelY = -1;
+					}
+				}
+			}
+			//cout << endl;
+		}
+	}
+}
+
 char * loadFile (const char * path)
 {
 	FILE *fd;

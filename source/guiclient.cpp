@@ -40,14 +40,11 @@ int main (int argc, char * argv[])
 	Socket * socket = new Socket(1337);
 
 
-	text->upload("This is an example text \x01, it is designed to be very long so i can test automatic line breaks as well as forced ones:\nthis was a linebreak", -1.0, -1.0, 1.0);
+	//text->upload("Hello World this is a test \x03\x01\x02\x03 <3\n", -1.0, 0.0, 1.0);
+	text->upload("_", -1.0, -1.0, 1.0);
+
 	while(input->closeRequested() == false)
 	{
-		window->clear();
-		text->draw();
-		window->swap();
-
-
 		// network ------------------
 		/*		if(sokket->receive(man))//TODO
 
@@ -60,7 +57,7 @@ int main (int argc, char * argv[])
 					chatlog->add(lastMessage);
 					delete fresh;
 					}
-					*/
+		*/
 		//	--------------------------
 		while(input->refresh())
 		{
@@ -84,6 +81,7 @@ int main (int argc, char * argv[])
 						delete sendBuf;
 					}
 					cout << "line is: \"" << *line << "\"\n";
+					text->upload(*line, -1.0, -1.0, 1.0, 0.5, 1.0, 0.5);
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
@@ -103,11 +101,25 @@ int main (int argc, char * argv[])
 					unsigned char c = input->getChar();
 					if(c != 0)
 					{
-						cout << "adding: \"" << c << "\"\n";
-						(*line) += c;
+						if(c == '\b')
+						{
+							cout << "removing!" << '\n';
+							*line = line->substr(0, line->size() - 1); //substract last character because backspace was pressed
+						}
+						else
+						{
+							cout << "adding: \"" << c << "\"\n";
+							(*line) += c;
+						}
+						text->upload(*line, -1.0, -1.0, 1.0);
 					}
 				}
 			}
+
+			window->clear();
+			text->draw();
+			window->swap();
+
 		}
 	}
 

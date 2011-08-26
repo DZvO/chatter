@@ -26,8 +26,8 @@ struct vertex_t
 	vertex_t(glm::vec3 position, glm::vec2 texcoord, glm::vec3 color) : pos(position), tex(texcoord), col(color) {}
 };
 
-const unsigned int TEXTURE_CHAR_WIDTH = 8, TEXTURE_CHAR_HEIGHT = 16, TEXTURE_CHAR_GAP = 1;
-const unsigned int TEXTURE_WIDTH = 2304;
+const unsigned int TEXTURE_CHAR_WIDTH = 8, TEXTURE_CHAR_HEIGHT = 8;
+const unsigned int TEXTURE_WH = 128;
 
 class TextRenderer
 {
@@ -53,6 +53,8 @@ class TextRenderer
 	int projectionUniform, viewUniform, modelUniform, fontTextureUniform;
 
 	Image * font;
+	glm::vec2 * kerning; // x is left to right, y is right to left - empty space in pixels of every 'cell' in the font texture
+	void loadKerning();
 };
 
 #endif

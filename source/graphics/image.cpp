@@ -56,5 +56,11 @@ unsigned int Image::getGlPointer()
 
 unsigned int Image::getPixel(unsigned int x, unsigned int y)
 {
+	if(x > width || y > height)
+	{
+		std::cout << "meep, getPixel was called with too much input! [" << x << ", " << y << "]" << std::endl;
+		return -1;
+	}
+
 	return ((unsigned int*)surface->pixels) [(y * surface->w) + x];
 }
