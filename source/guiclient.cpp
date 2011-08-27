@@ -81,7 +81,7 @@ int main (int argc, char * argv[])
 						delete sendBuf;
 					}
 					cout << "line is: \"" << *line << "\"\n";
-					text->upload(*line, -1.0, -1.0, 0.6, 0.5, 1.0, 0.5);
+					text->upload(*line, -1.0, -1.0, 0.5, 0.5, 1.0, 0.5);
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
@@ -111,7 +111,7 @@ int main (int argc, char * argv[])
 							//cout << "adding: \"" << c << "\"\n";
 							(*line) += c;
 						}
-						text->upload(*line, -1.0, -1.0, 0.6);
+						text->upload(*line, -1.0, -1.0, 0.5);
 					}
 				}
 			}

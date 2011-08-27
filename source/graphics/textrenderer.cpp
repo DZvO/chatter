@@ -83,7 +83,7 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, double scale, 
 	const double pixel_size = 1.0 / double(128);
 
 	double xl = x, xr = x;// + (0.08 - ((kerning[(unsigned char)msg[0]].x * 0.01) + (kerning[(unsigned char)msg[0]].y * 0.01)));
-	double yu = y, yl = y + 0.08;
+	double yu = y, yl = y + (0.08 * scale);
 	unsigned int vertex = 0;
 	double offset = 0.0;
 	for(unsigned int i = 0; msg[i] != '\0'; i++)
@@ -99,7 +99,7 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, double scale, 
 		if(c == ' ')
 		{
 			xl = xr;
-			xr += 0.03;
+			xr += (0.03 * scale);
 		}
 		else if(c == '\n')// || (xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)) + 0.01)) > 1)
 		{
@@ -118,19 +118,17 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, double scale, 
 			if(xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) + 0.01 > 1)
 			{
 				yu = yl + (0.01 * scale);
-				yl += (0.08 + 0.01) * scale;
+				yl += (0.08 * scale) + (0.01 * scale);
 
 				xl = x;
 				xr = x + ((0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) * scale);
-				cout << "line break! at char " << c << endl;
 			}
 			else
 			{
 				//do kerning stuff
 				xl = xr + (offset * scale); // 0.01 is a little gap between each character
-				xr += ((0.08 *scale) - (((kerning[c].x * 0.01 * scale) + (kerning[c].y * 0.01 * scale)))) + (offset * scale);
+				xr += ((0.08 - (((kerning[c].x * 0.01) + (kerning[c].y * 0.01)))) * scale) + (offset * scale);
 				offset = 0.010000000000;
-				//cout << "kerning for char \"" << c << "\"(" << (unsigned int) c << "), left: " << kerning[c].x << ", right: " << kerning[c].y << endl;
 			}
 
 
