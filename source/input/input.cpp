@@ -5,6 +5,7 @@ Input::Input()
 	keystate = SDL_GetKeyState(NULL);
 	close_requested = false;
 	textmode = false;
+	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 }
 
 Input::~Input()

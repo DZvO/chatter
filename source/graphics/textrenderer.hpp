@@ -35,7 +35,7 @@ class TextRenderer
 	TextRenderer(Window * window);
 	~TextRenderer();
 
-	glm::vec2 upload(std::string msg, float x, float y, float scale = 1.0, float r = 1.0, float g = 1.0, float b = 1.0); //returns width and height used
+	glm::vec2 upload(std::string msg, float x, float y, double scale = 1.0, float r = 1.0, float g = 1.0, float b = 1.0); //returns width and height used
 	void draw();
 
 	private:

@@ -50,8 +50,8 @@ void Window::create (const unsigned short width, const unsigned short height, co
 	}
 
 	//glEnable(GL_ALPHA_TEST);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)

@@ -59,7 +59,7 @@ TextRenderer::~TextRenderer()
 	delete [] vertices;
 }
 
-glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, float r, float g, float b)
+glm::vec2 TextRenderer::upload(std::string msg, float x, float y, double scale, float r, float g, float b)
 {
 	using glm::vec3; using glm::vec2;
 
@@ -82,10 +82,8 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, f
 	const double char_width = double(8) / double(128);
 	const double pixel_size = 1.0 / double(128);
 
-	double incrx = 0.08 * scale;
-	double incry = 0.08 * scale;
 	double xl = x, xr = x;// + (0.08 - ((kerning[(unsigned char)msg[0]].x * 0.01) + (kerning[(unsigned char)msg[0]].y * 0.01)));
-	double yu = y, yl = y + incry;
+	double yu = y, yl = y + 0.08;
 	unsigned int vertex = 0;
 	double offset = 0.0;
 	for(unsigned int i = 0; msg[i] != '\0'; i++)
@@ -106,7 +104,7 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, f
 		else if(c == '\n')// || (xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)) + 0.01)) > 1)
 		{
 			yu = yl + 0.01;
-			yl += incry + 0.01;
+			yl += 0.08 + 0.01;
 			xl = x;
 			xr = x;
 			offset = 0.0;
@@ -119,19 +117,19 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, f
 			//line break?
 			if(xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) + 0.01 > 1)
 			{
-				yu = yl + 0.01;
-				yl += incry + 0.01;
+				yu = yl + (0.01 * scale);
+				yl += (0.08 + 0.01) * scale;
 
 				xl = x;
-				xr = x + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)));
+				xr = x + ((0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) * scale);
 				cout << "line break! at char " << c << endl;
 			}
 			else
 			{
 				//do kerning stuff
-				xl = xr + offset; // 0.01 is a little gap between each character
-				offset = 0.01;
-				xr += (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01))) + 0.01;
+				xl = xr + (offset * scale); // 0.01 is a little gap between each character
+				xr += ((0.08 *scale) - (((kerning[c].x * 0.01 * scale) + (kerning[c].y * 0.01 * scale)))) + (offset * scale);
+				offset = 0.010000000000;
 				//cout << "kerning for char \"" << c << "\"(" << (unsigned int) c << "), left: " << kerning[c].x << ", right: " << kerning[c].y << endl;
 			}
 
@@ -166,7 +164,7 @@ glm::vec2 TextRenderer::upload(std::string msg, float x, float y, float scale, f
 			vertices[vertex++] = upperleft;
 		}
 	}
-	cout << "used " << vertex << " vertices" << endl;
+	//cout << "used " << vertex << " vertices" << endl;
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	GLsizeiptr const vertexSize = vertexCount * sizeof(vertex_t);
