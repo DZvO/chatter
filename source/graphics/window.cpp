@@ -14,9 +14,9 @@ void Window::create (const unsigned short width, const unsigned short height, co
 	this->height = height;
 
 	/* SDL stuff */
-	if(SDL_Init(SDL_INIT_TIMER) < 0 || SDL_Init(SDL_INIT_VIDEO) < 0)
+	/*if(SDL_Init(SDL_INIT_TIMER) < 0 ||*/ if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{   
-		std::cout << "Unable to init SDL_TIMER: " << SDL_GetError() << "\nPlease file a bug report on github.com/Compendium/chatter/issues\n";
+		std::cout << "Unable to init SDL " << SDL_GetError() << "\nPlease file a bug report on github.com/Compendium/chatter/issues\n";
 		exit(1);
 	}
 
