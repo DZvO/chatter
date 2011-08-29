@@ -2,13 +2,18 @@
 
 char * loadFile(const char* path)
 {
-	/*std::ifstream file(path, std::ios::binary | std::ios::ate);
+/*	std::ifstream file(path, std::ios::binary | std::ios::ate);
 	int size = file.tellg();
 	//cout << size << endl;
 	char * data = new char[size];
+	for(int i = 0; i < size; i++)
+		data[i] = 0;
 	file.seekg(0, std::ios::beg);
 	file.read(data, size);
-	return data;*/
+	cout << path << endl;
+	cout << "\"" << (const char*) data << "\"" << endl;
+	return data;
+	*/
 
 	FILE *fd;
 	long len, r;
@@ -35,35 +40,10 @@ char * loadFile(const char* path)
 	str[r - 1] = '\0'; //make sure the string ends
 
 	fclose(fd);
+	//cout << path << endl;
+	//cout << "\"" << (const char*) str << "\"" << endl;
 
 	return str;
-}
-bool shaderError(unsigned int object, unsigned int status)
-{
-	int ok = 0;
-	if(status == GL_LINK_STATUS)
-	{
-		glGetProgramiv(object, status, &ok);
-		return !ok;
-	}
-	else if(status == GL_COMPILE_STATUS)
-	{
-		glGetShaderiv(object, GL_COMPILE_STATUS, &ok);
-		return !ok;
-	}
-	return true;
-}
-
-void show_error(unsigned int object, PFNGLGETUNIFORMIVPROC glGet__iv, PFNGLGETSHADERINFOLOGPROC glGet__InfoLog)
-{
-	int length;
-	char *out;
-
-	glGet__iv(object, GL_INFO_LOG_LENGTH, &length);
-	out = new char[length];
-	glGet__InfoLog(object, length, NULL, out);
-	std::cout << out << endl;
-	delete [] out;
 }
 
 Chatlog::Chatlog(Window * window)
@@ -73,6 +53,7 @@ Chatlog::Chatlog(Window * window)
 	loadKerning();
 
 	this->window = window;
+	line_vertices = new TextVertices(window, font, kerning);
 
 	message_list = new list<Message*>;
 	vertices_list = new list<TextVertices*>;
@@ -114,9 +95,9 @@ Chatlog::Chatlog(Window * window)
 
 	fontTexUniform = glGetUniformLocation(programPointer, "texture");
 
-	cout << projectionUniform << " " << viewUniform << " " << modelUniform << " " << fontTexUniform << endl;
-	cout << programPointer << " " << vertexPointer << " " << fragmentPointer << endl;
-	cout << positionAttrib << " " << texcoordAttrib << " " << colorAttrib << endl;
+	cout << "ProjectionUniform: " << projectionUniform << " ViewUniform:" << viewUniform << " ModelUniform:" << modelUniform << " FontTexUniform:" << fontTexUniform << endl;
+	cout << "ProgramPointer: " << programPointer << " VertexPointer: " << vertexPointer << " FragmentPointer: " << fragmentPointer << endl;
+	cout << "PositionAttrib: " << positionAttrib << " TexCoordAttrib: " << texcoordAttrib << " ColorAttrib:" << colorAttrib << endl;
 
 	view = glm::mat4(1.0);
 	model = glm::mat4(1.0);
@@ -144,21 +125,49 @@ void Chatlog::add (Message * msg)
 {
 	message_list->push_back(msg);
 	TextVertices * tv  = new TextVertices(window, font, kerning);
-	tv->upload(msg->by + string(" ") + msg->text, 1.5);
+	tv->upload(msg->by + string(": ") + msg->text, 1.5);
 	vertices_list->push_back(tv);
 }
 
-void Chatlog::draw(bool draw_input_box, string * input)
+void Chatlog::draw(bool draw_input_box)
 {
+	//cout << "draw" << endl;
 	glUseProgram(programPointer);
 	glUniform1i(fontTexUniform, 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, font->getGlPointer());
 
 	glm::vec2 position = this->position;
-	for(list<TextVertices*>::iterator it = vertices_list->begin(); it != vertices_list->end(); it++)
+
+	if(draw_input_box && line_vertices->getVertexCount() > 0)
 	{
-		position.y -= (*it)->getSize().y;
+		position.y -= line_vertices->getSize()->y;
+
+		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+		glm::mat4 translated_view = glm::translate(view, glm::vec3(position, 0.0));
+		glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(translated_view));
+		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+
+		glBindBuffer(GL_ARRAY_BUFFER, line_vertices->getPointer());
+		glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
+		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
+		glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+		glBindBuffer(GL_ARRAY_BUFFER, line_vertices->getPointer());
+		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+
+		glDrawArrays(GL_QUADS, 0, line_vertices->getVertexCount());
+
+		glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	for(list<TextVertices*>::iterator it = vertices_list->end(); it != vertices_list->begin();)
+	{
+		--it; //are you fucking kidding me? past-the-end iterator? seriously, i can't believe it. and you can't even use "list->end() - 1" because the dammn STL has no such thing for a list. why? because it would be O(n) instead of O(1) grrrrr
+		position.y -= (*it)->getSize()->y;//TODO add check if we are beyond size, and ignore the remaining lines
 
 		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
 		glm::mat4 translated_view = glm::translate(view, glm::vec3(position, 0.0));
@@ -177,11 +186,19 @@ void Chatlog::draw(bool draw_input_box, string * input)
 
 		glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
-		//glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 
+void Chatlog::setLine(const string * input)
+{
+	//this->line = input;
+	string line = string("> ") + *input;
+	line_vertices->upload(line, 1.5);
+}
+
+//private
 void Chatlog::loadKerning()
 {
 	for(unsigned int row = 0; row <= 15; row++)

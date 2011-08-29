@@ -7,6 +7,8 @@ TextVertices::TextVertices(Window * window, Image * font, glm::vec2 * kern)
 	vertices = NULL;
 	this->font = font;
 	this->kerning = kern;
+	vertexCount = 0;
+	vertexBuffer = 0;
 
 	/*glUniform1i(fontTextureUniform, 0);
 	glActiveTexture(GL_TEXTURE0);
@@ -20,12 +22,10 @@ TextVertices::~TextVertices()
 
 glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, float b)
 {
+	str = msg;
 	using glm::vec3; using glm::vec2;
 	vec2 rv = vec2(0, 0);
 
-	vertexBuffer = 0;
-	glGenBuffers(1, &vertexBuffer);
-	cout << vertexBuffer << endl;
 	//vertexCount = msg.length() * 4;
 	vertexCount = 0;
 	for(unsigned int i = 0; msg[i] != '\0'; i++)
@@ -36,9 +36,17 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 	vertexCount *= 4;
 	if(vertices != NULL)
 	{
+		//cout << "deleting vb " << vertexBuffer << endl;
+		glDeleteBuffers(1, &vertexBuffer);
+		vertexBuffer = 0;
 		delete [] vertices;
 	}
-	vertices = new vertex_t[vertexCount];
+
+	{
+		glGenBuffers(1, &vertexBuffer);
+		//cout << "created vb " << vertexBuffer << endl;
+		vertices = new vertex_t[vertexCount];
+	}
 
 	const double char_width = double(8) / double(128);
 	const double pixel_size = 1.0 / double(128);
@@ -124,7 +132,7 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			vertices[vertex++] = upperleft;
 		}
 	}
-	cout << "used " << vertex << " vertices, for msg: \"" << msg << "\"\n";
+	//cout << "used " << vertex << " vertices, for msg: \"" << msg << "\"\n";
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	GLsizeiptr const vertexSize = vertexCount * sizeof(vertex_t);
@@ -164,14 +172,14 @@ void TextVertices::setPosition(glm::vec2 position)
 	this->pos = position;
 }
 
-glm::vec2 TextVertices::getPosition()
+const glm::vec2 * TextVertices::getPosition()
 {
-	return this->pos;
+	return &(this->pos);
 }
 
-glm::vec2 TextVertices::getSize()
+const glm::vec2 * TextVertices::getSize()
 {
-	return this->size;
+	return &(this->size);
 }
 
 unsigned int TextVertices::getPointer()

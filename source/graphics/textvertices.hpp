@@ -26,8 +26,8 @@ class TextVertices
 	glm::vec2 upload(std::string msg, double scale = 1.0, float r = 1.0, float g = 1.0, float b = 1.0); //returns width and height used
 
 	void setPosition(glm::vec2 pos);
-	glm::vec2 getPosition();
-	glm::vec2 getSize();
+	const glm::vec2 * getPosition();
+	const glm::vec2 * getSize();
 
 	struct vertex_t
 	{
@@ -39,6 +39,7 @@ class TextVertices
 	};
 
 
+	string str;
 	unsigned int getPointer();
 	unsigned int getVertexCount();
 	private:

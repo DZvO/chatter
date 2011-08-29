@@ -25,9 +25,13 @@ class Chatlog
 	~Chatlog();
 
 	void add(Message * msg);
-	void draw(bool draw_input_box, string * input);
+	void draw(bool draw_input_box);
+	void setLine(const string * input);
 
 	private:
+	string * line;
+	TextVertices * line_vertices;
+
 	glm::vec2 position;
 	glm::vec2 size;
 	Window * window;
