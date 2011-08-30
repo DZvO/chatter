@@ -125,7 +125,7 @@ void Chatlog::add (Message * msg)
 {
 	message_list->push_back(msg);
 	TextVertices * tv  = new TextVertices(window, font, kerning);
-	tv->upload(msg->by + string(": ") + msg->text, 1.5);
+	tv->upload(msg->by + string("\xff""424242"": ""\xff""ffffff") + msg->text, 1.5);
 	vertices_list->push_back(tv);
 }
 
@@ -194,7 +194,7 @@ void Chatlog::draw(bool draw_input_box)
 void Chatlog::setLine(const string * input)
 {
 	//this->line = input;
-	string line = string("> ") + *input;
+	string line = string("\xff""858585""> ""\xff""ffffff") + *input;
 	line_vertices->upload(line, 1.5);
 }
 

@@ -60,7 +60,7 @@ int main (int argc, char * argv[])
 					if((*line) != "")
 					{
 						Message * sendMessage = new Message();
-						sendMessage->by = "DerZauberer";
+						sendMessage->by = "\xff""ff6000" "DerZauberer" "\xff""ffffff";
 						sendMessage->text = *line;
 						chatlog->add(sendMessage);
 
@@ -75,14 +75,17 @@ int main (int argc, char * argv[])
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
+					string empty = "";
+					chatlog->setLine(&empty);
 				}
 				else
 				{
 					enable_textinput = true;
 					input->enableTextmode();
 					line = new std::string();
+					chatlog->setLine(line);
 				}
-				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
+				//cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
 			else
 			{
@@ -94,10 +97,12 @@ int main (int argc, char * argv[])
 						if(c == '\b')
 						{
 							*line = line->substr(0, line->size() - 1); //substract last character because backspace was pressed
+							chatlog->setLine(line);
 						}
 						else
 						{
 							(*line) += c;
+							chatlog->setLine(line);
 						}
 					}
 				}
@@ -105,7 +110,7 @@ int main (int argc, char * argv[])
 		}
 
 		window->clear();
-		chatlog->draw(enable_textinput, line);
+		chatlog->draw(enable_textinput);
 		window->swap();
 	}
 

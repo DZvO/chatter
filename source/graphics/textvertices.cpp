@@ -22,16 +22,23 @@ TextVertices::~TextVertices()
 
 glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, float b)
 {
-	str = msg;
 	using glm::vec3; using glm::vec2;
+	vec3 rgb = vec3(r, g, b);
 	vec2 rv = vec2(0, 0);
 
 	//vertexCount = msg.length() * 4;
 	vertexCount = 0;
 	for(unsigned int i = 0; msg[i] != '\0'; i++)
 	{
-		if(msg[i] != ' ')
+		if(msg[i] == ' ') {	}
+		else if(msg[i] == 0xff)
+		{
+			i += 6;//skip the next 6 (2*3) bytes of color information
+		}
+		else
+		{
 			vertexCount++;
+		}
 	}
 	vertexCount *= 4;
 	if(vertices != NULL)
@@ -65,7 +72,7 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 		 //     +1 y     
 		unsigned char c = msg[i];
 
-		if(c == ' ')
+		if(c == ' ')//add check for color setting stuff
 		{
 			xl = xr;
 			xr += (0.03 * scale);
@@ -78,6 +85,32 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			rv.x = xr;
 			xr = 0;
 			offset = 0.0;
+		}
+		else if(c == 0xff)
+		{
+			std::stringstream ssr;
+			unsigned int r_byte;
+			ssr << std::hex << string(1, msg[i+1]) + string(1, msg[i+2]);
+			ssr >> r_byte;
+
+			std::stringstream ssg;
+			unsigned int g_byte;
+			ssg << std::hex << string(1, msg[i+3]) + string(1, msg[i+4]);
+			ssg >> g_byte;
+
+			std::stringstream ssb;
+			unsigned int b_byte;
+			ssb << std::hex << string(1, msg[i+5]) + string(1, msg[i+6]);
+			ssb >> b_byte;
+
+			//cout << "r " << r_byte << endl;
+			//cout << "g " << g_byte << endl;
+			//cout << "b " << b_byte << endl;
+
+			rgb.r = double(r_byte) / double(0xff);
+			rgb.g = double(g_byte) / double(0xff);
+			rgb.b = double(b_byte) / double(0xff);
+			i += 6;
 		}
 		else
 		{
@@ -112,19 +145,19 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 
 			vertex_t lowerleft = vertex_t(vec3(xl, yl, 0),
 					vec2(texxleft, texylower),
-					vec3(r, g, b));
+					vec3(rgb.r, rgb.g, rgb.b));
 
 			vertex_t lowerright = vertex_t(vec3(xr, yl, 0),
 					vec2(texxright, texylower),
-					vec3(r, g, b));
+					vec3(rgb.r, rgb.g, rgb.b));
 
 			vertex_t upperright = vertex_t(vec3(xr, yu, 0),
 					vec2(texxright, texyupper),
-					vec3(r, g, b));
+					vec3(rgb.r, rgb.g, rgb.b));
 
 			vertex_t upperleft = vertex_t(vec3(xl, yu, 0),
 					vec2(texxleft, texyupper),
-					vec3(r, g, b));
+					vec3(rgb.r, rgb.g, rgb.b));
 
 			vertices[vertex++] = lowerleft;
 			vertices[vertex++] = lowerright;
