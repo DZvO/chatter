@@ -1,5 +1,5 @@
 #include "socket.hpp"
-Socket::Socket(unsigned short port, bool bind) : m_address("localhost", port)
+Socket::Socket(unsigned short port, bool bind) : m_address("::1", port)
 {
 	/*if(bind)
 		{
@@ -43,12 +43,12 @@ Socket::Socket(unsigned short port, bool bind) : m_address("localhost", port)
 	}
 }
 
-int Socket::send(const char* input, int length, Address receiver)
+int Socket::send(const char * input, unsigned int length, const Address * receiver)
 {
 	//return helper::send(input.c_str(), 0, input.length(), &receiver.addr, receiver.addr_len, sockfd);
 	int sentBytes = 0;
 
-	if((sentBytes = sendto(sockfd, input, length, 0, (struct sockaddr*)&receiver.addr, receiver.addr_len)) == -1)
+	if((sentBytes = sendto(sockfd, input, length, 0, (struct sockaddr*)&receiver->addr, receiver->addr_len)) == -1)
 	{
 		perror("ERROR:sendto | ");
 		cerr << endl;
@@ -56,115 +56,85 @@ int Socket::send(const char* input, int length, Address receiver)
 	return sentBytes;
 }
 
-int Socket::receive(unsigned char*& output, Address& sender)
+int Socket::receive(unsigned char * output, unsigned int output_cap, Address * sender)
 {
 	int recvBytes = 0;
 	//unsigned char* buffer = new unsigned char[MAX_BUF_LEN];
-	sender.addr_len = sizeof(sender.addr);
-	recvBytes = recvfrom(sockfd, output, MAX_BUF_LEN, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
-	sender.addr_len = sizeof(sender.addr);
-	return recvBytes;
-}
-
-int Socket::send(const string input, Address receiver)
-{
-	return send(input.c_str(), input.length(), receiver);
-}
-
-int Socket::receive(string& output, Address& sender)
-{
-	//TODO cant wrap my head around why this wont work :[
-	/*char* buffer = NULL;
-	int length = 0;
-	this->receive(buffer, length, sender);
-	if(buffer != NULL)
+	if(sender != NULL)
 	{
-		output = buffer;
+		sender->addr_len = sizeof(sender->addr);
+		recvBytes = recvfrom(sockfd, output, output_cap, 0, (struct sockaddr*)&sender->addr, &sender->addr_len);
+		sender->addr_len = sizeof(sender->addr);
+		sender->port = m_address.port;
 	}
-	return length;*/
-	/*char* recvd = NULL;
-	int length = 0;
-	int retVal = receive(recvd, length, sender);
-	if(retVal > 0)
+	else
 	{
-		output = recvd;
-	}
-	return retVal;*/
-
-	/*int recvBytes = 0;
-	char buffer[AGREED_BUF_SIZE];
-	sender.addr_len = sizeof(sender.addr);
-	recvBytes = recvfrom(sockfd, buffer, MAX_BUF_LEN - 1, 0, (struct sockaddr*)&sender.addr, &sender.addr_len);
-	if(recvBytes > 0)
-	{
-		buffer[recvBytes] = '\0';
-		output = buffer;
+		recvBytes = recvfrom(sockfd, output, output_cap, 0, NULL, NULL);
 	}
 	return recvBytes;
-	*/
-	cout << "ERROR: Not implemented." << endl;
-	return 0;
 }
 
-void Socket::send(Buffer& buf, Address receiver)
+void Socket::send(const Packet * pkt, const Address * to)
 {
-	unsigned int checksum = buf.getChecksum();	//dont need to use htonl/ntohl because i use bit shifting ?
-	unsigned short timestamp = 0;	//value that gets incremented every packet (1024 bytes)
-	unsigned short flags = 0;	//flags, for example what the data should be used for TODO currently un-used -> use for re-send requests?
+	unsigned char * buffer = new unsigned char [1024];
+	memset(buffer, 0, 1024);
 
-	unsigned int packet_size = PACKET_SIZE;
-	unsigned int payload_size = PAYLOAD_SIZE;
-	unsigned int header_size = HEADER_SIZE;
+	buffer[0] = (pkt->flags);
+	buffer[1] = (0x000000ff & pkt->identifier) >> 0;
+	buffer[2] = (0x0000ff00 & pkt->identifier) >> 8;
+	buffer[3] = (0x00ff0000 & pkt->identifier) >> 16;
+	buffer[4] = (0xff000000 & pkt->identifier) >> 24;
 
-	std::list<Packet*>* list = buf.getPackets();
-	std::list<Packet*>::iterator it;
-	for(it = list->begin(); it != list->end(); it++)
-	{
-		char* payload = (*it)->payload;
+	buffer[5] = (0x00ff & pkt->number) >> 0;
+	buffer[6] = (0xff00 & pkt->number) >> 8;
 
-		char* packet = new char[packet_size];
-		//memset(packet, 0, packet_size);
+	buffer[7] = (0x00ff & pkt->packet_count) >> 0;
+	buffer[8] = (0xff00 & pkt->packet_count) >> 8;
 
-		packet[0] = (checksum & 0x000000ff);
-		packet[1] = (checksum & 0x0000ff00) >> 8;
-		packet[2] = (checksum & 0x00ff0000) >> 16;
-		packet[3] = (checksum & 0xff000000) >> 24;
-
-		packet[4] = (timestamp & 0x00ff);
-		packet[5] = (timestamp & 0xff00) >> 8;
-		
-		packet[6] = (flags & 0x00ff);
-		packet[7] = (flags & 0xff00) >> 8;
-
-		memcpy(packet + header_size, payload, payload_size);
-
-		this->send(packet, packet_size, receiver);
-		/*for(unsigned int i = 0; i < packet_size; i++)
-		{
-			if(packet[i] != 0)
-				cout << "sent \"" << (int)packet[i] << "\"\n";
-		}*/
-		delete [] packet;
-		timestamp++;
-	}
+	memcpy(buffer + HEADER_SIZE, (unsigned char*)pkt->payload, PAYLOAD_SIZE);
+	//cout << "sent" << endl;
+	//cout << (const char*)buffer + HEADER_SIZE << endl;
+	//cout << endl;
+	this->send((char*)buffer, 1024, to);
+	delete [] buffer;
 }
 
-int Socket::receive(Buffer& buf, Address& sender)
+int Socket::receive(Packet * pkt, Address * from)
 {
-	unsigned char* data = new unsigned char[MAX_BUF_LEN];
-	int recvBytes = this->receive(data, sender);
-	if(recvBytes > 0)
+	unsigned char * buffer = new unsigned char [1024];
+	memset(buffer, 0, 1024);
+	int rv = this->receive(buffer, 1024, from);
+	if(rv > 0)
 	{
-		/*for(int i = 0; i < recvBytes; i++)
-		{
-			if(data[i] != 0)
-				clog << "recv \"" << (int)data[i] << "\"\n";
-		}*/
-		buf.add(data);//be naive and pretend we always receive the complete packet?
-		//clog << "received " << recvBytes << " bytes(should be: " << PACKET_SIZE << ")" << '\n';
+	//cout << "recvd" << endl;
+	//cout << (const char*)buffer+HEADER_SIZE << endl;
+	//cout << endl;
+		pkt->flags = buffer[0];
+		pkt->identifier = (buffer[1]) | (buffer[2] << 8) | (buffer[3] << 16) | (buffer[4] << 24);
+		pkt->number = (buffer[5]) | (buffer[6] << 8);
+		pkt->packet_count = (buffer[7]) | (buffer[8] << 8);
+		memcpy(pkt->payload, buffer + HEADER_SIZE, PAYLOAD_SIZE);
 	}
-	delete [] data;
-	return recvBytes;
+	delete [] buffer;
+	return rv;
+}
+
+void Socket::send (const SendBuffer * buf, const Address * to)
+{
+	unsigned int checksum = ((SendBuffer*)buf)->getChecksum();
+	list<unsigned char*>::iterator it = ((SendBuffer*)buf)->getPackets()->begin();
+	for(unsigned int i = 0; i < ((SendBuffer*)buf)->getPacketCount(); i++)
+	{
+		Packet sendPacket;
+		sendPacket.allocate();
+		sendPacket.identifier = checksum;
+		sendPacket.number = i;
+		sendPacket.packet_count = ((SendBuffer*)buf)->getPacketCount();
+		sendPacket.payload = (*it);
+
+		send(&sendPacket, to);
+		it++;
+	}
 }
 
 void Socket::close()

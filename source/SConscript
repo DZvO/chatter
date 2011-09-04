@@ -22,7 +22,7 @@ def splitter(folder, files):
 
 # -- libs --
 libnetwork = env.Clone()
-libnetwork.Library('network', splitter("network/", "address buffer socket"))
+libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
 libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog"), LIBS=['GL', 'GLEW', 'SDL', 'SDL_image'])
@@ -37,12 +37,8 @@ libchat = env.Clone()
 libchat.Library('chat', splitter("chat/", "message"))
 # -- ---- --
 
-
-client = env.Clone()
-client.Program('server.cpp', LIBS=['network'])
-
 guiclient = env.Clone()
 guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
-client.Program('client.cpp', LIBS=['network'])
+server.Program('server.cpp', LIBS=['network'])

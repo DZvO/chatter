@@ -9,7 +9,13 @@ using namespace std;
 
 #include "graphics/window.hpp"
 #include "input/input.hpp"
+
 #include "network/socket.hpp"
+#include "network/packet.hpp"
+#include "network/receivebuffer.hpp"
+#include "network/receivebuffermanager.hpp"
+#include "network/sendbuffer.hpp"
+
 #include "time/cooldown.hpp"
 
 #include "chat/message.hpp"
@@ -32,25 +38,34 @@ int main (int argc, char * argv[])
 
 	Chatlog * chatlog = new Chatlog(window);
 
-	//	BufferManager * man = new BufferManager();
 	Socket * socket = new Socket(1337);
+
+	ReceiveBufferManager * man = new ReceiveBufferManager();
+	Packet * packet_buffer = new Packet();
+	packet_buffer->allocate();
 
 	while(input->closeRequested() == false)
 	{
 		// network ------------------
-		/*		if(sokket->receive(man))//TODO
+		if(socket->receive(packet_buffer, NULL) > 1)
+		{
+			man->add(packet_buffer);
+			if(man->hasCompleted())
+			{
+				ReceiveBuffer * complete = man->getCompleted();
+				Message * recvd = new Message();
+				recvd->by = complete->getString();
+				recvd->text = complete->getString();
+				chatlog->add(recvd);
 
-					if(man->bufferCompleted())//TODO
-					{
-					Buffer * fresh = man->getCompletedBuffer();//TODO
-					Message * lastMessage = new Message();
-					lastMessage->by = fresh->getString();
-					lastMessage->text = fresh->getString();
-					chatlog->add(lastMessage);
-					delete fresh;
-					}
-		*/
+				delete complete;
+				delete packet_buffer;
+				packet_buffer = new Packet();
+				packet_buffer->allocate();
+			}
+		}
 		//	--------------------------
+
 		while(input->refresh())
 		{
 			if(input->isPressed(Input::kEnter))
@@ -60,17 +75,16 @@ int main (int argc, char * argv[])
 					if((*line) != "")
 					{
 						Message * sendMessage = new Message();
-						sendMessage->by = "\xff""ff6000" "DerZauberer" "\xff""ffffff";
+						sendMessage->by = "DerZauberer"; //ff6000
 						sendMessage->text = *line;
 						chatlog->add(sendMessage);
+						cout << "added " << *line << endl;
 
-						Buffer * sendBuf = new Buffer();
-						sendBuf->addString(sendMessage->by);
-						sendBuf->addString(sendMessage->text);
-
-						Address target("localhost", 1337);
-						socket->send(*sendBuf, target);
-						delete sendBuf;
+						Address target("::1", 1337);
+						SendBuffer sendBuffer;
+						sendBuffer.addString(sendMessage->by);
+						sendBuffer.addString(sendMessage->text);
+						socket->send(&sendBuffer, &target);
 					}
 					delete line;
 					input->disableTextmode();
@@ -85,7 +99,7 @@ int main (int argc, char * argv[])
 					line = new std::string();
 					chatlog->setLine(line);
 				}
-				//cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
+				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
 			else
 			{

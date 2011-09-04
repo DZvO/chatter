@@ -119,13 +119,26 @@ Chatlog::~Chatlog()
 		delete *it;
 	}
 	delete message_list;
+
+	for(list<TextVertices*>::iterator it = vertices_list->begin(); it != vertices_list->end(); it++)
+	{
+		delete *it;
+	}
+	delete vertices_list;
 }
 
 void Chatlog::add (Message * msg)
 {
 	message_list->push_back(msg);
 	TextVertices * tv  = new TextVertices(window, font, kerning);
-	tv->upload(msg->by + string("\xff""424242"": ""\xff""ffffff") + msg->text, 1.5);
+	tv->upload(msg->by + string("\xff""424242"" ""\xff""ffffff") + msg->text, 1.0);
+	vertices_list->push_back(tv);
+}
+
+void Chatlog::add (const std::string * str)
+{
+	TextVertices * tv = new TextVertices(window, font, kerning);
+	tv->upload(*str, 1.0);
 	vertices_list->push_back(tv);
 }
 
@@ -175,14 +188,11 @@ void Chatlog::draw(bool draw_input_box)
 		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
+		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+
 		glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
 		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
 		glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-
-		glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
-		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
 		glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
@@ -195,7 +205,7 @@ void Chatlog::setLine(const string * input)
 {
 	//this->line = input;
 	string line = string("\xff""858585""> ""\xff""ffffff") + *input;
-	line_vertices->upload(line, 1.5);
+	line_vertices->upload(line, 1.0);
 }
 
 //private

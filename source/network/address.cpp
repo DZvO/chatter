@@ -12,7 +12,7 @@ Address::Address(string targetAddr, unsigned short port)
 	struct addrinfo hints, *servinfo;
 	memset(&hints, 0, sizeof(hints));
 	//hints.ai_family = AF_UNSPEC; 
-	hints.ai_family = AF_INET; //TODO preffer IPv6 when widespread deployment arrived
+	hints.ai_family = AF_UNSPEC; //TODO preffer IPv6 when widespread deployment arrived
 	hints.ai_socktype = SOCK_DGRAM;
 	//hints.ai_flags = AI_PASSIVE; //optional? hints will be used to bind()
 	
@@ -32,11 +32,25 @@ Address::Address(string targetAddr, unsigned short port)
 std::ostream& operator<< (std::ostream& stream, const Address adr)
 {
 	char addressBuffer[INET6_ADDRSTRLEN];
-	if(inet_ntop(AF_INET, Helper::getInAddr((sockaddr*)&adr.addr), addressBuffer, INET6_ADDRSTRLEN) != NULL)
+	if(inet_ntop(adr.addr.ss_family, Helper::getInAddr((sockaddr*)&adr.addr), addressBuffer, INET6_ADDRSTRLEN) != NULL)
 	{
-		stream << "{family: " << adr.addr.ss_family << ',';
-		stream << "port: " << adr.port << ',';
-		stream << "addr: " << (const char*) addressBuffer << '}';
+		/*stream << "{family: ";
+		switch(adr.addr.ss_family)
+		{
+			case AF_INET:
+				stream << "IPv4";
+				break;
+			case AF_INET6:
+				stream << "IPv6";
+				break;
+			default:
+				stream << "UNSPEC";
+				break;
+		}*/
+		//stream << ", ";
+		//stream << "port: " << adr.port << ", ";
+		//stream << "addr: " << (const char*) addressBuffer << '}';
+		stream << "[" << (const char*) addressBuffer << "]:" << adr.port;
 	}
 	else
 	{
@@ -44,4 +58,3 @@ std::ostream& operator<< (std::ostream& stream, const Address adr)
 	}
 	return stream;
 }
-

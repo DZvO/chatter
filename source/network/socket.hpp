@@ -25,12 +25,12 @@
 using namespace std;
 
 #include "helper.hpp"
-#include "buffer.hpp"
-#include "address.hpp"
-#include "buffermanager.hpp"
+#include "network/packet.hpp"
+#include "network/address.hpp"
+#include "network/sendbuffer.hpp"
+#include "network/receivebuffer.hpp"
 
-extern const unsigned int AGREED_BUF_SIZE;
-extern const unsigned int MAX_BUF_LEN;
+extern const unsigned short MAX_BUF_SIZE;
 
 extern const unsigned short HEADER_SIZE; 
 extern const unsigned short PACKET_SIZE; 
@@ -41,15 +41,16 @@ class Socket //'heavily abstracted and oo class :)
 	public:
 		Socket(unsigned short port = 1337, bool bind = false);
 
-		int send(const char* input, int length, Address receiver);
-		int receive(unsigned char*& output, Address& sender);//length should always be PACKET_SIZE
+		int send(const char * input, unsigned int length, const Address * receiver);
+		int receive(unsigned char * output, unsigned int output_cap, Address * sender);//length should always be PACKET_SIZE
 
-		int send(const string input, Address receiver);
-		int receive(string& output, Address& sender);//dumb, because std::string wont save through '0'
+		void send(const Packet * pkt, const Address * to);
+		int receive(Packet * pkt, Address * from);
 
-		void send(Buffer& buf, Address to);//sends buf
-		int receive(Buffer& buf, Address& from);//return buf
-		int receive(BufferManager * man);//TODO
+		void send (const SendBuffer * buf, const Address * to);
+		//int receive (ReceiveBuffer * buf, Address * from);
+		//void send(const Buffer * buf, const Address * to);
+		//int receive(Buffer * buf, Address * from);
 
 		void close();
 
