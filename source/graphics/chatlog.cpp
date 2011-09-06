@@ -95,9 +95,9 @@ Chatlog::Chatlog(Window * window)
 
 	fontTexUniform = glGetUniformLocation(programPointer, "texture");
 
-	cout << "ProjectionUniform: " << projectionUniform << " ViewUniform:" << viewUniform << " ModelUniform:" << modelUniform << " FontTexUniform:" << fontTexUniform << endl;
-	cout << "ProgramPointer: " << programPointer << " VertexPointer: " << vertexPointer << " FragmentPointer: " << fragmentPointer << endl;
-	cout << "PositionAttrib: " << positionAttrib << " TexCoordAttrib: " << texcoordAttrib << " ColorAttrib:" << colorAttrib << endl;
+	//cout << "ProjectionUniform: " << projectionUniform << " ViewUniform:" << viewUniform << " ModelUniform:" << modelUniform << " FontTexUniform:" << fontTexUniform << endl;
+	//cout << "ProgramPointer: " << programPointer << " VertexPointer: " << vertexPointer << " FragmentPointer: " << fragmentPointer << endl;
+	//cout << "PositionAttrib: " << positionAttrib << " TexCoordAttrib: " << texcoordAttrib << " ColorAttrib:" << colorAttrib << endl;
 
 	view = glm::mat4(1.0);
 	model = glm::mat4(1.0);
@@ -130,9 +130,14 @@ Chatlog::~Chatlog()
 void Chatlog::add (Message * msg)
 {
 	message_list->push_back(msg);
-	TextVertices * tv  = new TextVertices(window, font, kerning);
-	tv->upload(msg->by + string("\xff""424242"" ""\xff""ffffff") + msg->text, 1.0);
-	vertices_list->push_back(tv);
+
+	TextVertices * text = new TextVertices(window, font, kerning);
+	text->upload(msg->text, 1.0, (unsigned char)((msg->text_color & 0x00ff0000) >> 16), (unsigned char)((msg->text_color & 0x0000ff00) >> 8), (unsigned char)(msg->text_color & 0x000000ff));
+	vertices_list->push_front(text);
+
+	TextVertices * by  = new TextVertices(window, font, kerning);
+	by->upload(msg->by, 1.0, (unsigned char)((msg->by_color & 0x00ff0000) >> 16), (unsigned char)((msg->by_color & 0x0000ff00) >> 8), (unsigned char)(msg->by_color & 0x000000ff));
+	vertices_list->push_front(by);
 }
 
 void Chatlog::add (const std::string * str)
@@ -142,9 +147,8 @@ void Chatlog::add (const std::string * str)
 	vertices_list->push_back(tv);
 }
 
-void Chatlog::draw(bool draw_input_box)
+void Chatlog::draw()
 {
-	//cout << "draw" << endl;
 	glUseProgram(programPointer);
 	glUniform1i(fontTexUniform, 0);
 	glActiveTexture(GL_TEXTURE0);
@@ -152,7 +156,7 @@ void Chatlog::draw(bool draw_input_box)
 
 	glm::vec2 position = this->position;
 
-	if(draw_input_box && line_vertices->getVertexCount() > 0)
+	if(line_vertices->getVertexCount() > 0)
 	{
 		position.y -= line_vertices->getSize()->y;
 
@@ -177,34 +181,61 @@ void Chatlog::draw(bool draw_input_box)
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	for(list<TextVertices*>::iterator it = vertices_list->end(); it != vertices_list->begin();)
+	for(list<TextVertices*>::iterator it = vertices_list->begin(); it != vertices_list->end(); it++)
 	{
-		--it; //are you fucking kidding me? past-the-end iterator? seriously, i can't believe it. and you can't even use "list->end() - 1" because the dammn STL has no such thing for a list. why? because it would be O(n) instead of O(1) grrrrr
 		position.y -= (*it)->getSize()->y;//TODO add check if we are beyond size, and ignore the remaining lines
 
-		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
-		glm::mat4 translated_view = glm::translate(view, glm::vec3(position, 0.0));
-		glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(translated_view));
-		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
+			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
+			glm::mat4 translated_model = glm::translate(model, glm::vec3(position, 0.0));
+			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
-		glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
-		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+		//by
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
+			glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
-		glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
-		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
-		glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
+			glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
+			glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
+			glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 
-		glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
+			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
-		glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+
+		//text
+		{
+			glm::vec2 position_text = position;
+			position_text.x += (*it)->getSize()->x + 0.03;
+
+			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
+			glm::mat4 translated_model = glm::translate(model, glm::vec3(position_text, 0.0));
+			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
+
+			it++;
+
+			glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
+			glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+
+			glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
+			glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
+			glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
+
+			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
+
+			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
 	}
 }
 
-void Chatlog::setLine(const string * input)
+void Chatlog::setLine(const string & input)
 {
 	//this->line = input;
-	string line = string("\xff""858585""> ""\xff""ffffff") + *input;
+	string line = input;
 	line_vertices->upload(line, 1.0);
 }
 

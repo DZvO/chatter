@@ -26,6 +26,14 @@ using namespace std;
 #include <graphics/glm/gtx/projection.hpp>
 #include <graphics/glm/gtc/type_ptr.hpp>
 
+enum STATE
+{
+	NORMAL, NAME_ENTRY, COLOR_ENTRY
+} state = NAME_ENTRY;
+
+const string name_entry_line = "Hey, Listen! Press 'enter' and enter your name!";
+const string color_entry_line = "Hey, Listen! Enter your color, or press enter twice to leave it at ffffff";
+
 int main (int argc, char * argv[])
 {
 	Window * window = new Window();
@@ -37,6 +45,9 @@ int main (int argc, char * argv[])
 	std::string * line = NULL;
 
 	Chatlog * chatlog = new Chatlog(window);
+	chatlog->setLine(name_entry_line);
+	string name;
+	unsigned int color;
 
 	Socket * socket = new Socket(1337);
 
@@ -55,7 +66,9 @@ int main (int argc, char * argv[])
 				ReceiveBuffer * complete = man->getCompleted();
 				Message * recvd = new Message();
 				recvd->by = complete->getString();
+				recvd->by_color = 0x424242;
 				recvd->text = complete->getString();
+				recvd->text_color = 0x858585;
 				chatlog->add(recvd);
 
 				delete complete;
@@ -74,30 +87,47 @@ int main (int argc, char * argv[])
 				{
 					if((*line) != "")
 					{
-						Message * sendMessage = new Message();
-						sendMessage->by = "DerZauberer"; //ff6000
-						sendMessage->text = *line;
-						chatlog->add(sendMessage);
-						cout << "added " << *line << endl;
+						if(state == NORMAL)
+						{
+							Message * sendMessage = new Message();
+							sendMessage->by = name;
+							sendMessage->by_color = 0xff6000;
+							sendMessage->text = *line;
+							chatlog->add(sendMessage);
 
-						Address target("::1", 1337);
-						SendBuffer sendBuffer;
-						sendBuffer.addString(sendMessage->by);
-						sendBuffer.addString(sendMessage->text);
-						socket->send(&sendBuffer, &target);
+							Address target("::1", 1337);
+							SendBuffer sendBuffer;
+							sendBuffer.addString(sendMessage->by);
+							//sendBuffer.addInt(sendMessage->by_color);
+							sendBuffer.addString(sendMessage->text);
+							//sendBuffer.addInt(sendMessage->text_color);
+							socket->send(&sendBuffer, &target);
+
+							chatlog->setLine("");
+						}
+						else if(state == NAME_ENTRY)
+						{
+							name = *line;
+							//state = COLOR_ENTRY;
+							state = NORMAL;
+							chatlog->setLine("You can now chat freely, simply press enter!");
+						}
+						else if(state == COLOR_ENTRY)
+						{
+							state = NORMAL;
+							//cout << "your color is " << color << endl;
+						}
 					}
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
-					string empty = "";
-					chatlog->setLine(&empty);
 				}
 				else
 				{
 					enable_textinput = true;
 					input->enableTextmode();
 					line = new std::string();
-					chatlog->setLine(line);
+					chatlog->setLine("\xff""424242""> ");
 				}
 				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
@@ -111,12 +141,12 @@ int main (int argc, char * argv[])
 						if(c == '\b')
 						{
 							*line = line->substr(0, line->size() - 1); //substract last character because backspace was pressed
-							chatlog->setLine(line);
+							chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
 						}
 						else
 						{
 							(*line) += c;
-							chatlog->setLine(line);
+							chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
 						}
 					}
 				}
@@ -124,7 +154,7 @@ int main (int argc, char * argv[])
 		}
 
 		window->clear();
-		chatlog->draw(enable_textinput);
+		chatlog->draw();
 		window->swap();
 	}
 

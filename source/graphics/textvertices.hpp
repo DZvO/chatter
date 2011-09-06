@@ -25,6 +25,7 @@ class TextVertices
 	~TextVertices();
 
 	glm::vec2 upload(std::string msg, double scale = 1.0, float r = 1.0, float g = 1.0, float b = 1.0); //returns width and height used
+	glm::vec2 upload(std::string msg, double scale, unsigned char r, unsigned char g, unsigned char b); //returns width and height used
 
 	void setPosition(glm::vec2 pos);
 	const glm::vec2 * getPosition();

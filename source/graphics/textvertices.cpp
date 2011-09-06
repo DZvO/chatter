@@ -179,12 +179,21 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);*/
 	//return glm::vec2(0.05 * msg.length() + 0.05, 0.1);
 	rv.y = yl;
+	rv.x = xr;
 	this->size = rv;
 	return rv;
 }
 
-/*void TextVertices::draw()
+glm::vec2 TextVertices::upload(std::string msg, double scale, unsigned char r, unsigned char g, unsigned char b)
 {
+	float rf = double(r) / double(0xff);
+	float gf = double(g) / double(0xff);
+	float bf = double(b) / double(0xff);
+	return upload(msg, scale, rf, gf, bf);
+}
+
+/*void TextVertices::draw()
+	{
 	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*projection));
 	glm::mat4 tm = glm::translate(view, glm::vec3(pos, 0.0));
 	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(tm));
@@ -195,10 +204,10 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
 	glDrawArrays(GL_QUADS, 0, vertexCount);
-	
+
 	glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}*/
+	}*/
 
 void TextVertices::setPosition(glm::vec2 position)
 {

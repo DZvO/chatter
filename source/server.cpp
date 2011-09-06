@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
 				response.addString("Navi");
 				response.addString(string("hey listen! you wrote: ") + text);
 				socket->send(&response, sender);
-
 			}
 
 			//loop = false;
