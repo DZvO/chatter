@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <cstdlib>
+#include <cstdio>
+#include <ctime>
 using namespace std;
 
 #include "network/packet.hpp"
@@ -24,13 +27,15 @@ class SendBuffer //add* functions
 
 	list<unsigned char*> * getPackets ();
 	unsigned short getPacketCount ();
-	unsigned int getChecksum ();
+	//unsigned int getChecksum ();
+	unsigned int getIdentifier ();
 
 	private:
 	list<unsigned char*> packets;
 	unsigned short packetPutPointer;
 	unsigned short payloadPutPointer;
 	unsigned short packetCount;
+	unsigned int identifier;
 };
 
 #endif

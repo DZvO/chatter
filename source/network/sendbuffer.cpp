@@ -3,6 +3,9 @@
 SendBuffer::SendBuffer ()
 {
 	packetPutPointer = payloadPutPointer = packetCount = 0;
+
+	srand(time(NULL));
+	identifier = rand();
 }
 
 SendBuffer::~SendBuffer ()
@@ -50,7 +53,7 @@ unsigned short SendBuffer::getPacketCount ()
 	return packetCount;
 }
 
-unsigned int SendBuffer::getChecksum ()
+/*unsigned int SendBuffer::getChecksum ()
 {
 	unsigned int check = 0;
 	for(list<unsigned char*>::iterator it = packets.begin(); it != packets.end(); it++)
@@ -61,4 +64,9 @@ unsigned int SendBuffer::getChecksum ()
 		}
 	}
 	return check;
+}*/
+
+unsigned int SendBuffer::getIdentifier ()
+{
+	return identifier;
 }

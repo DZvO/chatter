@@ -14,6 +14,7 @@ class Packet
 {
 	public:
 	unsigned char flags; 				//1
+	//unsigned char type;
 	unsigned int identifier;		//5
 	unsigned short number;			//7
 	unsigned short packet_count;//9 bytes
@@ -22,6 +23,9 @@ class Packet
 	Packet ()
 	{
 		flags = identifier = number = packet_count = 0;
+		if(HEADER_SIZE != (sizeof(flags) + sizeof(identifier) + sizeof(number) + sizeof(packet_count)))
+				cout << "warning: HEADER_SIZE is of the wrong size" << endl;
+		//type = flags = 0;
 		payload = NULL;
 	}
 	~Packet ()

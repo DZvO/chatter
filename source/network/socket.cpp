@@ -121,13 +121,13 @@ int Socket::receive(Packet * pkt, Address * from)
 
 void Socket::send (const SendBuffer * buf, const Address * to)
 {
-	unsigned int checksum = ((SendBuffer*)buf)->getChecksum();
+	unsigned int identifier = ((SendBuffer*)buf)->getIdentifier();
 	list<unsigned char*>::iterator it = ((SendBuffer*)buf)->getPackets()->begin();
 	for(unsigned int i = 0; i < ((SendBuffer*)buf)->getPacketCount(); i++)
 	{
 		Packet sendPacket;
 		sendPacket.allocate();
-		sendPacket.identifier = checksum;
+		sendPacket.identifier = identifier;
 		sendPacket.number = i;
 		sendPacket.packet_count = ((SendBuffer*)buf)->getPacketCount();
 		sendPacket.payload = (*it);
