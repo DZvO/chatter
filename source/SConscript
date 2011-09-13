@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-env = Environment(CXX = 'g++', CXXFLAGS = '-O0 -Wall -g', LIBPATH='.', CPPPATH='.')
+env = Environment(CXX = 'g++', CXXFLAGS = '-O0 -Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.')
 conf = Configure(env)
 
 if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):

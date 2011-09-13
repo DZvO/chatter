@@ -32,7 +32,7 @@ enum STATE
 } state = NAME_ENTRY;
 
 const string name_entry_line = "Hey, Listen! Press 'enter' and enter your name!";
-const string color_entry_line = "Hey, Listen! Enter your color, or press enter twice to leave it at ffffff";
+const string color_entry_line = "Hey, Listen! Enter your color, or press enter twice to leave it at ffffff (white)";
 
 int main (int argc, char * argv[])
 {
@@ -49,7 +49,12 @@ int main (int argc, char * argv[])
 	string name;
 	unsigned int color;
 
+	Address server("192.168.2.100", 1337);
 	Socket * socket = new Socket(1337);
+	Packet * connect_packet = new Packet();
+	connect_packet->allocate();
+	connect_packet->type = Packet::CONNECT_PACKET;
+	socket->send(connect_packet, &server);
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
 	Packet * packet_buffer = new Packet();
@@ -69,6 +74,7 @@ int main (int argc, char * argv[])
 				recvd->by_color = 0x424242;
 				recvd->text = complete->getString();
 				recvd->text_color = 0x858585;
+				cout << recvd->by << ": " << recvd->text << endl;
 				chatlog->add(recvd);
 
 				delete complete;
@@ -95,13 +101,12 @@ int main (int argc, char * argv[])
 							sendMessage->text = *line;
 							chatlog->add(sendMessage);
 
-							Address target("::1", 1337);
 							SendBuffer sendBuffer;
 							sendBuffer.addString(sendMessage->by);
 							//sendBuffer.addInt(sendMessage->by_color);
 							sendBuffer.addString(sendMessage->text);
 							//sendBuffer.addInt(sendMessage->text_color);
-							socket->send(&sendBuffer, &target);
+							socket->send(&sendBuffer, &server);
 
 							chatlog->setLine("");
 						}
@@ -157,6 +162,11 @@ int main (int argc, char * argv[])
 		chatlog->draw();
 		window->swap();
 	}
+
+	Packet * disconnect_packet = new Packet();
+	disconnect_packet->allocate();
+	disconnect_packet->type = Packet::DISCONNECT_PACKET;
+	socket->send(disconnect_packet, &server);
 
 	window->close();
 	delete window;

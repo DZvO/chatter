@@ -1,45 +1,55 @@
 #include "socket.hpp"
-Socket::Socket(unsigned short port, bool bind) : m_address("::1", port)
+Socket::Socket(unsigned short port, bool bind) : m_address("127.0.0.1", 1337)
 {
-	/*if(bind)
-		{
+	if(bind)
+	{
 		int rv = 0;
-		addrinfo hints, *servinfo;
+		struct addrinfo hints, *servinfo;
 		memset(&hints, 0, sizeof(hints));
-		hints.ai_family = AF_UNSPEC;//either ipv4 or ipv6
-		hints.ai_socktype = SOCK_DGRAM;//use udp
-		hints.ai_flags = AI_PASSIVE;//fill in local ip for me
+		hints.ai_family = AF_UNSPEC; //ipv4 or ipv6, let getaddrinfo decide
+		hints.ai_socktype = SOCK_DGRAM; //use udp
+		hints.ai_flags = AI_PASSIVE; //used for bind -> use my ip?
 
-		if((rv = getaddrinfo(NULL, boost::lexical_cast<std::string>(port).c_str(), &hints, &servinfo)) != 0)
+		if((rv = getaddrinfo(NULL, "1337", &hints, &servinfo)) != 0)
 		{
-		cerr << "ERROR: getaddrinfo: " << gai_strerror(rv) << endl;
-		return;
+			cerr << "ERROR : getaddrinfo | " << gai_strerror(rv) << endl;
+			return;
 		}
-		m_address.addr = *((sockaddr_storage*)servinfo->ai_addr);
-		m_address.addr_len = servinfo->ai_addrlen;
-		}*/
-	//cout << "new socket (AF_INET=" << AF_INET << ", AF_INET6=" << AF_INET6 << ")\n";
-	//cout << "socktype " << m_address.addr.ss_family << endl;
-	//m_address = address("localhost", port);
-	//TODO allow to select tcp/udp via enum {TCP, UDP}
-	if((sockfd = ::socket(m_address.addr.ss_family, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-	{
-		cerr << "ERROR:socket | " << endl;
-		return;
-	}
-	if(bind == true)
-	{
-		if(::bind(sockfd, (sockaddr*)&m_address.addr, m_address.addr_len) == -1)
+
+		//if((sockfd = ::socket((*((sockaddr_storage*)servinfo->ai_addr)).ss_family, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+		if((sockfd = ::socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol)) == -1)
+		{
+			cerr << "ERROR:socket | " << endl;
+			return;
+		}
+
+		if(::bind(sockfd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
 		{
 			::close(sockfd);
 			perror("ERROR:bind | ");
 			return;
 		}
+		cout << "bound with " << (servinfo->ai_family == AF_INET ? "ipv4" : "ipv6") << endl;
+
+		if(fcntl(sockfd, F_SETFL, O_NONBLOCK) != 0)
+		{
+			cerr << "ERROR:fcntl | " << endl;
+			return;
+		}
+		freeaddrinfo(servinfo);
 	}
-	if(fcntl(sockfd, F_SETFL, O_NONBLOCK) != 0)
+	else
 	{
-		cerr << "ERROR:fcntl | " << endl;
-		return;
+		if((sockfd = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+		{
+			cerr << "ERROR:socket | " << endl;
+			return;
+		}
+		if(fcntl(sockfd, F_SETFL, O_NONBLOCK) != 0)
+		{
+			cerr << "ERROR:fcntl | " << endl;
+			return;
+		}
 	}
 }
 
@@ -65,7 +75,7 @@ int Socket::receive(unsigned char * output, unsigned int output_cap, Address * s
 		sender->addr_len = sizeof(sender->addr);
 		recvBytes = recvfrom(sockfd, output, output_cap, 0, (struct sockaddr*)&sender->addr, &sender->addr_len);
 		sender->addr_len = sizeof(sender->addr);
-		sender->port = m_address.port;
+		sender->port = 0;
 	}
 	else
 	{
@@ -79,7 +89,7 @@ void Socket::send(const Packet * pkt, const Address * to)
 	unsigned char * buffer = new unsigned char [1024];
 	memset(buffer, 0, 1024);
 
-	buffer[0] = (pkt->flags);
+	buffer[0] = (pkt->type);
 	buffer[1] = (0x000000ff & pkt->identifier) >> 0;
 	buffer[2] = (0x0000ff00 & pkt->identifier) >> 8;
 	buffer[3] = (0x00ff0000 & pkt->identifier) >> 16;
@@ -106,10 +116,10 @@ int Socket::receive(Packet * pkt, Address * from)
 	int rv = this->receive(buffer, 1024, from);
 	if(rv > 0)
 	{
-	//cout << "recvd" << endl;
-	//cout << (const char*)buffer+HEADER_SIZE << endl;
-	//cout << endl;
-		pkt->flags = buffer[0];
+		//cout << "recvd" << endl;
+		//cout << (const char*)buffer+HEADER_SIZE << endl;
+		//cout << endl;
+		pkt->type = buffer[0];
 		pkt->identifier = (buffer[1]) | (buffer[2] << 8) | (buffer[3] << 16) | (buffer[4] << 24);
 		pkt->number = (buffer[5]) | (buffer[6] << 8);
 		pkt->packet_count = (buffer[7]) | (buffer[8] << 8);

@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <list>
 using namespace std;
 
 #include "network/socket.hpp"
@@ -19,6 +20,7 @@ void sleep(unsigned int sec, unsigned int usec)
 int main(int argc, char* argv[])
 {
 	Socket * socket = new Socket(1337, true);
+	list<Address> clients;
 	const char * response = "Hey client!";
 	unsigned int response_size = strlen(response);
 	Packet * packet_buffer = new Packet();
@@ -32,24 +34,47 @@ int main(int argc, char* argv[])
 		if(socket->receive(packet_buffer, sender) > 0)
 		{
 			cout << "received something from " << *sender << endl;
-			//cout << (unsigned int)packet_buffer->flags << " " << packet_buffer->identifier << " " << packet_buffer->number << " " << packet_buffer->packet_count << endl;
-			//cout << (const char*) buffer->payload << endl;
-			recvb->addPacket(packet_buffer);
-			if(recvb->isComplete())
+			//cout << (unsigned int)packet_buffer->type << " " << packet_buffer->identifier << " " << packet_buffer->number << " " << packet_buffer->packet_count << endl;
+			if(packet_buffer->type == Packet::DATA_PACKET)
 			{
-				string by = recvb->getString();
-				string text = recvb->getString();
-				cout << by << ": " << text << endl;
+				//cout << (const char*) buffer->payload << endl;
+				recvb->addPacket(packet_buffer);
+				if(recvb->isComplete())
+				{
+					string by = recvb->getString();
+					string text = recvb->getString();
+					cout << by << ": " << text << endl;
 
-				delete recvb;
-				recvb = new ReceiveBuffer();
+					delete recvb;
+					recvb = new ReceiveBuffer();
 
-				SendBuffer response;
-				response.addString("Navi");
-				response.addString(string("hey listen! you wrote: ") + text);
-				socket->send(&response, sender);
+					SendBuffer response;
+					response.addString("Server");
+					response.addString("hey listen! " + by + " wrote: " + text);
+					for(Address client : clients)
+					{
+						cout << "looped" << endl;
+						socket->send(&response, &client);
+						cout << "sent to " << client << endl;
+					}
+				}
+			}
+			else if(packet_buffer->type == Packet::CONNECT_PACKET)
+			{
+				clients.push_back(*sender);
+				cout << "connect'd!" << *sender << endl;
+				SendBuffer ident;
+				srand(time(NULL));
+				ident.add(rand());
+				socket->send(&ident, &sender);
+			}
+			else if(packet_buffer->type == Packet::DISCONNECT_PACKET)
+			{
+				clients.remove(*sender);
+				cout << "disconnect'd! " << *sender << endl;
 			}
 
+			cout << endl;
 			//loop = false;
 		}
 		else

@@ -27,8 +27,10 @@ class Address
 		struct sockaddr_storage addr;
 		socklen_t addr_len;
 		unsigned short port;
+		std::string addr_str;
 		Address();
 		Address(string targetAddr, unsigned short port = 1337);
+		bool operator == (const Address & a);
 		friend std::ostream& operator<< (std::ostream& stream, const Address adr);
 };
 

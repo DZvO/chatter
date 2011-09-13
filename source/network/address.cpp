@@ -11,8 +11,8 @@ Address::Address(string targetAddr, unsigned short port)
 	int rv = 0;
 	struct addrinfo hints, *servinfo;
 	memset(&hints, 0, sizeof(hints));
-	//hints.ai_family = AF_UNSPEC; 
-	hints.ai_family = AF_UNSPEC; //TODO preffer IPv6 when widespread deployment arrived
+	//hints.ai_family = AF_UNSPEC; //let getaddrinfo decide if we use ipv4 or 6
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	//hints.ai_flags = AI_PASSIVE; //optional? hints will be used to bind()
 	
@@ -22,11 +22,39 @@ Address::Address(string targetAddr, unsigned short port)
 		return;
 	}
 
-	//freeaddrinfo(servinfo);
 	this->port = port;
 	this->addr = *((sockaddr_storage*)servinfo->ai_addr);
 	this->addr_len = servinfo->ai_addrlen;
 	freeaddrinfo(servinfo);
+	this->addr_str = targetAddr;
+}
+
+bool Address::operator == (const Address & a)
+{
+	//TODO
+	unsigned int a_size = sizeof(Helper::getInAddr((sockaddr*)&a.addr));
+	unsigned int my_size = sizeof(Helper::getInAddr((sockaddr*)&addr));
+	bool same = true;
+	if(a_size == my_size && port == a.port)
+	{
+		for(unsigned int i = 0; i < a_size; i++)
+		{
+			if(*((unsigned char*)&a.addr) == *((unsigned char*)&addr))
+			{
+				continue;
+			}
+			else
+			{
+				same = false;
+				break;
+			}
+		}
+	}
+	else
+	{
+		same = false;
+	}
+	return same;
 }
 
 std::ostream& operator<< (std::ostream& stream, const Address adr)
