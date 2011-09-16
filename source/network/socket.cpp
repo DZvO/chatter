@@ -129,22 +129,24 @@ int Socket::receive(Packet * pkt, Address * from)
 	return rv;
 }
 
-void Socket::send (const SendBuffer * buf, const Address * to)
+void Socket::send (const SendBuffer * const buf, const Address * const to)
 {
-	unsigned int identifier = ((SendBuffer*)buf)->getIdentifier();
-	list<unsigned char*>::iterator it = ((SendBuffer*)buf)->getPackets()->begin();
-	for(unsigned int i = 0; i < ((SendBuffer*)buf)->getPacketCount(); i++)
+	unsigned int identifier = buf->getIdentifier();
+	list<unsigned char*>::const_iterator it = buf->getPackets()->begin();
+	Packet * sendpacket = new Packet();
+	for(unsigned int i = 0; i < buf->getPacketCount(); i++)
 	{
-		Packet sendPacket;
-		sendPacket.allocate();
-		sendPacket.identifier = identifier;
-		sendPacket.number = i;
-		sendPacket.packet_count = ((SendBuffer*)buf)->getPacketCount();
-		sendPacket.payload = (*it);
+		sendpacket->identifier = identifier;
+		sendpacket->number = i;
+		sendpacket->packet_count = buf->getPacketCount();
+		sendpacket->payload = (*it);
+		cout << "sent as payload: \"" << (*it) << "\"" << endl;
 
-		send(&sendPacket, to);
+		send(sendpacket, to);
 		it++;
 	}
+	sendpacket->payload = NULL;
+	delete sendpacket;
 }
 
 void Socket::close()

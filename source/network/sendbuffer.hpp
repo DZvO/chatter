@@ -25,10 +25,10 @@ class SendBuffer //add* functions
 	void addDouble (double d);
 	void addString (string s);
 
-	list<unsigned char*> * getPackets ();
-	unsigned short getPacketCount ();
+	const list<unsigned char*> * getPackets () const;
+	unsigned short getPacketCount () const;
 	//unsigned int getChecksum ();
-	unsigned int getIdentifier ();
+	unsigned int getIdentifier () const;
 
 	private:
 	list<unsigned char*> packets;

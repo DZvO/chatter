@@ -47,7 +47,7 @@ class Socket //'heavily abstracted and oo class :)
 		void send(const Packet * pkt, const Address * to);
 		int receive(Packet * pkt, Address * from);
 
-		void send (const SendBuffer * buf, const Address * to);
+		void send (const SendBuffer * const buf, const Address * const to);
 		//int receive (ReceiveBuffer * buf, Address * from);
 		//void send(const Buffer * buf, const Address * to);
 		//int receive(Buffer * buf, Address * from);

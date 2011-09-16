@@ -13,7 +13,7 @@ SendBuffer::~SendBuffer ()
 	unsigned int i = 0;
 	for(list<unsigned char*>::iterator it = packets.begin(); it != packets.end();)
 	{
-		cout << "delete " << i++ << endl;
+		//cout << "delete " << i++ << endl;
 		it++;
 		//delete [] *it;
 	}
@@ -34,6 +34,30 @@ void SendBuffer::addChar (unsigned char c)
 	payloadPutPointer++;
 }
 
+void SendBuffer::addShort (unsigned short s)
+{
+	addChar((s & 0x00ff));
+	addChar((s & 0xff00) >> 8);
+}
+
+void SendBuffer::addInt (unsigned int i)
+{
+	addShort((i & 0x0000ffff));
+	addShort((i & 0xffff0000) >> 16);
+}
+
+void SendBuffer::addLong (unsigned long l)
+{
+}
+
+void SendBuffer::addFloat (float f)
+{
+}
+
+void SendBuffer::addDouble (double d)
+{
+}
+
 void SendBuffer::addString (std::string s)
 {
 	for(unsigned int i = 0; s[i] != '\0'; i++)
@@ -43,30 +67,30 @@ void SendBuffer::addString (std::string s)
 	addChar('\0');
 }
 
-list<unsigned char*> * SendBuffer::getPackets ()
+const list<unsigned char*> * SendBuffer::getPackets () const
 {
 	return &packets;
 }
 
-unsigned short SendBuffer::getPacketCount ()
+unsigned short SendBuffer::getPacketCount () const
 {
 	return packetCount;
 }
 
 /*unsigned int SendBuffer::getChecksum ()
-{
+	{
 	unsigned int check = 0;
 	for(list<unsigned char*>::iterator it = packets.begin(); it != packets.end(); it++)
 	{
-		for(unsigned int i = 0; i < PAYLOAD_SIZE; i++)
-		{
-			check ^= (*it)[i];
-		}
+	for(unsigned int i = 0; i < PAYLOAD_SIZE; i++)
+	{
+	check ^= (*it)[i];
+	}
 	}
 	return check;
-}*/
+	}*/
 
-unsigned int SendBuffer::getIdentifier ()
+unsigned int SendBuffer::getIdentifier () const
 {
 	return identifier;
 }

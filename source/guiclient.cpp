@@ -45,42 +45,54 @@ int main (int argc, char * argv[])
 	std::string * line = NULL;
 
 	Chatlog * chatlog = new Chatlog(window);
-	chatlog->setLine(name_entry_line);
 	string name;
-	unsigned int color;
+	unsigned int color = 0xff6000;
 
 	Address server("192.168.2.100", 1337);
 	Socket * socket = new Socket(1337);
+	Packet * packet_buffer = new Packet();
+	packet_buffer->allocate();
+	unsigned int identifier = 0;
 	Packet * connect_packet = new Packet();
 	connect_packet->allocate();
 	connect_packet->type = Packet::CONNECT_PACKET;
 	socket->send(connect_packet, &server);
+	chatlog->setLine("Waiting for server, please be patient...");
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
-	Packet * packet_buffer = new Packet();
-	packet_buffer->allocate();
 
 	while(input->closeRequested() == false)
 	{
 		// network ------------------
 		if(socket->receive(packet_buffer, NULL) > 1)
 		{
-			man->add(packet_buffer);
-			if(man->hasCompleted())
+			if(packet_buffer->type == Packet::CONNECT_PACKET)
 			{
-				ReceiveBuffer * complete = man->getCompleted();
-				Message * recvd = new Message();
-				recvd->by = complete->getString();
-				recvd->by_color = 0x424242;
-				recvd->text = complete->getString();
-				recvd->text_color = 0x858585;
-				cout << recvd->by << ": " << recvd->text << endl;
-				chatlog->add(recvd);
-
-				delete complete;
+				identifier = (unsigned int)(packet_buffer->payload[0]) | (unsigned int)(packet_buffer->payload[1] << 8) | (unsigned int)(packet_buffer->payload[2] << 16) | (unsigned int)(packet_buffer->payload[3] << 24);
 				delete packet_buffer;
 				packet_buffer = new Packet();
 				packet_buffer->allocate();
+				chatlog->setLine(name_entry_line);
+			}
+			else if(packet_buffer->type == Packet::DATA_PACKET)
+			{
+				man->add(packet_buffer);
+				if(man->hasCompleted())
+				{
+					ReceiveBuffer * complete = man->getCompleted();
+					Message * recvd = new Message();
+					recvd->by = complete->getString();
+					recvd->by_color = complete->getInt();
+					recvd->text = complete->getString();
+					recvd->text_color = complete->getInt();
+					cout << recvd->by << ": " << recvd->text << endl;
+					chatlog->add(recvd);
+
+					delete complete;
+					delete packet_buffer;
+					packet_buffer = new Packet();
+					packet_buffer->allocate();
+				}
 			}
 		}
 		//	--------------------------
@@ -102,10 +114,11 @@ int main (int argc, char * argv[])
 							chatlog->add(sendMessage);
 
 							SendBuffer sendBuffer;
+							sendBuffer.addInt(identifier);
 							sendBuffer.addString(sendMessage->by);
-							//sendBuffer.addInt(sendMessage->by_color);
+							sendBuffer.addInt(sendMessage->by_color);
 							sendBuffer.addString(sendMessage->text);
-							//sendBuffer.addInt(sendMessage->text_color);
+							sendBuffer.addInt(sendMessage->text_color);
 							socket->send(&sendBuffer, &server);
 
 							chatlog->setLine("");
@@ -166,6 +179,11 @@ int main (int argc, char * argv[])
 	Packet * disconnect_packet = new Packet();
 	disconnect_packet->allocate();
 	disconnect_packet->type = Packet::DISCONNECT_PACKET;
+	disconnect_packet->payload[0] = identifier & 0xff;
+	disconnect_packet->payload[1] = (identifier & 0xff00) >> 8;
+	disconnect_packet->payload[2] = (identifier & 0xff0000) >> 16;
+	disconnect_packet->payload[3] = (identifier & 0xff000000) >> 24;
+	cout << "disconnecting with id " << identifier << endl;
 	socket->send(disconnect_packet, &server);
 
 	window->close();

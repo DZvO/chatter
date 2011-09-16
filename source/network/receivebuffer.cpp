@@ -70,6 +70,29 @@ unsigned char ReceiveBuffer::getChar ()
 
 unsigned short ReceiveBuffer::getShort ()
 {
+	unsigned short rv = 0;
+	rv = ((unsigned short)getChar()) | ((unsigned short)getChar() << 8);
+	return rv;
+}
+
+unsigned int ReceiveBuffer::getInt ()
+{
+	unsigned int rv = 0;
+	rv = ((unsigned int)getShort()) | ((unsigned int)getShort() << 16);
+}
+
+unsigned long ReceiveBuffer::getLong ()
+{
+	return 0;
+}
+
+float ReceiveBuffer::getFloat ()
+{
+	return 0;
+}
+
+double ReceiveBuffer::getDouble ()
+{
 	return 0;
 }
 
