@@ -140,7 +140,6 @@ void Socket::send (const SendBuffer * const buf, const Address * const to)
 		sendpacket->number = i;
 		sendpacket->packet_count = buf->getPacketCount();
 		sendpacket->payload = (*it);
-		cout << "sent as payload: \"" << (*it) << "\"" << endl;
 
 		send(sendpacket, to);
 		it++;

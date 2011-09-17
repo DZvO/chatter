@@ -133,18 +133,25 @@ void Chatlog::add (Message * msg)
 
 	TextVertices * text = new TextVertices(window, font, kerning);
 	text->upload(msg->text, 1.0, (unsigned char)((msg->text_color & 0x00ff0000) >> 16), (unsigned char)((msg->text_color & 0x0000ff00) >> 8), (unsigned char)(msg->text_color & 0x000000ff));
-	vertices_list->push_front(text);
+	vertices_list->push_back(text);
 
 	TextVertices * by  = new TextVertices(window, font, kerning);
 	by->upload(msg->by, 1.0, (unsigned char)((msg->by_color & 0x00ff0000) >> 16), (unsigned char)((msg->by_color & 0x0000ff00) >> 8), (unsigned char)(msg->by_color & 0x000000ff));
-	vertices_list->push_front(by);
+	vertices_list->push_back(by);
 }
 
 void Chatlog::add (const std::string * str)
 {
 	TextVertices * tv = new TextVertices(window, font, kerning);
 	tv->upload(*str, 1.0);
-	vertices_list->push_back(tv);
+
+	vertices_list->push_back(NULL);//'text'
+	vertices_list->push_back(tv);//'by'
+}
+
+void Chatlog::add (std::string str)
+{
+	add(&str);
 }
 
 void Chatlog::draw()
@@ -181,7 +188,7 @@ void Chatlog::draw()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	for(list<TextVertices*>::iterator it = vertices_list->begin(); it != vertices_list->end(); it++)
+	for(list<TextVertices*>::reverse_iterator it = vertices_list->rbegin(); it != vertices_list->rend(); it++)
 	{
 		position.y -= (*it)->getSize()->y;//TODO add check if we are beyond size, and ignore the remaining lines
 
@@ -201,7 +208,7 @@ void Chatlog::draw()
 
 			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
-			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+			//glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
@@ -210,24 +217,25 @@ void Chatlog::draw()
 			glm::vec2 position_text = position;
 			position_text.x += (*it)->getSize()->x + 0.03;
 
-			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
-			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
 			glm::mat4 translated_model = glm::translate(model, glm::vec3(position_text, 0.0));
 			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
 			it++;
+			if(*it != NULL)
+			{
 
-			glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
-			glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+				glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
+				//glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
-			glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
-			glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
-			glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
+				glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
+				glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
+				glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 
-			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
+				glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
-			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+				glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
+			}
 		}
 	}
 }

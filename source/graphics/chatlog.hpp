@@ -26,6 +26,7 @@ class Chatlog
 
 	void add(Message * msg);
 	void add(const std::string * str);
+	void add(std::string str);
 
 	void draw();
 	void setLine(const string & input);

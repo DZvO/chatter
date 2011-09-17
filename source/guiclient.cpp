@@ -2,6 +2,8 @@
 #include <string>
 using namespace std;
 
+#include <boost/lexical_cast.hpp>
+
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -26,13 +28,21 @@ using namespace std;
 #include <graphics/glm/gtx/projection.hpp>
 #include <graphics/glm/gtc/type_ptr.hpp>
 
+template<typename T2, typename T1> inline T2 lexical_cast(const T1 &in)
+{
+	T2 out;
+	std::stringstream ss;
+	ss << std::hex << in;
+	ss >> std::hex >> out;
+	return out;
+}
+
 enum STATE
 {
 	NORMAL, NAME_ENTRY, COLOR_ENTRY
 } state = NAME_ENTRY;
 
 const string name_entry_line = "Hey, Listen! Press 'enter' and enter your name!";
-const string color_entry_line = "Hey, Listen! Enter your color, or press enter twice to leave it at ffffff (white)";
 
 int main (int argc, char * argv[])
 {
@@ -107,28 +117,53 @@ int main (int argc, char * argv[])
 					{
 						if(state == NORMAL)
 						{
-							Message * sendMessage = new Message();
-							sendMessage->by = name;
-							sendMessage->by_color = 0xff6000;
-							sendMessage->text = *line;
-							chatlog->add(sendMessage);
+							if((*line)[0] != '/')
+							{
+								Message * sendMessage = new Message();
+								sendMessage->by = name;
+								sendMessage->by_color = color;
+								sendMessage->text = *line;
+								chatlog->add(sendMessage);
 
-							SendBuffer sendBuffer;
-							sendBuffer.addInt(identifier);
-							sendBuffer.addString(sendMessage->by);
-							sendBuffer.addInt(sendMessage->by_color);
-							sendBuffer.addString(sendMessage->text);
-							sendBuffer.addInt(sendMessage->text_color);
-							socket->send(&sendBuffer, &server);
+								SendBuffer sendBuffer;
+								sendBuffer.addInt(identifier);
+								sendBuffer.addString(sendMessage->by);
+								sendBuffer.addInt(sendMessage->by_color);
+								sendBuffer.addString(sendMessage->text);
+								sendBuffer.addInt(sendMessage->text_color);
+								socket->send(&sendBuffer, &server);
 
-							chatlog->setLine("");
+								chatlog->setLine("");
+							}
+							else
+							{
+								if(line->find("/color") != string::npos)
+								{
+									try
+									{
+										color = lexical_cast<unsigned int>(line->substr(7));
+										chatlog->add("\xff""888888""Okay! set color to: ""\xff" + lexical_cast<std::string>(color) + line->substr(7));
+										chatlog->setLine("");
+									}
+									catch(exception & e)
+									{
+										chatlog->setLine("\xff""888888""syntax for /color is '/color rrggbb', where r/g/b is hex");
+									}
+								}
+								else
+								{
+									chatlog->add("\xff""888888""Sorry, don't know what you mean.");
+								}
+							}
 						}
 						else if(state == NAME_ENTRY)
 						{
 							name = *line;
 							//state = COLOR_ENTRY;
 							state = NORMAL;
-							chatlog->setLine("You can now chat freely, simply press enter!");
+							chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
+							chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
+							chatlog->setLine("");
 						}
 						else if(state == COLOR_ENTRY)
 						{
@@ -183,7 +218,6 @@ int main (int argc, char * argv[])
 	disconnect_packet->payload[1] = (identifier & 0xff00) >> 8;
 	disconnect_packet->payload[2] = (identifier & 0xff0000) >> 16;
 	disconnect_packet->payload[3] = (identifier & 0xff000000) >> 24;
-	cout << "disconnecting with id " << identifier << endl;
 	socket->send(disconnect_packet, &server);
 
 	window->close();
