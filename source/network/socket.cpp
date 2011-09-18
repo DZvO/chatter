@@ -101,11 +101,12 @@ void Socket::send(const Packet * pkt, const Address * to)
 	buffer[7] = (0x00ff & pkt->packet_count) >> 0;
 	buffer[8] = (0xff00 & pkt->packet_count) >> 8;
 
-	memcpy(buffer + HEADER_SIZE, (unsigned char*)pkt->payload, PAYLOAD_SIZE);
+	memcpy(buffer + HEADER_SIZE, (unsigned char*)pkt->payload, pkt->payload_size);
 	//cout << "sent" << endl;
 	//cout << (const char*)buffer + HEADER_SIZE << endl;
 	//cout << endl;
-	this->send((char*)buffer, 1024, to);
+	this->send((char*)buffer, HEADER_SIZE + pkt->payload_size, to);
+	cout << "sent " << HEADER_SIZE + pkt->payload_size << " bytes" << endl;
 	delete [] buffer;
 }
 
@@ -132,14 +133,15 @@ int Socket::receive(Packet * pkt, Address * from)
 void Socket::send (const SendBuffer * const buf, const Address * const to)
 {
 	unsigned int identifier = buf->getIdentifier();
-	list<unsigned char*>::const_iterator it = buf->getPackets()->begin();
+	list<Packet*>::const_iterator it = buf->getPackets()->begin();
 	Packet * sendpacket = new Packet();
 	for(unsigned int i = 0; i < buf->getPacketCount(); i++)
 	{
 		sendpacket->identifier = identifier;
 		sendpacket->number = i;
 		sendpacket->packet_count = buf->getPacketCount();
-		sendpacket->payload = (*it);
+		sendpacket->payload = const_cast<Packet*>(*it)->payload;
+		sendpacket->payload_size = const_cast<Packet*>(*it)->payload_size;
 
 		send(sendpacket, to);
 		it++;

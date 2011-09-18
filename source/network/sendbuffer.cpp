@@ -11,11 +11,9 @@ SendBuffer::SendBuffer ()
 SendBuffer::~SendBuffer ()
 {
 	unsigned int i = 0;
-	for(list<unsigned char*>::iterator it = packets.begin(); it != packets.end();)
+	for(list<Packet*>::iterator it = packets.begin(); it != packets.end(); it++)
 	{
-		//cout << "delete " << i++ << endl;
-		it++;
-		//delete [] *it;
+		delete *it;
 	}
 }
 
@@ -23,14 +21,16 @@ void SendBuffer::addChar (unsigned char c)
 {
 	if(payloadPutPointer >= PAYLOAD_SIZE || packetCount == 0)
 	{
-		unsigned char * pkt = new unsigned char [PAYLOAD_SIZE];
-		memset(pkt, 0, PAYLOAD_SIZE);
+		Packet * pkt = new Packet();
+		pkt->allocate(PAYLOAD_SIZE);
+
 		packets.push_back(pkt);
 		packetCount++;
 		packetPutPointer++;
 		payloadPutPointer = 0;
 	}
-	packets.back()[payloadPutPointer] = c;
+	packets.back()->payload[payloadPutPointer] = c;
+	packets.back()->payload_size++;
 	payloadPutPointer++;
 }
 
@@ -67,7 +67,7 @@ void SendBuffer::addString (std::string s)
 	addChar('\0');
 }
 
-const list<unsigned char*> * SendBuffer::getPackets () const
+const list<Packet*> * SendBuffer::getPackets () const
 {
 	return &packets;
 }

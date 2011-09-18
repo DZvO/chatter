@@ -83,6 +83,7 @@ class Input
 	bool isReleased(Key k);
 	bool isReleasedSym(Key k);//directly return -> use keystate array instead of events
 
+	void requestClose();
 	bool closeRequested();
 	//#ifdef USE_SDL
 	const unsigned char* getKeyState();

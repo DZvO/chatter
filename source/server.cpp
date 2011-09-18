@@ -87,6 +87,8 @@ int main(int argc, char* argv[])
 				ident_packet->payload[1] = (ident & 0xff00) >> 8;
 				ident_packet->payload[2] = (ident & 0xff0000) >> 16;
 				ident_packet->payload[3] = (ident & 0xff000000) >> 24;
+				ident_packet->payload_size = 4;
+				cout << "sent ident: " << ident << endl;
 
 				socket->send(ident_packet, sender);
 

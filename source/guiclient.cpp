@@ -39,10 +39,8 @@ template<typename T2, typename T1> inline T2 lexical_cast(const T1 &in)
 
 enum STATE
 {
-	NORMAL, NAME_ENTRY, COLOR_ENTRY
-} state = NAME_ENTRY;
-
-const string name_entry_line = "Hey, Listen! Press 'enter' and enter your name!";
+	CONNECTING, NAME_ENTRY, CONNECTED
+} state = CONNECTING;
 
 int main (int argc, char * argv[])
 {
@@ -56,20 +54,21 @@ int main (int argc, char * argv[])
 
 	Chatlog * chatlog = new Chatlog(window);
 	string name;
-	unsigned int color = 0xff6000;
+	unsigned int color = 0xffffff;//0xff6000;
 
-	Address server("192.168.2.100", 1337);
+	Address * server = new Address("192.168.2.100", 1337);
 	Socket * socket = new Socket(1337);
 	Packet * packet_buffer = new Packet();
 	packet_buffer->allocate();
 	unsigned int identifier = 0;
+
+	ReceiveBufferManager * man = new ReceiveBufferManager();
+
 	Packet * connect_packet = new Packet();
 	connect_packet->allocate();
 	connect_packet->type = Packet::CONNECT_PACKET;
-	socket->send(connect_packet, &server);
+	socket->send(connect_packet, server);
 	chatlog->setLine("Waiting for server, please be patient...");
-
-	ReceiveBufferManager * man = new ReceiveBufferManager();
 
 	while(input->closeRequested() == false)
 	{
@@ -79,10 +78,12 @@ int main (int argc, char * argv[])
 			if(packet_buffer->type == Packet::CONNECT_PACKET)
 			{
 				identifier = (unsigned int)(packet_buffer->payload[0]) | (unsigned int)(packet_buffer->payload[1] << 8) | (unsigned int)(packet_buffer->payload[2] << 16) | (unsigned int)(packet_buffer->payload[3] << 24);
+				cout << "got identifier: " << identifier << endl;
 				delete packet_buffer;
 				packet_buffer = new Packet();
 				packet_buffer->allocate();
-				chatlog->setLine(name_entry_line);
+				chatlog->setLine("Connected, now please enter your name:");
+				state = NAME_ENTRY;
 			}
 			else if(packet_buffer->type == Packet::DATA_PACKET)
 			{
@@ -115,7 +116,16 @@ int main (int argc, char * argv[])
 				{
 					if((*line) != "")
 					{
-						if(state == NORMAL)
+						if(state == NAME_ENTRY)
+						{
+							name = *line;
+							//state = COLOR_ENTRY;
+							state = CONNECTED;
+							chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
+							chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
+							chatlog->setLine("");
+						}
+						else if(state == CONNECTED)
 						{
 							if((*line)[0] != '/')
 							{
@@ -131,7 +141,7 @@ int main (int argc, char * argv[])
 								sendBuffer.addInt(sendMessage->by_color);
 								sendBuffer.addString(sendMessage->text);
 								sendBuffer.addInt(sendMessage->text_color);
-								socket->send(&sendBuffer, &server);
+								socket->send(&sendBuffer, server);
 
 								chatlog->setLine("");
 							}
@@ -150,25 +160,15 @@ int main (int argc, char * argv[])
 										chatlog->setLine("\xff""888888""syntax for /color is '/color rrggbb', where r/g/b is hex");
 									}
 								}
+								else if(line->find("/quit") != string::npos)
+								{
+									input->requestClose();
+								}
 								else
 								{
 									chatlog->add("\xff""888888""Sorry, don't know what you mean.");
 								}
 							}
-						}
-						else if(state == NAME_ENTRY)
-						{
-							name = *line;
-							//state = COLOR_ENTRY;
-							state = NORMAL;
-							chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
-							chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
-							chatlog->setLine("");
-						}
-						else if(state == COLOR_ENTRY)
-						{
-							state = NORMAL;
-							//cout << "your color is " << color << endl;
 						}
 					}
 					delete line;
@@ -211,14 +211,18 @@ int main (int argc, char * argv[])
 		window->swap();
 	}
 
-	Packet * disconnect_packet = new Packet();
-	disconnect_packet->allocate();
-	disconnect_packet->type = Packet::DISCONNECT_PACKET;
-	disconnect_packet->payload[0] = identifier & 0xff;
-	disconnect_packet->payload[1] = (identifier & 0xff00) >> 8;
-	disconnect_packet->payload[2] = (identifier & 0xff0000) >> 16;
-	disconnect_packet->payload[3] = (identifier & 0xff000000) >> 24;
-	socket->send(disconnect_packet, &server);
+	if(server != NULL)
+	{
+		Packet * disconnect_packet = new Packet();
+		disconnect_packet->allocate();
+		disconnect_packet->type = Packet::DISCONNECT_PACKET;
+		disconnect_packet->payload[0] = identifier & 0xff;
+		disconnect_packet->payload[1] = (identifier & 0xff00) >> 8;
+		disconnect_packet->payload[2] = (identifier & 0xff0000) >> 16;
+		disconnect_packet->payload[3] = (identifier & 0xff000000) >> 24;
+		disconnect_packet->payload_size = 4;
+		socket->send(disconnect_packet, server);
+	}
 
 	window->close();
 	delete window;

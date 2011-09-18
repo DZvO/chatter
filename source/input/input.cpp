@@ -59,6 +59,11 @@ bool Input::isReleased(Key k)
 	return !isPressed(k);
 }
 
+void Input::requestClose()
+{
+	close_requested = true;
+}
+
 bool Input::closeRequested()
 {
 	return close_requested;

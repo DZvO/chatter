@@ -25,9 +25,13 @@ class Packet
 	unsigned short packet_count;//9 bytes
 	unsigned char * payload;
 
+	//won't be sent
+	unsigned short payload_size;
+
 	Packet ()
 	{
 		type = identifier = number = packet_count = 0;
+		payload_size = 0;
 		if(HEADER_SIZE != (sizeof(type) + sizeof(identifier) + sizeof(number) + sizeof(packet_count)))
 				cout << "warning: HEADER_SIZE is of the wrong size" << endl;
 		payload = NULL;
@@ -39,7 +43,14 @@ class Packet
 	void allocate ()
 	{
 		payload = new unsigned char [PAYLOAD_SIZE];
+		//payload_size = PAYLOAD_SIZE;
 		memset(payload, 0, PAYLOAD_SIZE);
+	}
+	void allocate (unsigned int size)
+	{
+		payload = new unsigned char [size];
+		//payload_size = size;
+		memset(payload, 0, size);
 	}
 };
 
