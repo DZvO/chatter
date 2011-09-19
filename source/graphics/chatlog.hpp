@@ -17,6 +17,7 @@ using namespace std;
 #include "graphics/image.hpp"
 #include "graphics/textvertices.hpp"
 #include "chat/message.hpp"
+#include "helper.hpp"
 
 class Chatlog
 {

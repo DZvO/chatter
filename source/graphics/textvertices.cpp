@@ -20,7 +20,7 @@ TextVertices::~TextVertices()
 	delete [] vertices;
 }
 
-glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, float b)
+glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, float b, float width, float height)
 {
 	using glm::vec3; using glm::vec2;
 	vec3 rgb = vec3(r, g, b);
@@ -118,22 +118,22 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			unsigned int c_col = (unsigned int)c % 16;
 
 			//line break? TODO since we're now using transformation matrices to move the text we can't use screen dimensions on uploading anymore. FIX -> use glm::vec2 size
-			/*if(xr + ((0.04 - (((kerning[c].x * 0.005) + (kerning[c].y * 0.005)))) * scale) + (offset * scale) > 1)
+			if((xr + ((0.04 - (((kerning[c].x * 0.005) + (kerning[c].y * 0.005))) * scale) + (offset * scale))) > width)
 			{
 				yu = yl + (0.005 * scale);
 				yl += (0.04 * scale) + (0.005 * scale);
 
 				rv.x = xr;
-				xl = x;
-				xr = x + ((0.04 - ((kerning[c].x * 0.005) + (kerning[c].y * 0.005))) * scale);
+				xl = 0;
+				xr = ((0.04 - ((kerning[c].x * 0.005) + (kerning[c].y * 0.005))) * scale);
 			}
 			else
-			{*/
+			{
 				//do kerning stuff
 				xl = xr + (offset * scale);
 				xr += ((0.04 - (((kerning[c].x * 0.005) + (kerning[c].y * 0.005)))) * scale) + (offset * scale);
 				offset = 0.005000000000;
-			//}
+			}
 
 			double texxleft = c_col * char_width;
 			texxleft += (kerning[c].x * pixel_size);
@@ -184,12 +184,12 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 	return rv;
 }
 
-glm::vec2 TextVertices::upload(std::string msg, double scale, unsigned char r, unsigned char g, unsigned char b)
+glm::vec2 TextVertices::upload(std::string msg, double scale, unsigned char r, unsigned char g, unsigned char b, float width, float height)
 {
 	float rf = double(r) / double(0xff);
 	float gf = double(g) / double(0xff);
 	float bf = double(b) / double(0xff);
-	return upload(msg, scale, rf, gf, bf);
+	return upload(msg, scale, rf, gf, bf, width, height);
 }
 
 /*void TextVertices::draw()

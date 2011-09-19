@@ -131,21 +131,21 @@ void Chatlog::add (Message * msg)
 {
 	message_list->push_back(msg);
 
-	TextVertices * text = new TextVertices(window, font, kerning);
-	text->upload(msg->text, 1.0, (unsigned char)((msg->text_color & 0x00ff0000) >> 16), (unsigned char)((msg->text_color & 0x0000ff00) >> 8), (unsigned char)(msg->text_color & 0x000000ff));
-	vertices_list->push_back(text);
+	//TextVertices * text = new TextVertices(window, font, kerning);
+	//text->upload(msg->text, 1.0, (unsigned char)((msg->text_color & 0x00ff0000) >> 16), (unsigned char)((msg->text_color & 0x0000ff00) >> 8), (unsigned char)(msg->text_color & 0x000000ff), 1.0, 1.0);
+	//vertices_list->push_back(text);
 
-	TextVertices * by  = new TextVertices(window, font, kerning);
-	by->upload(msg->by, 1.0, (unsigned char)((msg->by_color & 0x00ff0000) >> 16), (unsigned char)((msg->by_color & 0x0000ff00) >> 8), (unsigned char)(msg->by_color & 0x000000ff));
-	vertices_list->push_back(by);
+	TextVertices * text  = new TextVertices(window, font, kerning);
+	text->upload("\xff" + lexical_cast<std::string>(msg->by_color) + msg->by + ' ' + "\xff" + lexical_cast<std::string>(msg->text_color) + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	vertices_list->push_back(text);
 }
 
 void Chatlog::add (const std::string * str)
 {
 	TextVertices * tv = new TextVertices(window, font, kerning);
-	tv->upload(*str, 1.0);
+	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 
-	vertices_list->push_back(NULL);//'text'
+	//vertices_list->push_back(NULL);//'text'
 	vertices_list->push_back(tv);//'by'
 }
 
@@ -208,12 +208,12 @@ void Chatlog::draw()
 
 			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
 
-			//glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 
 		//text
-		{
+		/*{
 			glm::vec2 position_text = position;
 			position_text.x += (*it)->getSize()->x + 0.03;
 
@@ -236,7 +236,7 @@ void Chatlog::draw()
 				glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			}
-		}
+		}*/
 	}
 }
 
@@ -244,7 +244,7 @@ void Chatlog::setLine(const string & input)
 {
 	//this->line = input;
 	string line = input;
-	line_vertices->upload(line, 1.0);
+	line_vertices->upload(line, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 //private

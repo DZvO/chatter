@@ -11,6 +11,7 @@ using namespace std;
 
 #include "graphics/window.hpp"
 #include "input/input.hpp"
+#include "helper.hpp"
 
 #include "network/socket.hpp"
 #include "network/packet.hpp"
@@ -27,15 +28,6 @@ using namespace std;
 #include <graphics/glm/gtc/matrix_transform.hpp>
 #include <graphics/glm/gtx/projection.hpp>
 #include <graphics/glm/gtc/type_ptr.hpp>
-
-template<typename T2, typename T1> inline T2 lexical_cast(const T1 &in)
-{
-	T2 out;
-	std::stringstream ss;
-	ss << std::hex << in;
-	ss >> std::hex >> out;
-	return out;
-}
 
 enum STATE
 {
