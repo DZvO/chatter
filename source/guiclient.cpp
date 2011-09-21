@@ -102,6 +102,14 @@ int main (int argc, char * argv[])
 
 		while(input->refresh())
 		{
+			if(input->isPressed(Input::kR))
+			{
+				window->resize(600, 400);
+			}
+			if(input->isPressed(Input::kC))
+			{
+				window->resize(800, 600);
+			}
 			if(input->isPressed(Input::kEnter))
 			{
 				if(enable_textinput)

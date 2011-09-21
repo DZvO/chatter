@@ -136,7 +136,12 @@ void Chatlog::add (Message * msg)
 	//vertices_list->push_back(text);
 
 	TextVertices * text  = new TextVertices(window, font, kerning);
-	text->upload("\xff" + lexical_cast<std::string>(msg->by_color) + msg->by + ' ' + "\xff" + lexical_cast<std::string>(msg->text_color) + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	string by_color = lexical_cast<std::string>(msg->by_color & 0x00ffffff); //use bit mask to make sure we dont have 4'bytes' in the string (only want 3)
+	string text_color = lexical_cast<std::string>(msg->text_color & 0x00ffffff);
+	cout << by_color << endl;
+	cout << text_color << endl << endl;
+
+	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
 	vertices_list->push_back(text);
 }
 

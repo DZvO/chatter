@@ -90,7 +90,7 @@ class Input
 	//#endif
 
 	private:
-	bool close_requested;		
+	bool close_requested;
 	bool textmode;
 
 	//#ifdef USE_SDL
