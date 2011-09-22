@@ -58,7 +58,7 @@ Chatlog::Chatlog(Window * window)
 	message_list = new list<Message*>;
 	vertices_list = new list<TextVertices*>;
 
-	position = glm::vec2(-1, 1);
+	position = glm::vec2(0.0, 0.0);
 
 	programPointer = vertexPointer = fragmentPointer = 0;
 	positionAttrib = texcoordAttrib = colorAttrib = 0;
@@ -101,7 +101,7 @@ Chatlog::Chatlog(Window * window)
 
 	view = glm::mat4(1.0);
 	model = glm::mat4(1.0);
-	projection = glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
+	projection = glm::ortho(-400.0, 400.0, 300.0, -300.0, -1.0, 1.0);
 }
 
 Chatlog::~Chatlog()
@@ -136,19 +136,19 @@ void Chatlog::add (Message * msg)
 	//vertices_list->push_back(text);
 
 	TextVertices * text  = new TextVertices(window, font, kerning);
-	string by_color = lexical_cast<std::string>(msg->by_color & 0x00ffffff); //use bit mask to make sure we dont have 4'bytes' in the string (only want 3)
+	string by_color = lexical_cast<std::string>(msg->by_color & 0x00ffffff); //mask out alpha, because we only want rgb ('rrggbb') and not argb('aarrggbb')
 	string text_color = lexical_cast<std::string>(msg->text_color & 0x00ffffff);
 	cout << by_color << endl;
 	cout << text_color << endl << endl;
 
-	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
 	vertices_list->push_back(text);
 }
 
 void Chatlog::add (const std::string * str)
 {
 	TextVertices * tv = new TextVertices(window, font, kerning);
-	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
 
 	//vertices_list->push_back(NULL);//'text'
 	vertices_list->push_back(tv);//'by'
@@ -159,7 +159,7 @@ void Chatlog::add (std::string str)
 	add(&str);
 }
 
-void Chatlog::draw()
+void Chatlog::draw(Window * window)
 {
 	glUseProgram(programPointer);
 	glUniform1i(fontTexUniform, 0);
@@ -172,7 +172,8 @@ void Chatlog::draw()
 	{
 		position.y -= line_vertices->getSize()->y;
 
-		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+		//glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*window->getProjection()));
 		glm::mat4 translated_view = glm::translate(view, glm::vec3(position, 0.0));
 		glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(translated_view));
 		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -249,7 +250,7 @@ void Chatlog::setLine(const string & input)
 {
 	//this->line = input;
 	string line = input;
-	line_vertices->upload(line, 1.0, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f);
+	line_vertices->upload(line, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
 }
 
 //private
@@ -271,6 +272,7 @@ void Chatlog::loadKerning()
 					{
 						//cout << "from left in cell @ [" << row << ", " << col << "] pixel at [" << pixelX << ", " << pixelY << "] is not empty! (absolute: [" << (col*8)+pixelX << ", " << (row*8)+pixelY << "]" << endl;
 						kerning[(row * 16) + col].x = pixelX;
+						//cout << "kerning = " << kerning[(row*16) + col].x << endl;
 						//break loops
 						pixelX = 8;
 						pixelY = 8;
@@ -287,6 +289,7 @@ void Chatlog::loadKerning()
 					{
 						//cout << "from right in cell @ [" << row << ", " << col << "] pixel at [" << pixelX << ", " << pixelY << "] is not empty! (absolute: [" << (col*8)+pixelX << ", " << (row*8)+pixelY << "]" << endl;
 						kerning[(row * 16) + col].y = 7 - pixelX;
+						//cout << "kerning = " << kerning[(row*16) + col].y << endl;
 						//break loops
 						pixelX = -1;
 						pixelY = -1;

@@ -29,7 +29,7 @@ class Chatlog
 	void add(const std::string * str);
 	void add(std::string str);
 
-	void draw();
+	void draw(Window * window);
 	void setLine(const string & input);
 
 	private:

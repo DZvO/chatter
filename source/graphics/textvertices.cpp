@@ -59,31 +59,32 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 	const double pixel_size = 1.0 / double(128);
 
 	double xl = 0, xr = 0;// + (0.04 - ((kerning[(unsigned char)msg[0]].x * 0.01) + (kerning[(unsigned char)msg[0]].y * 0.01)));
-	double yu = 0, yl = (0.04 * scale);
+	double yu = 0, yl = 8.0 * 2;
 	unsigned int vertex = 0;
 	double offset = 0.0;
 	for(unsigned int i = 0; msg[i] != '\0'; i++)
 	{
 		 // Viewport:
-		 //     -1 y
+		 //     0 y
 		 //       |
-		 // -1 x -o- +1 x
+		 // 0 x -o- +1 x ...
 		 //    	  |
 		 //     +1 y     
+		 //     ...
 		unsigned char c = msg[i];
 
 		if(c == ' ')//add check for color setting stuff
 		{
 			xl = xr;
-			xr += (0.03 * scale);
+			xr += 6.0;//(0.03 * scale);
 		}
 		else if(c == '\n')// || (xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)) + 0.01)) > 1)
 		{
-			yu = yl + 0.005;
-			yl += 0.04 + 0.005;
+			yu = yl + 4.0;
+			yl += 8.0;
 			xl = 0;
 			rv.x = xr;
-			xr = 0;
+			xr = 8.0;
 			offset = 0.0;
 		}
 		else if(c == 0xff)
@@ -118,21 +119,23 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			unsigned int c_col = (unsigned int)c % 16;
 
 			//line break? TODO since we're now using transformation matrices to move the text we can't use screen dimensions on uploading anymore. FIX -> use glm::vec2 size
-			if((xr + ((0.04 - (((kerning[c].x * 0.005) + (kerning[c].y * 0.005))) * scale) + (offset * scale))) > width)
+			if((xr + (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2) > width)
 			{
-				yu = yl + (0.005 * scale);
-				yl += (0.04 * scale) + (0.005 * scale);
+				yu = yl + 1.0;
+				yl += (8.0 + 1.0) * 2;
 
 				rv.x = xr;
 				xl = 0;
-				xr = ((0.04 - ((kerning[c].x * 0.005) + (kerning[c].y * 0.005))) * scale);
+				xr = (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2;
 			}
 			else
 			{
 				//do kerning stuff
-				xl = xr + (offset * scale);
-				xr += ((0.04 - (((kerning[c].x * 0.005) + (kerning[c].y * 0.005)))) * scale) + (offset * scale);
-				offset = 0.005000000000;
+				xl = xr + 1.0;
+				//xr += ((0.4 - (((kerning[c].x * 0.05) + (kerning[c].y * 0.05)))) * scale) + (offset * scale);
+				//xr += 8.0 * 2;
+				xr += (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2 + 1.0;
+				//offset = 0.005000000000;
 			}
 
 			double texxleft = c_col * char_width;
@@ -143,21 +146,28 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			double texyupper = c_row * char_width;
 			double texylower = c_row * char_width + char_width;
 
+			//cout << "char " << c << endl;
 			vertex_t lowerleft = vertex_t(vec3(xl, yl, 0),
 					vec2(texxleft, texylower),
 					vec3(rgb.r, rgb.g, rgb.b));
+			//cout << lowerleft << endl;
 
 			vertex_t lowerright = vertex_t(vec3(xr, yl, 0),
 					vec2(texxright, texylower),
 					vec3(rgb.r, rgb.g, rgb.b));
+			//cout << lowerright << endl;
 
 			vertex_t upperright = vertex_t(vec3(xr, yu, 0),
 					vec2(texxright, texyupper),
 					vec3(rgb.r, rgb.g, rgb.b));
+			//cout << upperright << endl;
 
 			vertex_t upperleft = vertex_t(vec3(xl, yu, 0),
 					vec2(texxleft, texyupper),
 					vec3(rgb.r, rgb.g, rgb.b));
+			//cout << upperleft << endl;
+//
+			//cout << endl;
 
 			vertices[vertex++] = lowerleft;
 			vertices[vertex++] = lowerright;

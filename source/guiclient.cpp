@@ -207,7 +207,7 @@ int main (int argc, char * argv[])
 		}
 
 		window->clear();
-		chatlog->draw();
+		chatlog->draw(window);
 		window->swap();
 	}
 

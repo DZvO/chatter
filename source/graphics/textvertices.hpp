@@ -31,13 +31,19 @@ class TextVertices
 	const glm::vec2 * getPosition();
 	const glm::vec2 * getSize();
 
-	struct vertex_t
+	class vertex_t
 	{
+		public:
 		glm::vec3 pos;//world position
 		glm::vec2 tex;//texture coordinates
 		glm::vec3 col;
 		vertex_t() {}
 		vertex_t(glm::vec3 position, glm::vec2 texcoord, glm::vec3 color) : pos(position), tex(texcoord), col(color) {}
+		friend ostream& operator<<(ostream& os, const vertex_t& vt)
+		{
+			cout << "pos(" << vt.pos.x << "|" << vt.pos.y << "), tex(" << vt.tex.x << "|" << vt.tex.y << ")";
+			return os;
+		}
 	};
 
 
