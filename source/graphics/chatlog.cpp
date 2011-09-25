@@ -58,7 +58,7 @@ Chatlog::Chatlog(Window * window)
 	message_list = new list<Message*>;
 	vertices_list = new list<TextVertices*>;
 
-	position = glm::vec2(0.0, 0.0);
+	position = glm::vec2(-((double)window->getWidth() / 2), ((double)window->getHeight() / 2));
 
 	programPointer = vertexPointer = fragmentPointer = 0;
 	positionAttrib = texcoordAttrib = colorAttrib = 0;
@@ -101,7 +101,7 @@ Chatlog::Chatlog(Window * window)
 
 	view = glm::mat4(1.0);
 	model = glm::mat4(1.0);
-	projection = glm::ortho(-400.0, 400.0, 300.0, -300.0, -1.0, 1.0);
+	//projection = glm::ortho(-400.0, 400.0, 300.0, -300.0, -1.0, 1.0);
 }
 
 Chatlog::~Chatlog()
@@ -141,17 +141,17 @@ void Chatlog::add (Message * msg)
 	cout << by_color << endl;
 	cout << text_color << endl << endl;
 
-	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
-	vertices_list->push_back(text);
+	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
+	vertices_list->push_front(text);
 }
 
 void Chatlog::add (const std::string * str)
 {
 	TextVertices * tv = new TextVertices(window, font, kerning);
-	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
+	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
 
 	//vertices_list->push_back(NULL);//'text'
-	vertices_list->push_back(tv);//'by'
+	vertices_list->push_front(tv);//'by'
 }
 
 void Chatlog::add (std::string str)
@@ -194,63 +194,41 @@ void Chatlog::draw(Window * window)
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	for(list<TextVertices*>::reverse_iterator it = vertices_list->rbegin(); it != vertices_list->rend(); it++)
+	//for(list<TextVertices*>::iterator it = vertices_list->begin(); it != vertices_list->end(); it++)
+	for(TextVertices * tv : *vertices_list)
 	{
-		position.y -= (*it)->getSize()->y;//TODO add check if we are beyond size, and ignore the remaining lines
+		//position.y -= (*it)->getSize()->y;//TODO add check if we are beyond size, and ignore the remaining lines
+		position.y -= tv->getSize()->y;
+		if(this->position.y - position.y > this->size.y && this->size.y != 0)
+		{
+			//vertices_list->remove(tv);//c++ gotta love it (http://stackoverflow.com/questions/1830158/how-to-call-erase-with-a-reverse-iterator)
+			continue;
+		}
 
-			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
+			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*window->getProjection()));
 			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
 			glm::mat4 translated_model = glm::translate(model, glm::vec3(position, 0.0));
 			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
-		//by
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
+			glBindBuffer(GL_ARRAY_BUFFER, tv->getPointer());
 			glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
 			glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
 			glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
 			glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 
-			glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
+			glDrawArrays(GL_QUADS, 0, tv->getVertexCount());
 
 			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-		}
-
-		//text
-		/*{
-			glm::vec2 position_text = position;
-			position_text.x += (*it)->getSize()->x + 0.03;
-
-			glm::mat4 translated_model = glm::translate(model, glm::vec3(position_text, 0.0));
-			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
-
-			it++;
-			if(*it != NULL)
-			{
-
-				glBindBuffer(GL_ARRAY_BUFFER, (*it)->getPointer());
-				//glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
-
-				glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
-				glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
-				glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
-
-				glDrawArrays(GL_QUADS, 0, (*it)->getVertexCount());
-
-				glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-				glBindBuffer(GL_ARRAY_BUFFER, 0);
-			}
-		}*/
 	}
 }
 
 void Chatlog::setLine(const string & input)
 {
 	//this->line = input;
-	string line = input;
-	line_vertices->upload(line, 1.0, 1.0f, 1.0f, 1.0f, 400.0f, 300.0f);
+	//string * line = input;
+	line_vertices->upload(input, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
 }
 
 //private

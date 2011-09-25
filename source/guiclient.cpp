@@ -34,6 +34,16 @@ enum STATE
 	CONNECTING, NAME_ENTRY, CONNECTED
 } state = CONNECTING;
 
+bool hex_string_valid (std::string input)
+{
+	for(unsigned int length = 0; length < input.length(); length++)
+	{
+		char c = input[length];
+		if(c < '0' || c > '9' || c < 'a' || c > 'z')
+			return false;
+	}
+}
+
 int main (int argc, char * argv[])
 {
 	Window * window = new Window();
@@ -45,6 +55,9 @@ int main (int argc, char * argv[])
 	std::string * line = NULL;
 
 	Chatlog * chatlog = new Chatlog(window);
+	chatlog->setWidth(800.0);
+	chatlog->setHeight(50.0);
+
 	string name;
 	unsigned int color = 0xffffff;//0xff6000;
 
@@ -102,11 +115,11 @@ int main (int argc, char * argv[])
 
 		while(input->refresh())
 		{
-			if(input->isPressed(Input::kR))
+			if(input->isPressed(Input::kR) && input->isPressedSym(Input::kLShift))
 			{
 				window->resize(600, 400);
 			}
-			if(input->isPressed(Input::kC))
+			if(input->isPressed(Input::kC) && input->isPressedSym(Input::kLShift))
 			{
 				window->resize(800, 600);
 			}
@@ -123,7 +136,6 @@ int main (int argc, char * argv[])
 							state = CONNECTED;
 							chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
 							chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
-							chatlog->setLine("");
 						}
 						else if(state == CONNECTED)
 						{
@@ -142,8 +154,6 @@ int main (int argc, char * argv[])
 								sendBuffer.addString(sendMessage->text);
 								sendBuffer.addInt(sendMessage->text_color);
 								socket->send(&sendBuffer, server);
-
-								chatlog->setLine("");
 							}
 							else
 							{
@@ -153,6 +163,8 @@ int main (int argc, char * argv[])
 									{
 										color = lexical_cast<unsigned int>(line->substr(7));
 										chatlog->add("\xff""888888""Okay! set color to: ""\xff" + lexical_cast<std::string>(color) + line->substr(7));
+										chatlog->add(string("which is ") + lexical_cast<std::string>(color));
+										chatlog->add(string("btw color is ") + (hex_string_valid(line->substr(7)) ? "valid" : "not valid"));
 										chatlog->setLine("");
 									}
 									catch(exception & e)
@@ -174,6 +186,7 @@ int main (int argc, char * argv[])
 					delete line;
 					input->disableTextmode();
 					enable_textinput = false;
+					chatlog->setLine("");
 				}
 				else
 				{

@@ -131,10 +131,10 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 			else
 			{
 				//do kerning stuff
-				xl = xr + 1.0;
+				xl = xr + 2.0;
 				//xr += ((0.4 - (((kerning[c].x * 0.05) + (kerning[c].y * 0.05)))) * scale) + (offset * scale);
 				//xr += 8.0 * 2;
-				xr += (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2 + 1.0;
+				xr += (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2 + 2.0;
 				//offset = 0.005000000000;
 			}
 

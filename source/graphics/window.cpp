@@ -72,7 +72,7 @@ void Window::resize (const unsigned short width, const unsigned short height)
 
 	screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_DOUBLEBUF);
 	glViewport(0, 0, width, height);
-	projection = glm::ortho((double)-(width/2), (double)(width/2), (double)(height/2), (double)-(height/2), -1.0, 1.0);
+	projection = glm::ortho(-((double)width/2), ((double)width/2), ((double)height/2), -((double)height/2), -1.0, 1.0);
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 }
 

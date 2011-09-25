@@ -46,10 +46,9 @@ class TextVertices
 		}
 	};
 
-
-	string str;
 	unsigned int getPointer();
 	unsigned int getVertexCount();
+
 	private:
 	glm::vec2 pos;
 	glm::vec2 size;

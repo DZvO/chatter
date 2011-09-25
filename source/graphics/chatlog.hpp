@@ -32,6 +32,12 @@ class Chatlog
 	void draw(Window * window);
 	void setLine(const string & input);
 
+	void setWidth (double width)
+	{ size.x = width; }
+	void setHeight (double height)
+	{ size.y = height; }
+
+
 	private:
 	string * line;
 	TextVertices * line_vertices;
@@ -47,7 +53,7 @@ class Chatlog
 	int positionAttrib, texcoordAttrib, colorAttrib;
 	//void unloadShader();
 
-	glm::mat4 view, model, projection;
+	glm::mat4 view, model;//, projection;
 	int projectionUniform, viewUniform, modelUniform, fontTexUniform;
 
 	Image * font;
