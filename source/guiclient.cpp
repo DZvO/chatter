@@ -2,11 +2,7 @@
 #include <string>
 using namespace std;
 
-#include <boost/lexical_cast.hpp>
-
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <graphics/glew/glew.h>
 #include <SDL/SDL.h>
 
 #include "graphics/window.hpp"
@@ -39,9 +35,13 @@ bool hex_string_valid (std::string input)
 	for(unsigned int length = 0; length < input.length(); length++)
 	{
 		char c = input[length];
-		if(c < '0' || c > '9' || c < 'a' || c > 'z')
+		if((c < 'a' || c > 'f') && (c < '0' || c > '9'))
+		{
+			cout << "\"" << c << "\" isn't valid" << endl;
 			return false;
+		}
 	}
+	return true;
 }
 
 int main (int argc, char * argv[])
@@ -56,7 +56,7 @@ int main (int argc, char * argv[])
 
 	Chatlog * chatlog = new Chatlog(window);
 	chatlog->setWidth(800.0);
-	chatlog->setHeight(50.0);
+	chatlog->setHeight(100.0);
 
 	string name;
 	unsigned int color = 0xffffff;//0xff6000;
@@ -75,6 +75,7 @@ int main (int argc, char * argv[])
 	socket->send(connect_packet, server);
 	chatlog->setLine("Waiting for server, please be patient...");
 
+		
 	while(input->closeRequested() == false)
 	{
 		// network ------------------
@@ -159,17 +160,40 @@ int main (int argc, char * argv[])
 							{
 								if(line->find("/color") != string::npos)
 								{
-									try
+									if(line->length() >= 8+7)
 									{
-										color = lexical_cast<unsigned int>(line->substr(7));
-										chatlog->add("\xff""888888""Okay! set color to: ""\xff" + lexical_cast<std::string>(color) + line->substr(7));
-										chatlog->add(string("which is ") + lexical_cast<std::string>(color));
-										chatlog->add(string("btw color is ") + (hex_string_valid(line->substr(7)) ? "valid" : "not valid"));
-										chatlog->setLine("");
+										std::string color_str = line->substr(7);
+										try
+										{
+											std::string color_str_r = color_str.substr(0, 2);
+											if(!hex_string_valid(color_str_r))
+												throw("r");
+											unsigned int color_r = lexical_cast<unsigned int>(color_str_r) << 16;
+
+											std::string color_str_g = color_str.substr(3, 2);
+											if(!hex_string_valid(color_str_g))
+												throw("g");
+											unsigned int color_g = lexical_cast<unsigned int>(color_str_g) << 8;
+
+											std::string color_str_b = color_str.substr(6, 2);
+											if(!hex_string_valid(color_str_b))
+												throw("b");
+											unsigned int color_b = lexical_cast<unsigned int>(color_str_b) << 0;
+
+											color = color_r | color_g | color_b;
+
+											chatlog->add("\xff""888888""Okay! set color to: ""\xff" + lexical_cast<std::string>(color) + lexical_cast<std::string>(color));
+											chatlog->setLine("");
+										}
+										catch(const char * e)
+										{
+											chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
+											cout << "catch'd \"" << e << "\"" << endl;
+										}
 									}
-									catch(exception & e)
+									else
 									{
-										chatlog->setLine("\xff""888888""syntax for /color is '/color rrggbb', where r/g/b is hex");
+										chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
 									}
 								}
 								else if(line->find("/quit") != string::npos)
@@ -195,7 +219,7 @@ int main (int argc, char * argv[])
 					line = new std::string();
 					chatlog->setLine("\xff""424242""> ");
 				}
-				cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
+				//cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
 			}
 			else
 			{

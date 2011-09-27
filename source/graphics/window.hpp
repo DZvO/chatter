@@ -2,9 +2,7 @@
 #define _WINDOW_HPP
 
 #include <iostream>
-#include <GL/glew.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
+#include <graphics/glew/glew.h>
 #include <SDL/SDL.h>
 
 #include "glm/glm.hpp"

@@ -106,7 +106,7 @@ void Socket::send(const Packet * pkt, const Address * to)
 	//cout << (const char*)buffer + HEADER_SIZE << endl;
 	//cout << endl;
 	this->send((char*)buffer, HEADER_SIZE + pkt->payload_size, to);
-	cout << "sent " << HEADER_SIZE + pkt->payload_size << " bytes" << endl;
+	//cout << "sent " << HEADER_SIZE + pkt->payload_size << " bytes" << endl;
 	delete [] buffer;
 }
 

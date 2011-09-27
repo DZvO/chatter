@@ -14,8 +14,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include <iostream>
 #include <list>
 #include <cstdio>

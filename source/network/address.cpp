@@ -16,7 +16,12 @@ Address::Address(string targetAddr, unsigned short port)
 	hints.ai_socktype = SOCK_DGRAM;
 	//hints.ai_flags = AI_PASSIVE; //optional? hints will be used to bind()
 	
-	if((rv = getaddrinfo(targetAddr.c_str(), boost::lexical_cast<std::string>(port).c_str(), &hints, &servinfo)) != 0)
+	std::string port_str;
+	std::stringstream ss;
+	ss << port;
+	ss >> port_str;
+	
+	if((rv = getaddrinfo(targetAddr.c_str(), port_str.c_str(), &hints, &servinfo)) != 0)
 	{
 		cerr << "ERROR:getaddrinfo | " << gai_strerror(rv) << endl;
 		return;

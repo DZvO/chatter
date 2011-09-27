@@ -2,6 +2,7 @@
 #define _ADDRESS_HPP
 
 #include <iostream>
+#include <sstream>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -16,8 +17,6 @@ using namespace std;
 #include <sys/socket.h>
 
 #include <arpa/inet.h>
-
-#include <boost/lexical_cast.hpp>
 
 #include "helper.hpp"
 

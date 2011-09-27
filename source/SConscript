@@ -2,10 +2,6 @@
 env = Environment(CXX = 'g++', CXXFLAGS = '-O0 -Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.')
 conf = Configure(env)
 
-if not conf.CheckCXXHeader('boost/lexical_cast.hpp'):
-	print("Please install (lib)boost -> http://www.boost.org/")
-	Exit(1)
-
 if not conf.CheckLib('GL'):
 	print("Please install (lib)gl, by either:\
 			Linux:\
@@ -13,8 +9,6 @@ if not conf.CheckLib('GL'):
 			Windows:\
 				downloading a driver from your video cards vendor.")
 	Exit(1)
-
-#TODO glew/sdl dependency checking ??? since they dont really distribute a installable package(for end-users), maybe i need to ship a copy myself?
 env = conf.Finish()
 
 def splitter(folder, files):
@@ -25,7 +19,7 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog"), LIBS=['GL', 'GLEW', 'SDL', 'SDL_image'])
+libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog") + ["graphics/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))
@@ -38,7 +32,7 @@ libchat.Library('chat', splitter("chat/", "message"))
 # -- ---- --
 
 guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'GLEW', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
 server.Program('server.cpp', LIBS=['network'])
