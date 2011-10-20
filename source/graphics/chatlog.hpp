@@ -7,43 +7,53 @@
 #include <list>
 using namespace std;
 
-#include <graphics/glew/glew.h>
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "lib/glew/glew.h"
+#include "lib/glm/glm.hpp"
+#include "lib/glm/gtc/matrix_transform.hpp"
+#include "lib/glm/gtc/type_ptr.hpp"
 
 #include "graphics/window.hpp"
 #include "graphics/image.hpp"
 #include "graphics/textvertices.hpp"
 #include "chat/message.hpp"
 #include "helper.hpp"
+using namespace motor;
 
 class Chatlog
 {
 	public:
-	Chatlog(Window * window);
+	Chatlog();
 	~Chatlog();
 
 	void add(Message * msg);
 	void add(const std::string * str);
 	void add(std::string str);
 
-	void draw(Window * window);
+	void draw();
 	void setLine(const string & input);
 
 	void setWidth (double width)
 	{ size.x = width; }
 	void setHeight (double height)
 	{ size.y = height; }
+	void setSize (double width, double height)
+	{
+		size.x = width;
+		size.y = height;
+	}
+	void setPosition (double x, double y)
+	{
+		position.x = x;
+		position.y = y;
+	}
 
 
-	private:
 	string * line;
+	private:
 	TextVertices * line_vertices;
 
 	glm::vec2 position;
 	glm::vec2 size;
-	Window * window;
 	list<Message*> * message_list;
 	list<TextVertices*> * vertices_list;
 

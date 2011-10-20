@@ -3,10 +3,13 @@
 Image::Image()
 {
 	gl_pointer = width = height = bpp = 0;
+	pixels = NULL;
 }
 
 Image::Image(std::string path)
 {
+	gl_pointer = width = height = bpp = 0;
+	pixels = NULL;
 	load(path);
 }
 
@@ -14,6 +17,15 @@ Image::~Image()
 {
 	SDL_FreeSurface(surface);
 	glDeleteTextures(1, &gl_pointer);
+}
+
+void Image::create (unsigned int width, unsigned int height)
+{
+	surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, 0, 0, 0, 0);
+	this->width = width;
+	this->height = height;
+	this->bpp = surface->format->BitsPerPixel;
+	this->pixels = (unsigned int*) surface->pixels;
 }
 
 void Image::load(std::string path)
@@ -26,7 +38,14 @@ void Image::load(std::string path)
 		std::cout << "couldn't load file @ \"" << path << "\"\n";
 		return;
 	}
+	this->width = surface->w;
+	this->height = surface->h;
+	this->bpp = surface->format->BitsPerPixel;
+	this->pixels = (unsigned int*) surface->pixels;
+}
 
+void Image::upload ()
+{
 	unsigned int texture;
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glGenTextures(1, &texture);
@@ -43,9 +62,6 @@ void Image::load(std::string path)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, 3, surface->w, surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
 	}
-	this->width = surface->w;
-	this->height = surface->h;
-	this->bpp = surface->format->BitsPerPixel;
 	this->gl_pointer = texture;
 }
 

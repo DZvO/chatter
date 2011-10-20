@@ -1,5 +1,25 @@
 //TODO fix some valgrind errors -> "Invalid read of size 8"
 #include "address.hpp"
+//helper
+//get sockaddr, ipV4 or ipV6
+static void *getInAddrS(const struct sockaddr_storage *ss)
+{
+	if(ss->ss_family == AF_INET)
+	{
+		return &(((struct sockaddr_in*)ss)->sin_addr);
+	}
+	return &(((struct sockaddr_in6*)ss)->sin6_addr);
+}
+
+static void *getInAddr(const struct sockaddr *sa)
+{
+	if(sa->sa_family == AF_INET)
+	{
+		return &(((struct sockaddr_in*)sa)->sin_addr);
+	}
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
 
 Address::Address()
 {
@@ -37,8 +57,8 @@ Address::Address(string targetAddr, unsigned short port)
 bool Address::operator == (const Address & a)
 {
 	//TODO
-	unsigned int a_size = sizeof(Helper::getInAddr((sockaddr*)&a.addr));
-	unsigned int my_size = sizeof(Helper::getInAddr((sockaddr*)&addr));
+	unsigned int a_size = sizeof(getInAddr((sockaddr*)&a.addr));
+	unsigned int my_size = sizeof(getInAddr((sockaddr*)&addr));
 	bool same = true;
 	if(a_size == my_size && port == a.port)
 	{
@@ -65,7 +85,7 @@ bool Address::operator == (const Address & a)
 std::ostream& operator<< (std::ostream& stream, const Address adr)
 {
 	char addressBuffer[INET6_ADDRSTRLEN];
-	if(inet_ntop(adr.addr.ss_family, Helper::getInAddr((sockaddr*)&adr.addr), addressBuffer, INET6_ADDRSTRLEN) != NULL)
+	if(inet_ntop(adr.addr.ss_family, getInAddr((sockaddr*)&adr.addr), addressBuffer, INET6_ADDRSTRLEN) != NULL)
 	{
 		/*stream << "{family: ";
 		switch(adr.addr.ss_family)

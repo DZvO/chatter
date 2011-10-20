@@ -20,13 +20,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-using namespace std;
 
 #include "helper.hpp"
 #include "network/packet.hpp"
 #include "network/address.hpp"
 #include "network/sendbuffer.hpp"
 #include "network/receivebuffer.hpp"
+
+using namespace std;
 
 extern const unsigned short MAX_BUF_SIZE;
 

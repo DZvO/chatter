@@ -2,7 +2,7 @@
 
 char * loadFile(const char * path);
 
-TextVertices::TextVertices(Window * window, Image * font, glm::vec2 * kern)
+TextVertices::TextVertices(Image * font, glm::vec2 * kern)
 {
 	vertices = NULL;
 	this->font = font;

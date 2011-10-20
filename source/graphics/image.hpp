@@ -5,7 +5,7 @@
 #include <string>
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
-#include <graphics/glew/glew.h>
+#include "lib/glew/glew.h"
 
 class Image
 {
@@ -14,10 +14,14 @@ class Image
 	Image(std::string path);
 	~Image();
 
-	void load(std::string path);
+	void create (unsigned int width, unsigned int height);
+	void load (std::string path);
+	void upload ();
 
 	unsigned int getGlPointer();
 	unsigned int getPixel(unsigned int x, unsigned int y);
+
+	unsigned int * pixels;
 
 	private:
 	std::string path;

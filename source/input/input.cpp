@@ -5,7 +5,6 @@ Input::Input()
 	keystate = SDL_GetKeyState(NULL);
 	close_requested = false;
 	textmode = false;
-	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 }
 
 Input::~Input()
@@ -22,6 +21,16 @@ void Input::disableTextmode()
 {
 	SDL_EnableUNICODE(0);
 	textmode = false;
+}
+
+void Input::enableKeyRepeat ()
+{
+	SDL_EnableKeyRepeat(1500, 50);
+}
+
+void Input::disableKeyRepeat ()
+{
+	SDL_EnableKeyRepeat(0, 0);
 }
 
 unsigned char Input::getChar()

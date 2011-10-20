@@ -46,19 +46,19 @@ char * loadFile(const char* path)
 	return str;
 }
 
-Chatlog::Chatlog(Window * window)
+Chatlog::Chatlog()
 {
 	font = new Image("data/font.png");
+	font->upload();
 	kerning = new glm::vec2 [256];
 	loadKerning();
 
-	this->window = window;
-	line_vertices = new TextVertices(window, font, kerning);
+	line_vertices = new TextVertices(font, kerning);
 
 	message_list = new list<Message*>;
 	vertices_list = new list<TextVertices*>;
 
-	position = glm::vec2(-((double)window->getWidth() / 2), ((double)window->getHeight() / 2));
+	position = glm::vec2(0, 0); //glm::vec2(-((double)window->getWidth() / 2), ((double)window->getHeight() / 2));
 
 	programPointer = vertexPointer = fragmentPointer = 0;
 	positionAttrib = texcoordAttrib = colorAttrib = 0;
@@ -135,19 +135,31 @@ void Chatlog::add (Message * msg)
 	//text->upload(msg->text, 1.0, (unsigned char)((msg->text_color & 0x00ff0000) >> 16), (unsigned char)((msg->text_color & 0x0000ff00) >> 8), (unsigned char)(msg->text_color & 0x000000ff), 1.0, 1.0);
 	//vertices_list->push_back(text);
 
-	TextVertices * text  = new TextVertices(window, font, kerning);
-	string by_color = lexical_cast<std::string>(msg->by_color & 0x00ffffff); //mask out alpha, because we only want rgb ('rrggbb') and not argb('aarrggbb')
-	string text_color = lexical_cast<std::string>(msg->text_color & 0x00ffffff);
-	cout << by_color << endl;
-	cout << text_color << endl << endl;
+	TextVertices * text  = new TextVertices(font, kerning);
 
-	text->upload("\xff" + by_color + msg->by + " " + "\xff" + text_color + msg->text, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
+	std::string color_str_by;
+	std::stringstream ssb;
+	ssb.width(6);
+	ssb.setf(ios::hex);
+	ssb.fill('0');
+	ssb << std::hex << (msg->by_color & 0x00ffffff);
+	ssb >> std::hex >> color_str_by;
+
+	std::string color_str_text;
+	std::stringstream sst;
+	sst.width(6);
+	sst.setf(ios::hex);
+	sst.fill('0');
+	sst << std::hex << (msg->text_color & 0x00ffffff);
+	sst >> std::hex >> color_str_text;
+
+	text->upload("\xff" + color_str_by + msg->by + " " + "\xff" + color_str_text + msg->text, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
 	vertices_list->push_front(text);
 }
 
 void Chatlog::add (const std::string * str)
 {
-	TextVertices * tv = new TextVertices(window, font, kerning);
+	TextVertices * tv = new TextVertices(font, kerning);
 	tv->upload(*str, 1.0, 1.0f, 1.0f, 1.0f, size.x, size.y);
 
 	//vertices_list->push_back(NULL);//'text'
@@ -159,7 +171,7 @@ void Chatlog::add (std::string str)
 	add(&str);
 }
 
-void Chatlog::draw(Window * window)
+void Chatlog::draw()
 {
 	glUseProgram(programPointer);
 	glUniform1i(fontTexUniform, 0);
@@ -173,7 +185,7 @@ void Chatlog::draw(Window * window)
 		position.y -= line_vertices->getSize()->y;
 
 		//glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*window->getProjection()));
+		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getOrthoProjection())));
 		glm::mat4 translated_view = glm::translate(view, glm::vec3(position, 0.0));
 		glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(translated_view));
 		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -205,22 +217,22 @@ void Chatlog::draw(Window * window)
 			continue;
 		}
 
-			glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*window->getProjection()));
-			glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
-			glm::mat4 translated_model = glm::translate(model, glm::vec3(position, 0.0));
-			glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
+		glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getOrthoProjection())));
+		glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
+		glm::mat4 translated_model = glm::translate(model, glm::vec3(position, 0.0));
+		glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
-			glBindBuffer(GL_ARRAY_BUFFER, tv->getPointer());
-			glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+		glBindBuffer(GL_ARRAY_BUFFER, tv->getPointer());
+		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
-			glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
-			glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
-			glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
+		glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(0));
+		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3)));
+		glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertices::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec2)));
 
-			glDrawArrays(GL_QUADS, 0, tv->getVertexCount());
+		glDrawArrays(GL_QUADS, 0, tv->getVertexCount());
 
-			glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }
 

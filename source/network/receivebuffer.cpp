@@ -79,6 +79,7 @@ unsigned int ReceiveBuffer::getInt ()
 {
 	unsigned int rv = 0;
 	rv = ((unsigned int)getShort()) | ((unsigned int)getShort() << 16);
+	return rv;
 }
 
 unsigned long ReceiveBuffer::getLong ()

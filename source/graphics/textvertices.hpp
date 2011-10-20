@@ -10,17 +10,18 @@
 using namespace std;
 
 //#include "graphics/image.hpp"
-#include <graphics/glew/glew.h>
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "lib/glew/glew.h"
+#include "lib/glm/glm.hpp"
+#include "lib/glm/gtc/matrix_transform.hpp"
+#include "lib/glm/gtc/type_ptr.hpp"
 #include "graphics/image.hpp"
 #include "graphics/window.hpp"
+using namespace motor;
 
 class TextVertices
 {
 	public:
-	TextVertices(Window * window, Image * font, glm::vec2 * kern);
+	TextVertices(Image * font, glm::vec2 * kern);
 	~TextVertices();
 
 	glm::vec2 upload(std::string msg, double scale = 1.0, float r = 1.0, float g = 1.0, float b = 1.0, float width = 1.0, float height = 1.0); //returns width and height used

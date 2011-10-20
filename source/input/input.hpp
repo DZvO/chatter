@@ -73,6 +73,8 @@ class Input
 	void enableTextmode();	//keyboard layout translation for example from standard QWERTY to DVORAK, so the user can type in his favourite layout
 	void disableTextmode();
 	unsigned char getChar();
+	void enableKeyRepeat();
+	void disableKeyRepeat();
 	/* --------------- */
 
 	int refresh();

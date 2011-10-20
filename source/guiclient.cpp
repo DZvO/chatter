@@ -2,8 +2,13 @@
 #include <string>
 using namespace std;
 
-#include <graphics/glew/glew.h>
+#include "lib/glew/glew.h"
 #include <SDL/SDL.h>
+
+#include "lib/glm/glm.hpp"
+#include "lib/glm/gtc/matrix_transform.hpp"
+#include "lib/glm/gtx/projection.hpp"
+#include "lib/glm/gtc/type_ptr.hpp"
 
 #include "graphics/window.hpp"
 #include "input/input.hpp"
@@ -20,48 +25,29 @@ using namespace std;
 #include "chat/message.hpp"
 #include "graphics/chatlog.hpp"
 
-#include <graphics/glm/glm.hpp>
-#include <graphics/glm/gtc/matrix_transform.hpp>
-#include <graphics/glm/gtx/projection.hpp>
-#include <graphics/glm/gtc/type_ptr.hpp>
+using namespace motor;
 
-enum STATE
-{
-	CONNECTING, NAME_ENTRY, CONNECTED
-} state = CONNECTING;
-
-bool hex_string_valid (std::string input)
-{
-	for(unsigned int length = 0; length < input.length(); length++)
-	{
-		char c = input[length];
-		if((c < 'a' || c > 'f') && (c < '0' || c > '9'))
-		{
-			cout << "\"" << c << "\" isn't valid" << endl;
-			return false;
-		}
-	}
-	return true;
-}
+enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 int main (int argc, char * argv[])
 {
-	Window * window = new Window();
-	window->create(800, 600, "inspector gadget!");
+	Window::getInstance()->create(800, 600, "inspector gadget!");
 
 	bool enable_textinput = false;
 	Input * input = new Input();
-	Cooldown * cd = new Cooldown();
-	std::string * line = NULL;
 
-	Chatlog * chatlog = new Chatlog(window);
-	chatlog->setWidth(800.0);
-	chatlog->setHeight(100.0);
-
-	string name;
 	unsigned int color = 0xffffff;//0xff6000;
+	string * name = new string("");
+	string * line = nullptr;
 
-	Address * server = new Address("192.168.2.100", 1337);
+	Chatlog * chatlog = new Chatlog();
+	chatlog->setSize(800.0, 100.0);
+	chatlog->setPosition(-((double)Window::getInstance()->getWidth() / 2), ((double)Window::getInstance()->getHeight() / 2));
+
+	chatlog->setLine("Please enter the address of the server");
+	string * address = new string("");
+
+	Address * server = nullptr;//new Address(*address, 1337);
 	Socket * socket = new Socket(1337);
 	Packet * packet_buffer = new Packet();
 	packet_buffer->allocate();
@@ -69,186 +55,301 @@ int main (int argc, char * argv[])
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
 
-	Packet * connect_packet = new Packet();
-	connect_packet->allocate();
-	connect_packet->type = Packet::CONNECT_PACKET;
-	socket->send(connect_packet, server);
-	chatlog->setLine("Waiting for server, please be patient...");
-
-		
 	while(input->closeRequested() == false)
 	{
-		// network ------------------
-		if(socket->receive(packet_buffer, NULL) > 1)
+		switch(state)
 		{
-			if(packet_buffer->type == Packet::CONNECT_PACKET)
-			{
-				identifier = (unsigned int)(packet_buffer->payload[0]) | (unsigned int)(packet_buffer->payload[1] << 8) | (unsigned int)(packet_buffer->payload[2] << 16) | (unsigned int)(packet_buffer->payload[3] << 24);
-				cout << "got identifier: " << identifier << endl;
-				delete packet_buffer;
-				packet_buffer = new Packet();
-				packet_buffer->allocate();
-				chatlog->setLine("Connected, now please enter your name:");
-				state = NAME_ENTRY;
-			}
-			else if(packet_buffer->type == Packet::DATA_PACKET)
-			{
-				man->add(packet_buffer);
-				if(man->hasCompleted())
+			/* case ADDRESS_ENTRY {{{ */
+			case ADDRESS_ENTRY:
 				{
-					ReceiveBuffer * complete = man->getCompleted();
-					Message * recvd = new Message();
-					recvd->by = complete->getString();
-					recvd->by_color = complete->getInt();
-					recvd->text = complete->getString();
-					recvd->text_color = complete->getInt();
-					cout << recvd->by << ": " << recvd->text << endl;
-					chatlog->add(recvd);
-
-					delete complete;
-					delete packet_buffer;
-					packet_buffer = new Packet();
-					packet_buffer->allocate();
-				}
-			}
-		}
-		//	--------------------------
-
-		while(input->refresh())
-		{
-			if(input->isPressed(Input::kR) && input->isPressedSym(Input::kLShift))
-			{
-				window->resize(600, 400);
-			}
-			if(input->isPressed(Input::kC) && input->isPressedSym(Input::kLShift))
-			{
-				window->resize(800, 600);
-			}
-			if(input->isPressed(Input::kEnter))
-			{
-				if(enable_textinput)
-				{
-					if((*line) != "")
+					input->enableTextmode();
+					while(input->refresh())
 					{
-						if(state == NAME_ENTRY)
+						if(input->isPressed(Input::kEnter))
 						{
-							name = *line;
-							//state = COLOR_ENTRY;
-							state = CONNECTED;
-							chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
-							chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
-						}
-						else if(state == CONNECTED)
-						{
-							if((*line)[0] != '/')
+							if(*address == "")
 							{
-								Message * sendMessage = new Message();
-								sendMessage->by = name;
-								sendMessage->by_color = color;
-								sendMessage->text = *line;
-								chatlog->add(sendMessage);
-
-								SendBuffer sendBuffer;
-								sendBuffer.addInt(identifier);
-								sendBuffer.addString(sendMessage->by);
-								sendBuffer.addInt(sendMessage->by_color);
-								sendBuffer.addString(sendMessage->text);
-								sendBuffer.addInt(sendMessage->text_color);
-								socket->send(&sendBuffer, server);
+								chatlog->setLine("Please enter a address!");
 							}
 							else
 							{
-								if(line->find("/color") != string::npos)
+								chatlog->setLine("");
+								state = ACK_WAIT;
+								chatlog->setLine("Waiting for server, please be patient...");
+
+								//TODO add check if server/Address was initialized properly
+								server = new Address(*address, 1337);
+								Packet * connect_packet = new Packet();
+								connect_packet->allocate();
+								connect_packet->type = Packet::CONNECT_PACKET;
+								socket->send(connect_packet, server);
+							}
+						}
+						else
+						{
+							unsigned char c = input->getChar();
+							if(c != 0)
+							{
+								if(c == '\b')
 								{
-									if(line->length() >= 8+7)
-									{
-										std::string color_str = line->substr(7);
-										try
-										{
-											std::string color_str_r = color_str.substr(0, 2);
-											if(!hex_string_valid(color_str_r))
-												throw("r");
-											unsigned int color_r = lexical_cast<unsigned int>(color_str_r) << 16;
-
-											std::string color_str_g = color_str.substr(3, 2);
-											if(!hex_string_valid(color_str_g))
-												throw("g");
-											unsigned int color_g = lexical_cast<unsigned int>(color_str_g) << 8;
-
-											std::string color_str_b = color_str.substr(6, 2);
-											if(!hex_string_valid(color_str_b))
-												throw("b");
-											unsigned int color_b = lexical_cast<unsigned int>(color_str_b) << 0;
-
-											color = color_r | color_g | color_b;
-
-											chatlog->add("\xff""888888""Okay! set color to: ""\xff" + lexical_cast<std::string>(color) + lexical_cast<std::string>(color));
-											chatlog->setLine("");
-										}
-										catch(const char * e)
-										{
-											chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
-											cout << "catch'd \"" << e << "\"" << endl;
-										}
-									}
-									else
-									{
-										chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
-									}
-								}
-								else if(line->find("/quit") != string::npos)
-								{
-									input->requestClose();
+									*address = address->substr(0, address->size() - 1); //substract last character because backspace was pressed
+									chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *address);
 								}
 								else
 								{
-									chatlog->add("\xff""888888""Sorry, don't know what you mean.");
+									(*address) += c;
+									chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *address);
 								}
 							}
 						}
 					}
-					delete line;
+				}
+				break;
+				/* }}} */
+			case ACK_WAIT: /* {{{ */
+				{
 					input->disableTextmode();
-					enable_textinput = false;
-					chatlog->setLine("");
-				}
-				else
-				{
-					enable_textinput = true;
-					input->enableTextmode();
-					line = new std::string();
-					chatlog->setLine("\xff""424242""> ");
-				}
-				//cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
-			}
-			else
-			{
-				if(enable_textinput)
-				{
-					unsigned char c = input->getChar();
-					if(c != 0)
+					if(socket->receive(packet_buffer, nullptr) > 1)
 					{
-						if(c == '\b')
+						if(packet_buffer->type == Packet::CONNECT_PACKET)
 						{
-							*line = line->substr(0, line->size() - 1); //substract last character because backspace was pressed
-							chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
+							identifier = (unsigned int)(packet_buffer->payload[0]) | (unsigned int)(packet_buffer->payload[1] << 8) | (unsigned int)(packet_buffer->payload[2] << 16) | (unsigned int)(packet_buffer->payload[3] << 24);
+							delete packet_buffer;
+							packet_buffer = new Packet();
+							packet_buffer->allocate();
+							state = NAME_ENTRY;
+							chatlog->setLine("Connection established, now enter your name");
+						}
+					}
+					//TODO add time check, and resend ack-request after a certain amount of time
+
+					//ignore all input, except close requests, which are handled in the uppre while loop
+					while(input->refresh())
+					{
+					}
+				}
+				break; /* }}} */
+			case NAME_ENTRY: /* {{{ */
+				{
+					input->enableTextmode();
+					while(input->refresh())
+					{
+						if(input->isPressed(Input::kEnter))
+						{
+							if(*name != "")
+							{
+								state = NORMAL;
+								chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
+								chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
+								chatlog->setLine("");
+							}
+							else
+							{
+								chatlog->setLine("Please enter your name!");
+							}
 						}
 						else
 						{
-							(*line) += c;
-							chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
+							unsigned char c = input->getChar();
+							if(c != 0)
+							{
+								if(c == '\b')
+								{
+									*name = name->substr(0, name->size() - 1); //substract last character because backspace was pressed
+									chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *name);
+								}
+								else
+								{
+									(*name) += c;
+									chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *name);
+								}
+							}
 						}
 					}
 				}
-			}
-		}
+				break; /* }}} */
+			case NORMAL: /* {{{ */
+				{
+					// network ------------------
+					if(socket->receive(packet_buffer, nullptr) > 1)
+					{
+						if(packet_buffer->type == Packet::DATA_PACKET)
+						{
+							man->add(packet_buffer);
+							if(man->hasCompleted())
+							{
+								ReceiveBuffer * complete = man->getCompleted();
+								Message * recvd = new Message();
+								recvd->by = complete->getString();
+								recvd->by_color = complete->getInt();
+								recvd->text = complete->getString();
+								recvd->text_color = complete->getInt();
+								cout << recvd->by << ": " << recvd->text << endl;
+								chatlog->add(recvd);
 
-		window->clear();
-		chatlog->draw(window);
-		window->swap();
+								delete complete;
+								delete packet_buffer;
+								packet_buffer = new Packet();
+								packet_buffer->allocate();
+							}
+						}
+						else
+						{
+							cerr << "wrong packet received" << endl;
+						}
+					}
+					//	--------------------------
+
+					while(input->refresh())
+					{
+						if(input->isPressed(Input::kR) && input->isPressedSym(Input::kLShift))
+						{
+							Window::getInstance()->resize(600, 400);
+						}
+						if(input->isPressed(Input::kC) && input->isPressedSym(Input::kLShift))
+						{
+							Window::getInstance()->resize(800, 600);
+						}
+						if(input->isPressed(Input::kEnter))
+						{
+							if(enable_textinput)
+							{
+								if((*line) != "")
+								{
+									if((*line)[0] != '/')
+									{
+										Message * sendMessage = new Message();
+										sendMessage->by = *name;
+										sendMessage->by_color = color;
+										sendMessage->text = *line;
+										chatlog->add(sendMessage);
+
+										SendBuffer sendBuffer;
+										sendBuffer.addInt(identifier);
+										sendBuffer.addString(sendMessage->by);
+										sendBuffer.addInt(sendMessage->by_color);
+										sendBuffer.addString(sendMessage->text);
+										sendBuffer.addInt(sendMessage->text_color);
+										socket->send(&sendBuffer, server);
+									}
+									else
+									{
+										if(line->find("/color") != string::npos)
+										{
+											if(line->length() >= 8+7)
+											{
+												std::string color_str = line->substr(7);
+												try
+												{
+													std::string color_str_r = color_str.substr(0, 2);
+													if(!hex_string_valid(color_str_r))
+														throw("r");
+													unsigned int color_r = 0;
+													std::stringstream ss_r; 
+													ss_r.setf(ios::hex);
+													ss_r << std::hex << color_str_r;
+													ss_r >> std::hex >> color_r;
+
+													std::string color_str_g = color_str.substr(3, 2);
+													if(!hex_string_valid(color_str_g))
+														throw("g");
+													unsigned int color_g = 0;
+													std::stringstream ss_g;
+													ss_g << std::hex << color_str_g;
+													ss_g >> std::hex >> color_g;
+
+													std::string color_str_b = color_str.substr(6, 2);
+													if(!hex_string_valid(color_str_b))
+														throw("b");
+													unsigned int color_b = 0;
+													std::stringstream ss_b;
+													ss_b.setf(ios::hex);
+													ss_b << std::hex << color_str_b;
+													ss_b >> std::hex >> color_b;
+
+													color = (color_r << 16) | (color_g << 8) | (color_b << 0);
+
+													std::string color_str;
+													std::stringstream ss;
+													ss.width(6);
+													ss.setf(ios::hex);
+													ss.fill('0');
+													ss << std::hex << color;
+													//cout << "color:" << color << endl;
+													ss >> std::hex >> color_str;
+													//cout << color_str_r << " " << color_str_g << " " << color_str_b << " => " << color_str << endl;
+													//cout << color_r << " " << color_g << " " << color_b << " " << " => " << color << endl; 
+
+													chatlog->add("\xff""888888""Okay! set color to: ""\xff" + color_str + color_str);
+													chatlog->setLine("");
+												}
+												catch(const char * e)
+												{
+													chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
+													cout << "catch'd \"" << e << "\"" << endl;
+												}
+											}
+											else
+											{
+												chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
+											}
+										}
+										else if(line->find("/quit") != string::npos)
+										{
+											input->requestClose();
+										}
+										else
+										{
+											chatlog->add("\xff""888888""Sorry, don't know what you mean.");
+										}
+									}
+								}
+								delete line;
+								input->disableTextmode();
+								input->disableKeyRepeat();
+								enable_textinput = false;
+								chatlog->setLine("");
+							}
+							else
+							{
+								enable_textinput = true;
+								input->enableTextmode();
+								input->enableKeyRepeat();
+								line = new std::string();
+								chatlog->setLine("\xff""424242""> ");
+							}
+							//cout << "textmode is " << (enable_textinput ? "enabled" : "disabled") << endl;
+						}
+						else
+						{
+							if(enable_textinput)
+							{
+								unsigned char c = input->getChar();
+								if(c != 0)
+								{
+									if(c == '\b')
+									{
+										*line = line->substr(0, line->size() - 1); //substract last character because backspace was pressed
+										chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
+									}
+									else
+									{
+										(*line) += c;
+										chatlog->setLine(string("\xff""424242""> ""\xff""ffffff") + *line);
+									}
+								}
+							}
+						}
+					}
+				}
+				break; /* }}} */
+		}
+		Window::getInstance()->clear();
+		chatlog->draw();
+		Window::getInstance()->swap();
 	}
 
-	if(server != NULL)
+	if(server != nullptr)
 	{
 		Packet * disconnect_packet = new Packet();
 		disconnect_packet->allocate();
@@ -261,10 +362,10 @@ int main (int argc, char * argv[])
 		socket->send(disconnect_packet, server);
 	}
 
-	window->close();
-	delete window;
+	Window::getInstance()->close();
 	delete input;
-	delete cd;
 	delete socket;
 	return 0;
 }
+
+// vim:foldmethod=marker
