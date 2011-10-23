@@ -57,10 +57,12 @@ void Image::upload ()
 	if(surface->format->Amask)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, 4, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+		std::cout << "loaded image " << path << " with amask\n";
 	}
 	else
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, 3, surface->w, surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
+		std::cout << "loaded image " << path << " without amask\n";
 	}
 	this->gl_pointer = texture;
 }

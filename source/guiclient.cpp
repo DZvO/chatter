@@ -24,14 +24,15 @@ using namespace std;
 
 #include "chat/message.hpp"
 #include "graphics/chatlog.hpp"
-
 using namespace motor;
+
+#include "graphics/cube.hpp"
 
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 int main (int argc, char * argv[])
 {
-	Window::getInstance()->create(800, 600, "inspector gadget!");
+	Window::getInstance()->create(800, 600, "inspector gadget!", true);
 
 	bool enable_textinput = false;
 	Input * input = new Input();
@@ -41,10 +42,12 @@ int main (int argc, char * argv[])
 	string * line = nullptr;
 
 	Chatlog * chatlog = new Chatlog();
-	chatlog->setSize(800.0, 100.0);
+	chatlog->setSize(800.0, 600.0);
 	chatlog->setPosition(-((double)Window::getInstance()->getWidth() / 2), ((double)Window::getInstance()->getHeight() / 2));
 
 	chatlog->setLine("Please enter the address of the server");
+	//for(int i = 0; i < 40; i++)
+		//chatlog->add("\xff""aaaaaa""Lorem ipsum dolor sit amet, lorem ipsum dolor sit amet");
 	string * address = new string("");
 
 	Address * server = nullptr;//new Address(*address, 1337);
@@ -54,6 +57,8 @@ int main (int argc, char * argv[])
 	unsigned int identifier = 0;
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
+
+	Cube * cube = new Cube();
 
 	while(input->closeRequested() == false)
 	{
@@ -344,7 +349,11 @@ int main (int argc, char * argv[])
 				}
 				break; /* }}} */
 		}
+
+		cube->tick();
+
 		Window::getInstance()->clear();
+		cube->draw();
 		chatlog->draw();
 		Window::getInstance()->swap();
 	}

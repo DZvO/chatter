@@ -26,9 +26,31 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	SDL_WM_SetCaption(window_title, NULL);
 	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0); // has no effect on my platform
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL);
-	/* // SDL stuff */
-	
+
+	/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
+	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 2 ) ;*/
+
+	screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+	//glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE_ARB);
+
+	if(smooth_shading)
+	{
+		glShadeModel(GL_SMOOTH);
+		//forget smooth shading, USE ALL THE ANTI ALIASING
+		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
+		//glEnable(GL_MULTISAMPLE);
+		///glEnable(GL_MULTISAMPLE_ARB);
+		//glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
+		//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+
+		//glEnable(GL_LINE_SMOOTH);
+		//glEnable(GL_POLYGON_SMOOTH);
+	}
+
+
+
 	/* OpenGL stuff */
 	//const float ftobconst = 1.0f / 255.0f;
 	//glClearColor(ftobconst * 146.f, ftobconst * 161.f, ftobconst * 207.f, 0);
@@ -40,26 +62,24 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	glEnable(GL_TEXTURE_2D);
 
 	glEnable(GL_CULL_FACE); //enabe culling of "invisible" faces
-	//glFrontFace(GL_CCW);		//in which direction are the vertices of front facing faces arranged? --> CCW
+	glFrontFace(GL_CCW);		//in which direction are the vertices of front facing faces arranged? --> CCW
 	glCullFace(GL_BACK);		//cull back
 
 	glEnable(GL_DEPTH_TEST); //enable depth testing, this prevents stuff being drawn over things that are nearer to the camera
 
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
 
-	if(smooth_shading)
-	{
-		glShadeModel(GL_SMOOTH);
-	}
 
-	//glEnable(GL_ALPHA_TEST);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)
 	{
 		std::cout << "Your graphics card doesn't support Opengl 2.x, and I need it to run properly. Therefore i will now exit in peace." << std::endl;
+		std::cout << "(Or there was an error initializing glew, which is equally bad!)" << std::endl;
 		exit(-1);
 	}
 
@@ -89,7 +109,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		//clog << glXQueryExtensionsString(glXGetCurrentDisplay(), 0);
 		clog << ")\n";
 	}
-	
+
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 	ortho_projection = glm::ortho((double)-(width/2), (double)(width/2), (double)(height/2), (double)-(height/2), -1.0, 1.0);//glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
 	perspective_projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);

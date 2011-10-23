@@ -32,7 +32,7 @@ libchat = env.Clone()
 libchat.Library('chat', splitter("chat/", "message"))
 
 libstuff = env.Clone()
-libstuff.Library('stuff', splitter("./", "cube"))
+libstuff.Library('stuff', splitter("graphics/", "cube"))
 # -- ---- --
 
 guiclient = env.Clone()

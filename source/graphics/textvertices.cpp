@@ -80,11 +80,11 @@ glm::vec2 TextVertices::upload(std::string msg, double scale, float r, float g, 
 		}
 		else if(c == '\n')// || (xr + (0.08 - ((kerning[c].x * 0.01) + (kerning[c].y * 0.01)) + 0.01)) > 1)
 		{
-			yu = yl + 4.0;
-			yl += 8.0;
+			yu = yl + 1.0;
+			yl += (8.0 + 1.0) * 2;
 			xl = 0;
 			rv.x = xr;
-			xr = 8.0;
+			xr = (8.0 - (kerning[c].x + kerning[c].y + 0)) * 2;
 			offset = 0.0;
 		}
 		else if(c == 0xff)
