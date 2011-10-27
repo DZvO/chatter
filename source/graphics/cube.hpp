@@ -9,6 +9,7 @@
 #include <GL/gl.h>
 #include "graphics/window.hpp"
 using motor::Window;
+#include "graphics/image.hpp"
 
 class Cube
 {
@@ -35,6 +36,7 @@ class Cube
 
 	private:
 	char * loadFile (const char * path);
+	Image * texture;
 	glm::vec3 rotation;
 	glm::vec3 position;
 	glm::mat4 modelmatrix;

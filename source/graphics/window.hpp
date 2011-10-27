@@ -79,6 +79,14 @@ namespace motor
 				block = b;
 			}
 
+			/**
+			 * Returns the frametime, in milliseconds
+			 */
+			float getFrametime ()
+			{
+				return frametime;
+			}
+
 		private:
 			bool block;
 

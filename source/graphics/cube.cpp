@@ -24,6 +24,9 @@ char * Cube::loadFile(const char* path)
 
 Cube::Cube() : rotation(0.0), position(0.0, 0.0, -15.0), modelmatrix(1.0)
 {
+	texture = new Image("data/cube.png");
+	texture->upload();
+
 	programPointer = vertexPointer = fragmentPointer = 0;
 	positionAttrib = texcoordAttrib = colorAttrib = 0;
 	projectionUniform = viewUniform = modelUniform = texUniform = 0;
@@ -66,42 +69,43 @@ Cube::Cube() : rotation(0.0), position(0.0, 0.0, -15.0), modelmatrix(1.0)
 	using glm::vec3; using glm::vec2;
 
 	//middle/center of cube is (0|0|0)
+	const float s = 1.0 / 6.0 - 0.0001;
 	
-	//front face
+	//front face - 1st part of texture
 	vertices[0]  = vertex_t(vec3(-0.5, +0.5, +0.5), vec2(0, 0), vec3(1.0, 1.0, 1.0));//upper - left - front 
 	vertices[1]  = vertex_t(vec3(-0.5, -0.5, +0.5), vec2(0, 1), vec3(1.0, 1.0, 1.0));//lower - left - front
-	vertices[2]  = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(1, 1), vec3(1.0, 1.0, 1.0));//lower - right - front 
-	vertices[3]  = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(1, 0), vec3(1.0, 1.0, 1.0));//upper - right - front
+	vertices[2]  = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(s, 1), vec3(1.0, 1.0, 1.0));//lower - right - front 
+	vertices[3]  = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(s, 0), vec3(1.0, 1.0, 1.0));//upper - right - front
 
-	//right face
-	vertices[4]  = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(0, 0), vec3(1.0, 1.0, 0.0));//upper - left - right
-	vertices[5]  = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(0, 1), vec3(1.0, 1.0, 0.0));//lower - left - right
-	vertices[6]  = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(1, 1), vec3(1.0, 1.0, 0.0));//lower - right - right 
-	vertices[7]  = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(1, 0), vec3(1.0, 1.0, 0.0));//upper - right - right
+	//right face - 2nd part of texture
+	vertices[4]  = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(s, 0), vec3(1.0, 1.0, 1.0));//upper - left - right
+	vertices[5]  = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(s, 1), vec3(1.0, 1.0, 1.0));//lower - left - right
+	vertices[6]  = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(s*2, 1), vec3(1.0, 1.0, 1.0));//lower - right - right 
+	vertices[7]  = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(s*2, 0), vec3(1.0, 1.0, 1.0));//upper - right - right
 
-	//back face
-	vertices[8]  = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(0, 0), vec3(1.0, 0.0, 1.0));//upper - left - back
-	vertices[9]  = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(0, 1), vec3(1.0, 0.0, 1.0));//lower - left - back
-	vertices[10] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(1, 1), vec3(1.0, 0.0, 1.0));//lower - right - back
-	vertices[11] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(1, 0), vec3(1.0, 0.0, 1.0));//upper - right - back
+	//back face - 3rd part of texture
+	vertices[8]  = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(s*2, 0), vec3(1.0, 1.0, 1.0));//upper - left - back
+	vertices[9]  = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(s*2, 1), vec3(1.0, 1.0, 1.0));//lower - left - back
+	vertices[10] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(s*3, 1), vec3(1.0, 1.0, 1.0));//lower - right - back
+	vertices[11] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(s*3, 0), vec3(1.0, 1.0, 1.0));//upper - right - back
 
-	//left face
-	vertices[12] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(0, 0), vec3(0.0, 1.0, 1.0));//upper - left - left
-	vertices[13] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(0, 1), vec3(0.0, 1.0, 1.0));//lower - left - left
-	vertices[14] = vertex_t(vec3(-0.5, -0.5, +0.5), vec2(1, 1), vec3(0.0, 1.0, 1.0));//lower - right - left
-	vertices[15] = vertex_t(vec3(-0.5, +0.5, +0.5), vec2(1, 0), vec3(0.0, 1.0, 1.0));//upper - right - left
+	//left face - 4th part of texture
+	vertices[12] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(s*3, 0), vec3(1.0, 1.0, 1.0));//upper - left - left
+	vertices[13] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(s*3, 1), vec3(1.0, 1.0, 1.0));//lower - left - left
+	vertices[14] = vertex_t(vec3(-0.5, -0.5, +0.5), vec2(s*4, 1), vec3(1.0, 1.0, 1.0));//lower - right - left
+	vertices[15] = vertex_t(vec3(-0.5, +0.5, +0.5), vec2(s*4, 0), vec3(1.0, 1.0, 1.0));//upper - right - left
 
-	//top face
-	vertices[16] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(0, 0), vec3(0.0, 1.0, 0.0));//upper - left - top
-	vertices[17] = vertex_t(vec3(-0.5, +0.5, +0.5), vec2(0, 1), vec3(0.0, 1.0, 0.0));//lower - left - top
-	vertices[18] = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(1, 1), vec3(0.0, 1.0, 0.0));//lower - right - top
-	vertices[19] = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(1, 0), vec3(0.0, 1.0, 0.0));//upper - right - top
+	//top face - 5th part of texture
+	vertices[16] = vertex_t(vec3(-0.5, +0.5, -0.5), vec2(s*4, 0), vec3(1.0, 1.0, 1.0));//upper - left - top
+	vertices[17] = vertex_t(vec3(-0.5, +0.5, +0.5), vec2(s*4, 1), vec3(1.0, 1.0, 1.0));//lower - left - top
+	vertices[18] = vertex_t(vec3(+0.5, +0.5, +0.5), vec2(s*5, 1), vec3(1.0, 1.0, 1.0));//lower - right - top
+	vertices[19] = vertex_t(vec3(+0.5, +0.5, -0.5), vec2(s*5, 0), vec3(1.0, 1.0, 1.0));//upper - right - top
 
-	//bottom face
-	vertices[20] = vertex_t(vec3(-0.5, -0.5, +0.5), vec2(0, 0), vec3(1.0, 0.0, 0.0));//upper - left - bottom
-	vertices[21] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(0, 1), vec3(1.0, 0.0, 0.0));//lower - left - bottom
-	vertices[22] = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(1, 1), vec3(1.0, 0.0, 0.0));//lower - right - bottom
-	vertices[23] = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(1, 0), vec3(1.0, 0.0, 0.0));//upper - right - bottom
+	//bottom face - 6th part of texture
+	vertices[20] = vertex_t(vec3(-0.5, -0.5, +0.5), vec2(s*5, 0), vec3(1.0, 1.0, 1.0));//upper - left - bottom
+	vertices[21] = vertex_t(vec3(-0.5, -0.5, -0.5), vec2(s*5, 1), vec3(1.0, 1.0, 1.0));//lower - left - bottom
+	vertices[22] = vertex_t(vec3(+0.5, -0.5, -0.5), vec2(1, 1), vec3(1.0, 1.0, 1.0));//lower - right - bottom
+	vertices[23] = vertex_t(vec3(+0.5, -0.5, +0.5), vec2(1, 0), vec3(1.0, 1.0, 1.0));//upper - right - bottom
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -112,8 +116,8 @@ Cube::Cube() : rotation(0.0), position(0.0, 0.0, -15.0), modelmatrix(1.0)
 
 void Cube::tick ()
 {
-	rotation.y -= 1.8;
-	rotation.x += 1.0;
+	rotation.y -= 1.8 * (Window::getInstance()->getFrametime() / 10) / 10;
+	rotation.x += 1.0 * (Window::getInstance()->getFrametime() / 10) / 10;
 }
 
 void Cube::draw ()
@@ -121,7 +125,7 @@ void Cube::draw ()
 	glUseProgram(programPointer);
 	glUniform1i(texUniform, 0);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, texture->getGlPointer());
 
 	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getPerspectiveProjection())));
 	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));

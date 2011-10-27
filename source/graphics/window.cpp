@@ -36,7 +36,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	if(smooth_shading)
 	{
-		glShadeModel(GL_SMOOTH);
+		//glShadeModel(GL_SMOOTH);
 		//forget smooth shading, USE ALL THE ANTI ALIASING
 		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
@@ -70,9 +70,9 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
 
 
-	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_ALPHA_TEST);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
 	glewInit();
@@ -112,7 +112,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 	ortho_projection = glm::ortho((double)-(width/2), (double)(width/2), (double)(height/2), (double)-(height/2), -1.0, 1.0);//glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
-	perspective_projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
+	perspective_projection = glm::perspective(70.0, double(width) / double(height), 1.0, 1000.0);
 	/* // OpenGL stuff */
 }
 
@@ -124,7 +124,7 @@ void motor::Window::resize (const unsigned short width, const unsigned short hei
 	screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_DOUBLEBUF);
 	glViewport(0, 0, width, height);
 	ortho_projection = glm::ortho(-((double)width/2), ((double)width/2), ((double)height/2), -((double)height/2), -1.0, 1.0);
-	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
+	perspective_projection = glm::perspective(70.0, double(width) / double(height), 1.0, 1000.0);
 }
 
 void motor::Window::clear ()
@@ -139,11 +139,11 @@ void motor::Window::swap()
 	frametimelast = getticks;
 	frametime = alpha * frametimedelta + (1.0 - alpha) * frametime;
 	framespersecond = 1000.0 / frametime;
-	//cout << frametime << '\n';
-	//cout << framespersecond << '\n';
-	//cout << endl;
-	if((int)framespersecond >= 33)
-		SDL_Delay(30);
+	cout << frametime << '\n';
+	cout << framespersecond << '\n';
+	cout << endl;
+	if((int)framespersecond >= 120-1)
+		SDL_Delay(8);
 
 	SDL_GL_SwapBuffers();
 }

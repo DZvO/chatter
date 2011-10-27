@@ -7,12 +7,12 @@ attribute vec3 position;
 attribute vec2 texcoord;
 attribute vec3 color;
 
-varying vec2 tex;
-varying vec3 col;
+varying vec2 fragtexcoord;
+varying vec3 fragcolor;
 
 void main()
 {
-	tex = texcoord;
-	col = color;
+	fragtexcoord = texcoord;
+	fragcolor = color;
 	gl_Position = projection * model * view * vec4(position, 1.0f);
 }
