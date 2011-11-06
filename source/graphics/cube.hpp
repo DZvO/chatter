@@ -10,6 +10,7 @@
 #include "graphics/window.hpp"
 using motor::Window;
 #include "graphics/image.hpp"
+#include "graphics/shaderHelper.hpp"
 
 class Cube
 {
@@ -17,6 +18,7 @@ class Cube
 	{
 		public:
 		glm::vec3 pos;//world position
+		glm::vec3 normal;
 		glm::vec2 tex;//texture coordinates
 		glm::vec3 col;
 		vertex_t() {}
@@ -27,22 +29,47 @@ class Cube
 			cout << "pos(" << vt.pos.x << "|" << vt.pos.y << "), tex(" << vt.tex.x << "|" << vt.tex.y << ")";
 			return os;
 		}
+		static glm::vec3 cross (glm::vec3 a, glm::vec3 b)
+		{
+			glm::vec3 result;
+			result.x = a.y * b.z - a.z * b.y;
+			result.y = a.z * b.x - a.x * b.z;
+			result.z = a.x * b.y - a.y * b.x;
+			return result;
+		}
+
+		static glm::vec3 getTriangleNormal (glm::vec3 a, glm::vec3 b, glm::vec3 c)
+		{
+			glm::vec3 edge1 = b - a;
+			glm::vec3 edge2 = c - a;
+			glm::vec3 normal = cross(edge1, edge2);
+			return normal;
+		}
 	};
 
 	public: 
-	Cube ();
+	Cube (bool useLight = true);
 	void tick ();
 	void draw ();
+
+	void setPosition (glm::vec3 p);
+	void setSize (glm::vec3 s);
 
 	private:
 	char * loadFile (const char * path);
 	Image * texture;
 	glm::vec3 rotation;
 	glm::vec3 position;
+	glm::vec3 size;
 	glm::mat4 modelmatrix;
 	unsigned int programPointer, vertexPointer, fragmentPointer;
-	unsigned int positionAttrib, texcoordAttrib, colorAttrib;
+	unsigned int positionAttrib, normalAttrib, texcoordAttrib, colorAttrib;
 	unsigned int projectionUniform, viewUniform, modelUniform, texUniform;
+
+	unsigned int num_lights;
+	unsigned int programLightPosLocation, programLightColorLocation;
+	float lightColor[3];
+	float lightPosition[3];
 
 	unsigned int vertexBuffer, vertexCount;
 	vertex_t * vertices;

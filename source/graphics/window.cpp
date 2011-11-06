@@ -36,20 +36,18 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	if(smooth_shading)
 	{
-		//glShadeModel(GL_SMOOTH);
+		glShadeModel(GL_SMOOTH);
 		//forget smooth shading, USE ALL THE ANTI ALIASING
 		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 		//glEnable(GL_MULTISAMPLE);
 		///glEnable(GL_MULTISAMPLE_ARB);
-		//glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
-		//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-
-		//glEnable(GL_LINE_SMOOTH);
-		//glEnable(GL_POLYGON_SMOOTH);
+		glEnable(GL_LINE_SMOOTH);
+		glEnable(GL_POLYGON_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
+		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
+		cout << "smooth!" << endl;
 	}
-
-
 
 	/* OpenGL stuff */
 	//const float ftobconst = 1.0f / 255.0f;
@@ -67,12 +65,12 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	glEnable(GL_DEPTH_TEST); //enable depth testing, this prevents stuff being drawn over things that are nearer to the camera
 
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
+	//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
 
 
-	//glEnable(GL_ALPHA_TEST);
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_ALPHA_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
 	glewInit();
@@ -139,9 +137,9 @@ void motor::Window::swap()
 	frametimelast = getticks;
 	frametime = alpha * frametimedelta + (1.0 - alpha) * frametime;
 	framespersecond = 1000.0 / frametime;
-	cout << frametime << '\n';
-	cout << framespersecond << '\n';
-	cout << endl;
+	//cout << frametime << '\n';
+	//cout << framespersecond << '\n';
+	//cout << endl;
 	if((int)framespersecond >= 120-1)
 		SDL_Delay(8);
 

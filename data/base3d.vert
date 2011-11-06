@@ -3,7 +3,8 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-attribute vec3 position;
+attribute vec4 position;
+attribute vec3 normal;
 attribute vec2 texcoord;
 attribute vec3 color;
 
@@ -12,7 +13,12 @@ varying vec3 fragcolor;
 
 void main()
 {
-	fragtexcoord = texcoord;
 	fragcolor = color;
-	gl_Position = projection * model * view * vec4(position, 1.0f);
+	fragtexcoord = texcoord;
+
+	//vec4 v = vec4(position, 1.0f);
+	//v = projection * view * model * v;
+
+	//gl_Position = v;
+	gl_Position = projection * view * model * position;
 }

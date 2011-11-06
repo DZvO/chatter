@@ -58,7 +58,11 @@ int main (int argc, char * argv[])
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
 
-	Cube * cube = new Cube();
+	Cube * cube = new Cube(true);
+	cube->setSize(glm::vec3(4, 4, 4));
+	Cube * cube2 = new Cube(false);
+	cube2->setPosition(glm::vec3(6, 7, -8));
+	cube2->setSize(glm::vec3(0.5, 0.5, 0.5));
 
 	while(input->closeRequested() == false)
 	{
@@ -351,9 +355,11 @@ int main (int argc, char * argv[])
 		}
 
 		cube->tick();
+		cube2->tick();
 
 		Window::getInstance()->clear();
 		cube->draw();
+		cube2->draw();
 		chatlog->draw();
 		Window::getInstance()->swap();
 	}

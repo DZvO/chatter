@@ -20,7 +20,7 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
+libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog cube shaderHelper") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))
@@ -31,12 +31,12 @@ libtime.Library('time', splitter("time/", "cooldown"))
 libchat = env.Clone()
 libchat.Library('chat', splitter("chat/", "message"))
 
-libstuff = env.Clone()
-libstuff.Library('stuff', splitter("graphics/", "cube"))
+#libstuff = env.Clone()
+#libstuff.Library('stuff', splitter("graphics/", "cube"))
 # -- ---- --
 
 guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat', 'stuff'])
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
 server.Program('server.cpp', LIBS=['network'])
