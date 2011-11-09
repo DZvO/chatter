@@ -20,7 +20,7 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog cube shaderHelper") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
+libgraphics.Library('graphics', splitter("graphics/", "window image textvertices chatlog cube shaderHelper camera") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))

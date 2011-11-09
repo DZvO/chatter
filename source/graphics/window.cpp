@@ -24,7 +24,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	//SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_WM_SetCaption(window_title, NULL);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0); // has no effect on my platform
+	//SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0); // has no effect on my platform
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;

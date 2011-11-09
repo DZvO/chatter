@@ -161,8 +161,7 @@ void Cube::draw ()
 	//glLightfv(GL_LIGHT0, GL_POSITION, glm::value_ptr(glm::vec4(1, 0.5, 1, 0)));
 
 	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getPerspectiveProjection())));
-	glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, +2));
-	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(view));
+	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(Camera::getInstance()->getView()));
 
 	glm::mat4 translated_model = modelmatrix;
 	translated_model = glm::translate(translated_model, position);

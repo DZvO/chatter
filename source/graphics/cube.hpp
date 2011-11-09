@@ -9,6 +9,7 @@
 #include <GL/gl.h>
 #include "graphics/window.hpp"
 using motor::Window;
+#include "graphics/camera.hpp"
 #include "graphics/image.hpp"
 #include "graphics/shaderHelper.hpp"
 

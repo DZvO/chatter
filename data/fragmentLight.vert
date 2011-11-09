@@ -12,6 +12,9 @@ varying vec4 fragColor;
 varying vec3 fragNormal;
 varying vec2 fragTexCoord;
 
+uniform vec3 lightPos;
+varying vec3 fragLightPos;
+
 void main ()
 {
 	fragTexCoord = texcoord;
@@ -23,6 +26,8 @@ void main ()
 
 	//transform the normal's orientation into eye space.
 	fragNormal = vec3(view * model * vec4(normal, 0.0));
+
+	fragLightPos = vec3(view * vec4(lightPos, 1.0));
 
 	gl_Position = projection * view * model * position;
 }

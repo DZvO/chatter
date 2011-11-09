@@ -27,12 +27,13 @@ using namespace std;
 using namespace motor;
 
 #include "graphics/cube.hpp"
+#include "graphics/camera.hpp"
 
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 int main (int argc, char * argv[])
 {
-	Window::getInstance()->create(800, 600, "inspector gadget!", true);
+	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
 
 	bool enable_textinput = false;
 	Input * input = new Input();
@@ -209,16 +210,26 @@ int main (int argc, char * argv[])
 					}
 					//	--------------------------
 
+					if(input->isPressedSym(Input::kW))
+					{
+						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, 0.5));
+					}
+					if(input->isPressedSym(Input::kD))
+					{
+						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, -0.5));
+					}
+
+					if(input->isPressedSym(Input::kArrowRight))
+					{
+						Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, 0.5, 0));
+					}
+					if(input->isPressedSym(Input::kArrowLeft))
+					{
+						Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, -0.5, 0));
+					}
+
 					while(input->refresh())
 					{
-						if(input->isPressed(Input::kR) && input->isPressedSym(Input::kLShift))
-						{
-							Window::getInstance()->resize(600, 400);
-						}
-						if(input->isPressed(Input::kC) && input->isPressedSym(Input::kLShift))
-						{
-							Window::getInstance()->resize(800, 600);
-						}
 						if(input->isPressed(Input::kEnter))
 						{
 							if(enable_textinput)

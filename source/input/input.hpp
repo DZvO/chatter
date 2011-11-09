@@ -62,7 +62,9 @@ class Input
 		kBackspace = SDLK_BACKSPACE,
 		kTab = SDLK_TAB,
 		kLShift = SDLK_LSHIFT,
-		kRShift = SDLK_RSHIFT
+		kRShift = SDLK_RSHIFT,
+		kArrowLeft = SDLK_LEFT,
+		kArrowRight = SDLK_RIGHT
 	};
 
 	public:
