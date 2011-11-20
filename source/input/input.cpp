@@ -43,14 +43,12 @@ unsigned char Input::getChar()
 
 const unsigned char* Input::getKeyState()
 {
-	SDL_EnableUNICODE(0);
 	keystate = SDL_GetKeyState(NULL);
 	return keystate;
 }
 
 bool Input::isPressedSym(Key k)
 {
-	SDL_EnableUNICODE(0);
 	keystate = SDL_GetKeyState(NULL);
 	return (keystate[k] == 1 ? true : false);
 }
