@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <SDL/SDL.h>
+#include "graphics/window.hpp"
 
 class Input
 {

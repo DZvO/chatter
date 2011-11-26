@@ -88,6 +88,10 @@ int Input::refresh()
 		{
 			close_requested = true;
 		}
+		if(event.type == SDL_VIDEORESIZE)
+		{
+			motor::Window::getInstance()->resize(event.resize.w, event.resize.h);
+		}
 	}
 	return rv;
 	//TODO handle mouse

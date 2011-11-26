@@ -24,13 +24,12 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	//SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_WM_SetCaption(window_title, NULL);
-	SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0); // has no effect on my platform
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 2 ) ;*/
 
-	screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+	screen = SDL_SetVideoMode(width, height, 0, SDL_RESIZABLE | SDL_OPENGL);
 	//glEnable(GL_MULTISAMPLE);
 	//glEnable(GL_MULTISAMPLE_ARB);
 
@@ -67,11 +66,9 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
 
-
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)
@@ -80,7 +77,6 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		std::cout << "(Or there was an error initializing glew, which is equally bad!)" << std::endl;
 		exit(-1);
 	}
-
 
 #if defined linux || __GNUC__
 	if(glx::glxewIsSupported("GLX_MESA_swap_control")) //linux - X11 maybe also MacOSX?
