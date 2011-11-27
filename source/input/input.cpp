@@ -2,9 +2,10 @@
 
 Input::Input()
 {
-	keystate = SDL_GetKeyState(NULL);
+	//keystate = SDL_GetKeyState(NULL);
 	close_requested = false;
 	textmode = false;
+	SDL_EnableUNICODE(1);
 }
 
 Input::~Input()
@@ -13,13 +14,13 @@ Input::~Input()
 
 void Input::enableTextmode()
 {
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1);
 	textmode = true;
 }
 
 void Input::disableTextmode()
 {
-	SDL_EnableUNICODE(0);
+	//SDL_EnableUNICODE(0);
 	textmode = false;
 }
 
@@ -41,31 +42,31 @@ unsigned char Input::getChar()
 		return 0;
 }
 
-const unsigned char* Input::getKeyState()
+bool Input::isPressed (char16_t c)
 {
-	return keystate;
-}
-
-bool Input::isPressedSym(Key k)
-{
-	return (keystate[k] == 1 ? true : false);
-}
-
-bool Input::isPressed(Key k)
-{
-	if(event.type == SDL_KEYDOWN && event.key.keysym.sym == k)
+	if(event.type == SDL_KEYDOWN && event.key.keysym.unicode == c)
 		return true;
 	return false;
 }
 
-bool Input::isReleasedSym(Key k)
+bool Input::isPressedSym (char16_t k)
 {
-	return !isPressedSym(k);
+	return keystate[k];
 }
 
-bool Input::isReleased(Key k)
+bool Input::isPressed (Input::Key k)
 {
-	return !isPressed(k);
+	return SDL_GetKeyState(NULL)[k];
+}
+
+bool Input::isReleased (char16_t c)
+{
+	return !isPressed(c);
+}
+
+bool Input::isReleasedSym (char16_t k)
+{
+	return !isPressedSym(k);
 }
 
 void Input::requestClose()
@@ -85,14 +86,26 @@ int Input::refresh()
 	if(rv == 1)//if there are pending events
 	{
 		if(event.type == SDL_QUIT)
-		{
 			close_requested = true;
-		}
-		if(event.type == SDL_VIDEORESIZE)
-		{
+		else if(event.type == SDL_VIDEORESIZE)
 			motor::Window::getInstance()->resize(event.resize.w, event.resize.h);
+		else if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP)
+		{
+			bool pressed = (event.type == SDL_KEYDOWN ? true : false);
+			auto unicode = event.key.keysym.unicode;
+			auto sym = event.key.keysym.sym;
 		}
 	}
 	return rv;
 	//TODO handle mouse
+}
+
+void Input::addMapping (std::string name, char16_t k)
+{
+	keymap[name] = k;
+}
+
+char16_t Input::getMapping (std::string name)
+{
+	return keymap[name];
 }

@@ -64,6 +64,8 @@ int main (int argc, char * argv[])
 	cube2->setPosition(glm::vec3(6, 7, -8));
 	cube2->setSize(glm::vec3(0.5, 0.5, 0.5));
 
+	input->addMapping("forward", ',');
+
 	while(input->closeRequested() == false)
 	{
 		switch(state)
@@ -211,14 +213,6 @@ int main (int argc, char * argv[])
 
 					while(input->refresh())
 					{
-						if(input->isPressed(Input::kR) && input->isPressedSym(Input::kLShift))
-						{
-							Window::getInstance()->resize(600, 400);
-						}
-						if(input->isPressed(Input::kC) && input->isPressedSym(Input::kLShift))
-						{
-							Window::getInstance()->resize(800, 600);
-						}
 						if(input->isPressed(Input::kEnter))
 						{
 							if(enable_textinput)
@@ -352,6 +346,10 @@ int main (int argc, char * argv[])
 					}
 				}
 				break; /* }}} */
+		}
+
+		if(input->isPressedSym(input->getMapping("forward")))
+		{
 		}
 
 		cube->tick();
