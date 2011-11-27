@@ -1,19 +1,18 @@
-uniform vec3 lightPos;
-
 varying vec3 fragPosition;
 varying vec4 fragColor;
 varying vec3 fragNormal;
 varying vec2 fragTexCoord;
+varying vec3 fragLightPos;
 
 uniform sampler2D texture;
 
 void main ()
 {
 	//Will be used for attenuation.
-	float dist = length(lightPos - fragPosition);
+	float dist = length(fragLightPos - fragPosition);
 
 	//Get a lighting direction vector from the light to the vertex.
-	vec3 lightVector = normalize(lightPos - fragPosition);
+	vec3 lightVector = normalize(fragLightPos - fragPosition);
 
 	//Calculate the dot product of the light vector and vertex normal. If the normal and light vector are
 	//pointing in the same direction then it will get max illumination.

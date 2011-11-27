@@ -58,7 +58,8 @@ class Input
 			kTab = SDLK_TAB,
 			kLShift = SDLK_LSHIFT,
 			kRShift = SDLK_RSHIFT,
-			_end
+			kArrowLeft = SDLK_LEFT,
+			kArrowRight = SDLK_RIGHT
 		};
 	public:
 		Input();
