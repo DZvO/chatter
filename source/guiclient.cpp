@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 using namespace std;
 
 #include "lib/glew/glew.h"
@@ -29,6 +30,8 @@ using namespace motor;
 #include "graphics/cube.hpp"
 #include "graphics/camera.hpp"
 
+#include "graphics/scenemanager.hpp"
+
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 int main (int argc, char * argv[])
@@ -37,6 +40,17 @@ int main (int argc, char * argv[])
 
 	bool enable_textinput = false;
 	Input * input = new Input();
+	if(ifstream("data/preferences.ini"))
+	{
+		input->loadKeymapping("data/preferences.ini");
+	}
+	else
+	{
+		input->addMapping("forward", (SDLKey)44);
+		input->addMapping("backward", (SDLKey)111);
+		input->saveKeymapping("data/preferences.ini");
+	}
+
 
 	unsigned int color = 0xffffff;//0xff6000;
 	string * name = new string("");
@@ -48,7 +62,7 @@ int main (int argc, char * argv[])
 
 	chatlog->setLine("Please enter the address of the server");
 	//for(int i = 0; i < 40; i++)
-		//chatlog->add("\xff""aaaaaa""Lorem ipsum dolor sit amet, lorem ipsum dolor sit amet");
+	//chatlog->add("\xff""aaaaaa""Lorem ipsum dolor sit amet, lorem ipsum dolor sit amet");
 	string * address = new string("");
 
 	Address * server = nullptr;//new Address(*address, 1337);
@@ -59,13 +73,14 @@ int main (int argc, char * argv[])
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
 
-	Cube * cube = new Cube(true);
+	Cube * cube = new Cube();
 	cube->setSize(glm::vec3(4, 4, 4));
-	Cube * cube2 = new Cube(false);
+	Cube * cube2 = new Cube();
 	cube2->setPosition(glm::vec3(6, 7, -8));
 	cube2->setSize(glm::vec3(0.5, 0.5, 0.5));
-
-	input->addMapping("forward", ',');
+	SceneManager * sm = new SceneManager();
+	sm->addObject(cube);
+	sm->addObject(cube2);
 
 	while(input->closeRequested() == false)
 	{
@@ -212,11 +227,11 @@ int main (int argc, char * argv[])
 					}
 					//	--------------------------
 
-					if(input->isPressedSym(Input::kW))
+					if(input->isPressedSym(input->getMapping("forward")))
 					{
 						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, 0.5));
 					}
-					if(input->isPressedSym(Input::kD))
+					if(input->isPressedSym(input->getMapping("backward")))
 					{
 						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, -0.5));
 					}
@@ -256,7 +271,7 @@ int main (int argc, char * argv[])
 									}
 									else
 									{
-										if(line->find("/color") != string::npos)
+										if(line->find("/color") != string::npos) // {{{
 										{
 											if(line->length() >= 8+7)
 											{
@@ -315,15 +330,24 @@ int main (int argc, char * argv[])
 											{
 												chatlog->add("\xff""888888""syntax for /color is '/color rr gg bb', where r/g/b is hex");
 											}
-										}
-										else if(line->find("/quit") != string::npos)
+										} // }}}
+										else if(line->find("/quit") != string::npos) // {{{
 										{
 											input->requestClose();
+										} // }}}
+										else if (line->find("/ft") != string::npos)
+										{
+											std::stringstream ss;
+											ss << Window::getInstance()->getFrametime();
+											std::string ft;
+											ss >> ft;
+
+											chatlog->add(ft);
 										}
-										else
+										else // {{{
 										{
 											chatlog->add("\xff""888888""Sorry, don't know what you mean.");
-										}
+										} // }}}
 									}
 								}
 								delete line;
@@ -367,16 +391,13 @@ int main (int argc, char * argv[])
 				break; /* }}} */
 		}
 
-		if(input->isPressedSym(input->getMapping("forward")))
-		{
-		}
-
 		cube->tick();
 		cube2->tick();
 
 		Window::getInstance()->clear();
-		cube->draw();
-		cube2->draw();
+		//cube->draw();
+		//cube2->draw();
+		sm->draw();
 		chatlog->draw();
 		Window::getInstance()->swap();
 	}

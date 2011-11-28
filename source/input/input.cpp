@@ -42,31 +42,16 @@ unsigned char Input::getChar()
 		return 0;
 }
 
-bool Input::isPressed (char16_t c)
+bool Input::isPressed (Input::Key k)
 {
-	if(event.type == SDL_KEYDOWN && event.key.keysym.unicode == c)
+	if(event.type == SDL_KEYDOWN && event.key.keysym.sym == (SDLKey)k)
 		return true;
 	return false;
 }
 
-bool Input::isPressedSym (char16_t k)
-{
-	return keystate[k];
-}
-
-bool Input::isPressed (Input::Key k)
+bool Input::isPressedSym (Input::Key k)
 {
 	return SDL_GetKeyState(NULL)[k];
-}
-
-bool Input::isReleased (char16_t c)
-{
-	return !isPressed(c);
-}
-
-bool Input::isReleasedSym (char16_t k)
-{
-	return !isPressedSym(k);
 }
 
 void Input::requestClose()
@@ -94,18 +79,56 @@ int Input::refresh()
 			bool pressed = (event.type == SDL_KEYDOWN ? true : false);
 			auto unicode = event.key.keysym.unicode;
 			auto sym = event.key.keysym.sym;
+			//keystate[unicode] = pressed;
 		}
 	}
 	return rv;
 	//TODO handle mouse
 }
 
-void Input::addMapping (std::string name, char16_t k)
+void Input::addMapping (std::string name, Input::Key k)
 {
 	keymap[name] = k;
 }
 
-char16_t Input::getMapping (std::string name)
+void Input::addMapping (std::string name, SDLKey k)
 {
-	return keymap[name];
+	keymap[name] = (Input::Key)k;
+}
+
+Input::Key Input::getMapping (std::string name)
+{
+	return (Input::Key)keymap[name];
+}
+
+void Input::loadKeymapping (std::string path)
+{
+	std::fstream fs (path, std::fstream::in);
+	while(fs.good())
+	{
+		std::string currentLine;
+		std::getline(fs, currentLine);
+		if(currentLine == "")
+			break;
+		std::string key, value;
+		key = currentLine.substr(0, currentLine.find(" = "));
+		value = currentLine.substr(currentLine.find(" = ") + string(" = ").length(), currentLine.length() - (currentLine.find(" = ") + string(" = ").length()));
+
+		//convert 'value' to an int
+		std::stringstream ss;
+		ss << value;
+		int val;
+		ss >> val;
+
+		keymap[key] = val;
+	}
+}
+
+void Input::saveKeymapping (std::string path)
+{
+	std::fstream fs (path, std::fstream::trunc | std::fstream::out);
+	for(auto k : keymap)
+	{
+		fs << k.first << " = " << k.second << '\n';
+	}
 }

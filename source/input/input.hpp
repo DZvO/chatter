@@ -6,6 +6,9 @@
 #include "graphics/window.hpp"
 #include <bitset>
 #include <map>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 class Input
 {
@@ -75,25 +78,25 @@ class Input
 
 		int refresh();
 
-		bool isPressed (char16_t c);
-		bool isPressedSym (char16_t k);//directly return -> use keystate array instead of events
 		bool isPressed (Key k);
 		bool isPressedSym (Key k);
 
-		bool isReleased (char16_t c);
-		bool isReleasedSym (char16_t k);//directly return -> use keystate array instead of events
 		bool isReleased (Key k);
 		bool isReleasedSym (Key k);
 
 		void requestClose();
 		bool closeRequested();
 
-		void addMapping (std::string name, char16_t k);
-		char16_t getMapping (std::string name);
+		void addMapping (std::string name, Input::Key k);
+		void addMapping (std::string name, SDLKey k);
+		Input::Key getMapping (std::string name);
+
+		void loadKeymapping (std::string path);
+		void saveKeymapping (std::string path);
 
 	private:
-		std::map<std::string, char16_t> keymap;
-		std::bitset<sizeof(char16_t) * 8> keystate;
+		std::map<std::string, unsigned int> keymap;
+		//std::bitset<sizeof(char16_t) * 8> keystate;
 		bool close_requested;
 		bool textmode;
 

@@ -45,7 +45,6 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		glEnable(GL_POLYGON_SMOOTH);
 		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST );
 		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST );
-		cout << "smooth!" << endl;
 	}
 
 	/* OpenGL stuff */
