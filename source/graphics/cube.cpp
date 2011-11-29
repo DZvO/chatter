@@ -152,13 +152,10 @@ void Cube::tick ()
 
 void Cube::draw ()
 {
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glUseProgram(programPointer);
 	glUniform1i(texUniform, 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture->getGlPointer());
-
-	//glLightfv(GL_LIGHT0, GL_POSITION, glm::value_ptr(glm::vec4(1, 0.5, 1, 0)));
 
 	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getPerspectiveProjection())));
 	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(Camera::getInstance()->getView()));
@@ -171,10 +168,7 @@ void Cube::draw ()
 	translated_model = glm::rotate(translated_model, rotation.z, glm::vec3(0, 0, 1));
 	glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
-	//light stuff///
 	glUniform3fv(programLightPosLocation, num_lights, lightPosition);
-	//glUniform3fv(programLightColorLocation, num_lights, lightColor);
-	//light stuff///
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(0));

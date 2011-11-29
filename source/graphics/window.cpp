@@ -3,7 +3,8 @@
 motor::Window::Window ()
 {
 	block = true;
-	alpha = 0.06;
+	alpha = 0.1111;
+	last = 0;
 }
 
 motor::Window::~Window ()
@@ -80,11 +81,11 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 #if defined linux || __GNUC__
 	if(glx::glxewIsSupported("GLX_MESA_swap_control")) //linux - X11 maybe also MacOSX?
 	{
-		glx::glXSwapIntervalMESA(0);
+		glx::glXSwapIntervalMESA(1);
 	}
 	else if(glx::glxewIsSupported("GLX_SGI_swap_control")) //linux - X11 / SGI - but doesn't work on my platform. maybe MacOSX?
 	{
-		glx::glXSwapIntervalSGI(0);
+		glx::glXSwapIntervalSGI(1);
 	}
 
 #elif defined _WIN32 || WIN32
@@ -131,12 +132,13 @@ void motor::Window::swap()
 	frametimedelta = getticks - frametimelast;
 	frametimelast = getticks;
 	frametime = alpha * frametimedelta + (1.0 - alpha) * frametime;
-	framespersecond = 1000.0 / frametime;
+	//framespersecond = 1000.0 / frametime;
+
 	//cout << frametime << '\n';
 	//cout << framespersecond << '\n';
 	//cout << endl;
-	if((int)framespersecond >= 120-1)
-		SDL_Delay(8);
+	//if((int)framespersecond >= 120-1)
+		//SDL_Delay(8);
 
 	SDL_GL_SwapBuffers();
 }

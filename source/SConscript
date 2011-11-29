@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os;
-env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
+env = Environment(CXX = 'g++', CXXFLAGS = '-O2 -Wall -g --std=c++0x -I/usr/include/bullet', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
 conf = Configure(env)
 
 if not conf.CheckLib('GL'):
@@ -36,7 +36,7 @@ libchat.Library('chat', splitter("chat/", "message"))
 # -- ---- --
 
 guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
+guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat', 'BulletDynamics', 'BulletCollision', 'LinearMath'])
 
 server = env.Clone()
 server.Program('server.cpp', LIBS=['network'])

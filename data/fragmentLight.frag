@@ -3,6 +3,7 @@ varying vec4 fragColor;
 varying vec3 fragNormal;
 varying vec2 fragTexCoord;
 varying vec3 fragLightPos;
+varying vec3 fragLightCol;
 
 uniform sampler2D texture;
 
@@ -20,9 +21,13 @@ void main ()
 
 	//Add attenuation
 	diffuse = diffuse * (1.0 / (1.0 + (0.015 * dist * dist)));
-	diffuse += 0.2; //add ambient
+	//diffuse += 0.2; //add ambient
+	vec4 diff = vec4(diffuse); diff.w = 1.0;
+	diff *= vec4(fragLightCol, 1.0);
+	diff += 0.01;
 
 	vec4 textureColor = texture2D(texture, fragTexCoord);
 
-	gl_FragColor = textureColor * fragColor * diffuse;
+	gl_FragColor = textureColor * fragColor * diff;
+	//gl_FragColor = textureColor * fragColor;
 }

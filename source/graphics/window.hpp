@@ -91,6 +91,7 @@ namespace motor
 			bool block;
 
 			unsigned int getticks, frametimedelta, frametimelast;
+			float last;
 			float alpha, frametime, framespersecond;
 
 			unsigned short width, height;

@@ -31,12 +31,16 @@ using namespace motor;
 #include "graphics/camera.hpp"
 
 #include "graphics/scenemanager.hpp"
+#include <bullet/btBulletDynamicsCommon.h>
+
+#include <sys/time.h>
 
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 int main (int argc, char * argv[])
 {
 	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
+	unsigned int time = SDL_GetTicks();
 
 	bool enable_textinput = false;
 	Input * input = new Input();
@@ -50,7 +54,6 @@ int main (int argc, char * argv[])
 		input->addMapping("backward", (SDLKey)111);
 		input->saveKeymapping("data/preferences.ini");
 	}
-
 
 	unsigned int color = 0xffffff;//0xff6000;
 	string * name = new string("");
@@ -81,6 +84,34 @@ int main (int argc, char * argv[])
 	SceneManager * sm = new SceneManager();
 	sm->addObject(cube);
 	sm->addObject(cube2);
+	sm->addLight(glm::vec3(6, 7, -8), glm::vec3(0, 1, 1));
+	//sm->addLight(glm::vec3(-6, 7, -8), glm::vec3(0, 1, 0));
+	
+	btBroadphaseInterface * broadphase = new btDbvtBroadphase ();
+
+	btDefaultCollisionConfiguration * collisionConfiguration = new btDefaultCollisionConfiguration ();
+	btCollisionDispatcher * dispatcher = new btCollisionDispatcher (collisionConfiguration);
+
+	btSequentialImpulseConstraintSolver * solver = new btSequentialImpulseConstraintSolver();
+
+	btDiscreteDynamicsWorld * dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+	dynamicsWorld->setGravity(btVector3(0, -2, 0));
+
+	btCollisionShape * fallShape = new btBoxShape(btVector3(2, 2, 2));
+
+	btDefaultMotionState * fallMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
+	btScalar mass = 1;
+	btVector3 fallInertia(0, 0, 0);
+	fallShape->calculateLocalInertia(mass, fallInertia);
+
+	btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
+	btRigidBody * fallRigidBody = new btRigidBody(fallRigidBodyCI);
+	dynamicsWorld->addRigidBody(fallRigidBody);
+
+	timeval tv;
+	unsigned long long delta = 0;
+	unsigned long long avg = 0;
+	int delta_count = 0;
 
 	while(input->closeRequested() == false)
 	{
@@ -391,15 +422,42 @@ int main (int argc, char * argv[])
 				break; /* }}} */
 		}
 
+		dynamicsWorld->stepSimulation(1/60.f, 10);
+		btTransform trans;
+		fallRigidBody->getMotionState()->getWorldTransform(trans);
+		auto o = trans.getOrigin();
+		//cube->setPosition(glm::vec3(o.getX(), o.getY(), o.getZ() - 10));
+
 		cube->tick();
 		cube2->tick();
 
+
 		Window::getInstance()->clear();
+		gettimeofday(&tv, nullptr);
+		delta = tv.tv_usec;
+
 		//cube->draw();
 		//cube2->draw();
 		sm->draw();
+
 		chatlog->draw();
+		gettimeofday(&tv, nullptr);
+		delta = tv.tv_usec - delta;
+		delta_count++;
+		avg += delta;
 		Window::getInstance()->swap();
+
+		if(time < SDL_GetTicks())
+		{
+			time = SDL_GetTicks() + 500;
+			//std::stringstream ss;
+			//ss << Window::getInstance()->getFrametime();
+			//ss << delta;
+			//std::string out;
+			//ss >> out;
+			//chatlog->add(out);
+			std::cout << float(avg) / float(delta_count) << '\n';
+		}
 	}
 
 	if(server != nullptr)

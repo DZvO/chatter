@@ -52,16 +52,16 @@ void SceneManager::draw ()
 
 	glUniform1i(lightCountUniform, lightCount);
 	glUniform3fv(lightPosUniform, lightCount, glm::value_ptr(lightPos[0]));
-
+	glUniform3fv(lightColUniform, lightCount, glm::value_ptr(lightCol[0]));
 
 	for(Cube * object : objects)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, object->vertexBuffer);
-		glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(0));
-		glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3)));
-		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3)));
-		glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3) + sizeof(glm::vec2)));
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, object->vertexBuffer);
+	glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(0));
+	glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3)));
+	glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3)));
+	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Cube::vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3) + sizeof(glm::vec2)));
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, object->vertexBuffer);
 		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(normalAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
