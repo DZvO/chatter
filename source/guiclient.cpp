@@ -52,6 +52,8 @@ int main (int argc, char * argv[])
 	{
 		input->addMapping("forward", (SDLKey)44);
 		input->addMapping("backward", (SDLKey)111);
+		input->addMapping("left", (SDLKey)97);
+		input->addMapping("right", (SDLKey)101);
 		input->saveKeymapping("data/preferences.ini");
 	}
 
@@ -76,17 +78,30 @@ int main (int argc, char * argv[])
 
 	ReceiveBufferManager * man = new ReceiveBufferManager();
 
-	Cube * cube = new Cube();
-	cube->setSize(glm::vec3(4, 4, 4));
-	Cube * cube2 = new Cube();
-	cube2->setPosition(glm::vec3(6, 7, -8));
-	cube2->setSize(glm::vec3(0.5, 0.5, 0.5));
+	//Cube * cube = new Cube();
+	//cube->setSize(glm::vec3(4, 4, 4));
+	//Cube * cube2 = new Cube();
+	//cube2->setPosition(glm::vec3(6, 7, -8));
+	//cube2->setSize(glm::vec3(0.5, 0.5, 0.5));
 	SceneManager * sm = new SceneManager();
-	sm->addObject(cube);
-	sm->addObject(cube2);
-	sm->addLight(glm::vec3(6, 7, -8), glm::vec3(0, 1, 1));
+	for(int x = 0; x < 80; x += 4)
+	{
+		for(int y = 0; y < 80; y += 4)
+		{
+			for(int z = 0; z < 80; z += 4)
+			{
+				Cube * cube = new Cube();
+				cube->setSize(glm::vec3(2, 2, 2));
+				cube->setPosition(glm::vec3(x, y, z));
+				sm->addObject(cube);
+			}
+		}
+	}
+	//sm->addObject(cube);
+	//sm->addObject(cube2);
+	sm->addLight(glm::vec3(10, 10, 10), glm::vec3(1, 1, 1));
 	//sm->addLight(glm::vec3(-6, 7, -8), glm::vec3(0, 1, 0));
-	
+
 	btBroadphaseInterface * broadphase = new btDbvtBroadphase ();
 
 	btDefaultCollisionConfiguration * collisionConfiguration = new btDefaultCollisionConfiguration ();
@@ -127,7 +142,18 @@ int main (int argc, char * argv[])
 						{
 							if(*address == "")
 							{
-								chatlog->setLine("Please enter a address!");
+								//chatlog->setLine("Please enter a address!");
+								chatlog->setLine("");
+								state = ACK_WAIT;
+								chatlog->setLine("Waiting for server, please be patient...");
+
+								//TODO add check if server/Address was initialized properly
+								*address = "localhost";
+								server = new Address(*address, 1337);
+								Packet * connect_packet = new Packet();
+								connect_packet->allocate();
+								connect_packet->type = Packet::CONNECT_PACKET;
+								socket->send(connect_packet, server);
 							}
 							else
 							{
@@ -203,7 +229,12 @@ int main (int argc, char * argv[])
 							}
 							else
 							{
-								chatlog->setLine("Please enter your name!");
+								//chatlog->setLine("Please enter your name!");
+								*name = "dawg";
+								state = NORMAL;
+								chatlog->add("\xff""888888""You can now chat freely, simply press enter!");
+								chatlog->add("\xff""888888""(btw, you can also change your color with /color [rrggbb -> hex])");
+								chatlog->setLine("");
 							}
 						}
 						else
@@ -259,22 +290,26 @@ int main (int argc, char * argv[])
 					//	--------------------------
 
 					if(input->isPressedSym(input->getMapping("forward")))
-					{
-						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, 0.5));
-					}
+						Camera::getInstance()->translate(glm::vec3(0, 0, 0.75));
+					//Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, 0.5));
 					if(input->isPressedSym(input->getMapping("backward")))
-					{
-						Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, -0.5));
-					}
+						Camera::getInstance()->translate(glm::vec3(0, 0, -0.75));
+					//Camera::getInstance()->setPosition(Camera::getInstance()->getPosition() + glm::vec3(0, 0, -0.5));
+					if(input->isPressedSym(input->getMapping("left")))
+						Camera::getInstance()->translate(glm::vec3(0.75, 0, 0));
+					if(input->isPressedSym(input->getMapping("right")))
+						Camera::getInstance()->translate(glm::vec3(-0.75, 0, 0));
 
 					if(input->isPressedSym(Input::kArrowRight))
-					{
-						Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, 0.5, 0));
-					}
+						//Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, 0.5, 0));
+						Camera::getInstance()->rotate(glm::vec3(0, 0.75, 0));
 					if(input->isPressedSym(Input::kArrowLeft))
-					{
-						Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, -0.5, 0));
-					}
+						//Camera::getInstance()->setRotation(Camera::getInstance()->getRotation() + glm::vec3(0, -0.5, 0));
+						Camera::getInstance()->rotate(glm::vec3(0, -0.75, 0));
+					if(input->isPressedSym(Input::kArrowUp))
+						Camera::getInstance()->rotate(glm::vec3(-0.75, 0, 0));
+					if(input->isPressedSym(Input::kArrowDown))
+						Camera::getInstance()->rotate(glm::vec3(0.75, 0, 0));
 
 					while(input->refresh())
 					{
@@ -428,10 +463,6 @@ int main (int argc, char * argv[])
 		auto o = trans.getOrigin();
 		//cube->setPosition(glm::vec3(o.getX(), o.getY(), o.getZ() - 10));
 
-		cube->tick();
-		cube2->tick();
-
-
 		Window::getInstance()->clear();
 		gettimeofday(&tv, nullptr);
 		delta = tv.tv_usec;
@@ -443,8 +474,8 @@ int main (int argc, char * argv[])
 		chatlog->draw();
 		gettimeofday(&tv, nullptr);
 		delta = tv.tv_usec - delta;
-		delta_count++;
-		avg += delta;
+		//delta_count++;
+		//avg += delta;
 		Window::getInstance()->swap();
 
 		if(time < SDL_GetTicks())
@@ -456,7 +487,11 @@ int main (int argc, char * argv[])
 			//std::string out;
 			//ss >> out;
 			//chatlog->add(out);
-			std::cout << float(avg) / float(delta_count) << '\n';
+
+			std::cout.setf(ios::fixed, ios::floatfield);
+			std::cout.setf(ios::showpoint);
+			//std::cout << (float(avg) / float(delta_count)) / 1000.0f << '\n';
+			std::cout << float(delta) / 1000.0f << '\n';
 		}
 	}
 

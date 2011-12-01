@@ -49,7 +49,7 @@ char * loadFile(const char* path)
 Chatlog::Chatlog()
 {
 	font = new Image("data/font.png");
-	font->upload();
+	font->upload(false);
 	kerning = new glm::vec2 [256];
 	loadKerning();
 

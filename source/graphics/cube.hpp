@@ -50,30 +50,43 @@ class Cube
 	};
 
 	public: 
-	Cube (bool useLight = true);
+	Cube ();
 	void tick ();
 	void draw ();
 
 	void setPosition (glm::vec3 p);
+	void setRotation (glm::vec3 r);
 	void setSize (glm::vec3 s);
 
 	public:
 	char * loadFile (const char * path);
-	Image * texture;
+	static Image * texture;
+	static unsigned int allocated;
 	glm::vec3 rotation;
 	glm::vec3 position;
 	glm::vec3 size;
 	glm::mat4 modelmatrix;
+	bool modelmatrix_cached;
 
 	glm::mat4 getModelMatrix ()
 	{
-		glm::mat4 translated_model = modelmatrix;
-		translated_model = glm::translate(translated_model, position);
-		translated_model = glm::scale(translated_model, size);
-		translated_model = glm::rotate(translated_model, rotation.x, glm::vec3(1, 0, 0));
-		translated_model = glm::rotate(translated_model, rotation.y, glm::vec3(0, 1, 0));
-		translated_model = glm::rotate(translated_model, rotation.z, glm::vec3(0, 0, 1));
-		return translated_model;
+		if(modelmatrix_cached)
+		{
+			return modelmatrix;
+		}
+		else
+		{
+			glm::mat4 translated_model = glm::mat4(1.0);
+			translated_model = glm::translate(translated_model, position);
+			translated_model = glm::scale(translated_model, size);
+			translated_model = glm::rotate(translated_model, rotation.x, glm::vec3(1, 0, 0));
+			translated_model = glm::rotate(translated_model, rotation.y, glm::vec3(0, 1, 0));
+			translated_model = glm::rotate(translated_model, rotation.z, glm::vec3(0, 0, 1));
+			modelmatrix = translated_model;
+			modelmatrix_cached = true;
+
+			return translated_model;
+		}
 	}
 
 	unsigned int programPointer, vertexPointer, fragmentPointer;

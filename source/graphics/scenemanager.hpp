@@ -20,6 +20,9 @@ class SceneManager
 		void addLight (glm::vec3 pos, glm::vec3 col);
 		void addObject (Cube * object);
 
+		void addStaticObject (Cube * object);
+		void uploadStaticObjects ();
+
 		void draw ();
 	private:
 
@@ -35,6 +38,9 @@ class SceneManager
 		//std::vector<unsigned int> lightColUniform;
 
 		std::vector<Cube*> objects;
+		std::vector<Cube*> staticObjects;
+		std::vector<Cube::vertex_t> staticGeometry;
+		unsigned int vertexBuffer, vertexCount;
 };
 
 #endif

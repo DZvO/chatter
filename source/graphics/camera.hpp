@@ -9,6 +9,8 @@ using namespace std;
 class Camera
 {
 	public:
+	void translate (glm::vec3 delta);
+	void rotate (glm::vec3 delta);
 	void setPosition (glm::vec3 p);
 	void setRotation (glm::vec3 r);
 	glm::vec3 getPosition ();

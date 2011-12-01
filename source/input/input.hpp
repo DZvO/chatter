@@ -62,7 +62,9 @@ class Input
 			kLShift = SDLK_LSHIFT,
 			kRShift = SDLK_RSHIFT,
 			kArrowLeft = SDLK_LEFT,
-			kArrowRight = SDLK_RIGHT
+			kArrowRight = SDLK_RIGHT,
+			kArrowUp = SDLK_UP,
+			kArrowDown = SDLK_DOWN
 		};
 	public:
 		Input();

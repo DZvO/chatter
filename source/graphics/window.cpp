@@ -106,7 +106,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 	ortho_projection = glm::ortho((double)-(width/2), (double)(width/2), (double)(height/2), (double)-(height/2), -1.0, 1.0);//glm::ortho(-1.0, 1.0, 1.0, -1.0, -1.0, 1.0);
-	perspective_projection = glm::perspective(70.0, double(width) / double(height), 1.0, 1000.0);
+	perspective_projection = glm::perspective(70.0, double(width) / double(height), 0.0, 1000.0);
 	/* // OpenGL stuff */
 }
 
@@ -118,7 +118,7 @@ void motor::Window::resize (const unsigned short width, const unsigned short hei
 	screen = SDL_SetVideoMode(width, height, 32, SDL_OPENGL | SDL_DOUBLEBUF);
 	glViewport(0, 0, width, height);
 	ortho_projection = glm::ortho(-((double)width/2), ((double)width/2), ((double)height/2), -((double)height/2), -1.0, 1.0);
-	perspective_projection = glm::perspective(70.0, double(width) / double(height), 1.0, 1000.0);
+	perspective_projection = glm::perspective(70.0, double(width) / double(height), 0.1, 1000.0);
 }
 
 void motor::Window::clear ()

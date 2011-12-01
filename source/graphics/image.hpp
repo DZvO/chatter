@@ -16,7 +16,7 @@ class Image
 
 	void create (unsigned int width, unsigned int height);
 	void load (std::string path);
-	void upload ();
+	void upload (bool smooth = true);
 
 	unsigned int getGlPointer();
 	unsigned int getPixel(unsigned int x, unsigned int y);

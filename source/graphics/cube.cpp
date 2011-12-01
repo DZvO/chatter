@@ -51,37 +51,43 @@ void show_error(unsigned int object, PFNGLGETSHADERIVPROC glGet__iv, PFNGLGETSHA
 }
 
 
-Cube::Cube(bool useLight) : rotation(0.0), position(0.0, 0.0, -15.0), size(4, 4, 4), modelmatrix(1.0)
+Image * Cube::texture = nullptr;
+unsigned int Cube::allocated = 0;
+Cube::Cube() : rotation(0.0), position(0.0, 0.0, -15.0), size(4, 4, 4), modelmatrix(1.0)
 {
 	num_lights = 1;
 
-	texture = new Image("data/cube.png");
-	texture->upload();
+	if(texture == nullptr)
+	{
+		texture = new Image("data/cube.png");
+		texture->upload();
+	}
 
 	//programPointer = vertexPointer = fragmentPointer = 0;
-	positionAttrib = texcoordAttrib = colorAttrib = 0;
-	projectionUniform = viewUniform = modelUniform = texUniform = 0;
+	/*	positionAttrib = texcoordAttrib = colorAttrib = 0;
+			projectionUniform = viewUniform = modelUniform = texUniform = 0;
 
-	if(useLight)
-		programPointer = ShaderHelper::loadShader("data/fragmentLight.vert", "data/fragmentLight.frag");
-	else
-		programPointer = ShaderHelper::loadShader("data/base3d.vert", "data/base3d.frag");
+			if(useLight)
+			programPointer = ShaderHelper::loadShader("data/fragmentLight.vert", "data/fragmentLight.frag");
+			else
+			programPointer = ShaderHelper::loadShader("data/base3d.vert", "data/base3d.frag");
 
-	positionAttrib = glGetAttribLocation(programPointer, "position");
-	normalAttrib = glGetAttribLocation(programPointer, "normal");
-	texcoordAttrib = glGetAttribLocation(programPointer, "texcoord");
-	colorAttrib = glGetAttribLocation(programPointer, "color");
+			positionAttrib = glGetAttribLocation(programPointer, "position");
+			normalAttrib = glGetAttribLocation(programPointer, "normal");
+			texcoordAttrib = glGetAttribLocation(programPointer, "texcoord");
+			colorAttrib = glGetAttribLocation(programPointer, "color");
 
-	projectionUniform = glGetUniformLocation(programPointer, "projection");
-	viewUniform = glGetUniformLocation(programPointer, "view");
-	modelUniform = glGetUniformLocation(programPointer, "model");
-	texUniform = glGetUniformLocation(programPointer, "texture");
+			projectionUniform = glGetUniformLocation(programPointer, "projection");
+			viewUniform = glGetUniformLocation(programPointer, "view");
+			modelUniform = glGetUniformLocation(programPointer, "model");
+			texUniform = glGetUniformLocation(programPointer, "texture");
 
-	programLightPosLocation = glGetUniformLocation(programPointer, "lightPos");
+			programLightPosLocation = glGetUniformLocation(programPointer, "lightPos");
 	//programLightColorLocation = glGetUniformLocation(programPointer, "lightColor");
 
 	lightColor[0] = 1.0f; lightColor[1] = 1.0f; lightColor[2] = 1.0f;
 	lightPosition[0] = 6.0f; lightPosition[1] = 7.0f; lightPosition[2] = -8.0f;
+	*/
 
 	//vertices
 	vertexCount = 4*6;
@@ -140,8 +146,10 @@ Cube::Cube(bool useLight) : rotation(0.0), position(0.0, 0.0, -15.0), size(4, 4,
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 	GLsizeiptr const vertexSize = vertexCount * sizeof(vertex_t);
+	allocated += vertexSize;
+	std::cout << float(allocated) / 1024 << " kbyte" << '\n';
 	glBufferData(GL_ARRAY_BUFFER, vertexSize, vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Cube::tick ()
@@ -152,47 +160,51 @@ void Cube::tick ()
 
 void Cube::draw ()
 {
-	glUseProgram(programPointer);
-	glUniform1i(texUniform, 0);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture->getGlPointer());
+	/*
+		 glUseProgram(programPointer);
+		 glUniform1i(texUniform, 0);
+		 glActiveTexture(GL_TEXTURE0);
+		 glBindTexture(GL_TEXTURE_2D, texture->getGlPointer());
 
-	glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getPerspectiveProjection())));
-	glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(Camera::getInstance()->getView()));
+		 glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getPerspectiveProjection())));
+		 glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(Camera::getInstance()->getView()));
 
-	glm::mat4 translated_model = modelmatrix;
-	translated_model = glm::translate(translated_model, position);
-	translated_model = glm::scale(translated_model, size);
-	translated_model = glm::rotate(translated_model, rotation.x, glm::vec3(1, 0, 0));
-	translated_model = glm::rotate(translated_model, rotation.y, glm::vec3(0, 1, 0));
-	translated_model = glm::rotate(translated_model, rotation.z, glm::vec3(0, 0, 1));
-	glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
+		 glm::mat4 translated_model = modelmatrix;
+		 translated_model = glm::translate(translated_model, position);
+		 translated_model = glm::scale(translated_model, size);
+		 translated_model = glm::rotate(translated_model, rotation.x, glm::vec3(1, 0, 0));
+		 translated_model = glm::rotate(translated_model, rotation.y, glm::vec3(0, 1, 0));
+		 translated_model = glm::rotate(translated_model, rotation.z, glm::vec3(0, 0, 1));
+		 glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(translated_model));
 
-	glUniform3fv(programLightPosLocation, num_lights, lightPosition);
+		 glUniform3fv(programLightPosLocation, num_lights, lightPosition);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(0));
-	glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3)));
-	glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3)));
-	glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3) + sizeof(glm::vec2)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		 glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		 glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(0));
+		 glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3)));
+		 glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3)));
+		 glVertexAttribPointer(colorAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)(sizeof(glm::vec3) + sizeof(glm::vec3) + sizeof(glm::vec2)));
+		 glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(normalAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
+		 glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		 glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(normalAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
-	glDrawArrays(GL_QUADS, 0, vertexCount);
+		 glDrawArrays(GL_QUADS, 0, vertexCount);
 
-	glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(normalAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		 glDisableVertexAttribArray(positionAttrib); glDisableVertexAttribArray(normalAttrib); glDisableVertexAttribArray(texcoordAttrib); glDisableVertexAttribArray(colorAttrib);
+		 glBindBuffer(GL_ARRAY_BUFFER, 0);
+		 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		 */
 }
 
 void Cube::setPosition (glm::vec3 p)
 {
 	position = p;
+	modelmatrix_cached = false;
 }
 
 void Cube::setSize (glm::vec3 s)
 {
 	size = s;
+	modelmatrix_cached = false;
 }

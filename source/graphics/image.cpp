@@ -44,14 +44,14 @@ void Image::load(std::string path)
 	this->pixels = (unsigned int*) surface->pixels;
 }
 
-void Image::upload ()
+void Image::upload (bool smooth)
 {
 	unsigned int texture;
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (smooth ? GL_LINEAR : GL_NEAREST));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	if(surface->format->Amask)
