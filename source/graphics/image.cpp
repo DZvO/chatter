@@ -1,9 +1,11 @@
 #include "image.hpp"
+unsigned int Image::texture_count(0);
 
 Image::Image()
 {
 	gl_pointer = width = height = bpp = 0;
 	pixels = NULL;
+	texture_count++;
 }
 
 Image::Image(std::string path)
@@ -11,6 +13,7 @@ Image::Image(std::string path)
 	gl_pointer = width = height = bpp = 0;
 	pixels = NULL;
 	load(path);
+	texture_count++;
 }
 
 Image::~Image()

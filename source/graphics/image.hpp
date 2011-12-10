@@ -23,11 +23,26 @@ class Image
 
 	unsigned int * pixels;
 
+	unsigned int getId () const
+	{
+		return gl_pointer;
+	}
+
+	unsigned short getWidth () const
+	{
+		return width;
+	}
+	unsigned short getHeight () const
+	{
+		return height;
+	}
+
 	private:
 	std::string path;
 	SDL_Surface * surface;
 	unsigned int gl_pointer;
 	unsigned short width, height, bpp;
+	static unsigned int texture_count;
 };
 
 #endif
