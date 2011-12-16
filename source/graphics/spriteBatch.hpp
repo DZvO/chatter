@@ -38,6 +38,7 @@ class SpriteBatch
 		inline void addVertex (unsigned int texId, const short & x, const short & y, const float & texX, const float & texY, unsigned int color);
 		static unsigned int programPointer, positionAttrib, texcoordAttrib, colorAttrib, projectionUniform, viewUniform, modelUniform, texUniform;
 		static unsigned int mvpUniform;
+		bool beginCalled;
 };
 
 

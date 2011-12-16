@@ -22,10 +22,13 @@ SpriteBatch::SpriteBatch ()
 	//modelUniform = glGetUniformLocation(programPointer, "model");
 	mvpUniform = glGetUniformLocation(programPointer, "mvp");
 	texUniform = glGetUniformLocation(programPointer, "texture");
+	beginCalled = false;
 }
 
 void SpriteBatch::begin ()
 {
+	//TODO set stuff like alpha blending or sort-mode, texture -repeat/wrap, transform-matrix, and so on...
+	beginCalled = true;
 }
 
 inline void SpriteBatch::addVertex (unsigned int texId, const short & x, const short & y, const float & texX, const float & texY, unsigned int color)
@@ -130,4 +133,5 @@ void SpriteBatch::end ()
 	}
 
 	vertices.clear();
+	beginCalled = false;
 }

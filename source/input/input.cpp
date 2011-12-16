@@ -6,6 +6,7 @@ Input::Input()
 	close_requested = false;
 	textmode = false;
 	SDL_EnableUNICODE(1);
+	//mousecallback = nullptr;
 }
 
 Input::~Input()
@@ -81,6 +82,14 @@ int Input::refresh()
 			auto sym = event.key.keysym.sym;
 			//keystate[unicode] = pressed;
 		}
+		else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
+		{
+			int x = 0, y = 0;
+			SDL_GetMouseState(&x, &y);
+			//if(mousecallback != nullptr)
+				//(*mousecallback)(x, y, (event.type == SDL_MOUSEBUTTONDOWN ? true : false));
+			mousecallback(inst, x, y, (event.type == SDL_MOUSEBUTTONDOWN ? true : false));
+		}
 	}
 	return rv;
 	//TODO handle mouse
@@ -131,4 +140,24 @@ void Input::saveKeymapping (std::string path)
 	{
 		fs << k.first << " = " << k.second << '\n';
 	}
+}
+
+void Input::setMouseCallback(void * instance, void(cb)(void *, int,int,bool))
+{
+	inst = instance;
+	mousecallback = cb;
+}
+
+unsigned short Input::getMouseX ()
+{
+	int r = 0;
+	SDL_GetMouseState(&r, nullptr);
+	return r;
+}
+
+unsigned short Input::getMouseY ()
+{
+	int r = 0;
+	SDL_GetMouseState(nullptr, &r);
+	return r;
 }

@@ -13,22 +13,28 @@ using namespace std;
 
 #include "graphics/window.hpp"
 using namespace motor;
+#include "time/stopwatch.hpp"
 #include "input/input.hpp"
 #include "helper.hpp"
 
 #include "graphics/camera.hpp"
-#include <sys/time.h>
-
 #include "graphics/spriteBatch.hpp"
+#include "graphics/guimanager.hpp"
 
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
+
+void buttonPressed ()
+{
+	exit(0);
+}
 
 int main (int argc, char * argv[])
 {
 	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
+	StopWatch * stopwatch = new StopWatch();
 	SpriteBatch * sb = new SpriteBatch();
 	Image cubetex ("data/cubetex.png");
-	cubetex.upload();
+	GuiManager guimanager;// = new GuiManager();
 	unsigned int time = SDL_GetTicks();
 
 	bool enable_textinput = false;
@@ -39,18 +45,12 @@ int main (int argc, char * argv[])
 	}
 	else
 	{
-		input->addMapping("forward", (SDLKey)44);
-		input->addMapping("backward", (SDLKey)111);
-		input->addMapping("left", (SDLKey)97);
-		input->addMapping("right", (SDLKey)101);
 		input->addMapping("escape", SDLK_ESCAPE);
 		input->saveKeymapping("data/preferences.ini");
 	}
 
-	timeval tv;
-	unsigned long long delta = 0;
-	unsigned long long avg = 0;
-	int delta_count = 0;
+	input->setMouseCallback(&guimanager, GuiManager::mouseCallback);
+	guimanager.addButton("Button Text", Rectangle(100, 100, 50, 50), buttonPressed);
 
 	while(input->closeRequested() == false)
 	{
@@ -63,18 +63,15 @@ int main (int argc, char * argv[])
 		}
 
 		Window::getInstance()->clear();
-		gettimeofday(&tv, nullptr);
-		delta = tv.tv_usec;
+		stopwatch->start();
 
 		sb->begin();
-		for(int i = 0; i < 10000; i++)
-			sb->draw(cubetex, Rectangle(100 + i, 100 + i, cubetex.getWidth(), cubetex.getHeight()), Rectangle(0, 0, cubetex.getWidth(), cubetex.getHeight()), Vector4(1, 1, 1, 1));
+		//for(int i = 0; i < 100; i++)
+			//sb->draw(cubetex, Rectangle(100, 100, 50, 50), Rectangle(0, 0, cubetex.getWidth(), cubetex.getHeight()), Vector4(1, 1, 1, 1));
+		guimanager.draw(sb, input->getMouseX(), input->getMouseY());
 		sb->end();
 
-		gettimeofday(&tv, nullptr);
-		delta = tv.tv_usec - delta;
-		//delta_count++;
-		//avg += delta;
+		stopwatch->stop();
 		Window::getInstance()->swap();
 
 		if(time < SDL_GetTicks())
@@ -83,13 +80,15 @@ int main (int argc, char * argv[])
 
 			std::cout.setf(ios::fixed, ios::floatfield);
 			std::cout.setf(ios::showpoint);
-			//std::cout << (float(avg) / float(delta_count)) / 1000.0f << '\n';
-			std::cout << float(delta) / 1000.0f << '\n';
+			std::cout.width(6);
+			std::cout.precision(3);
+			std::cout << stopwatch->get() << " ms"<< '\n';
 		}
 	}
-
 	Window::getInstance()->close();
 	delete input;
+	delete sb;
+	delete stopwatch;
 	return 0;
 }
 

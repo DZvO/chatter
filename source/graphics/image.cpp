@@ -45,6 +45,7 @@ void Image::load(std::string path)
 	this->height = surface->h;
 	this->bpp = surface->format->BitsPerPixel;
 	this->pixels = (unsigned int*) surface->pixels;
+	upload(false);
 }
 
 void Image::upload (bool smooth)

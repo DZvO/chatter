@@ -9,6 +9,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <functional>
 
 class Input
 {
@@ -96,6 +97,11 @@ class Input
 		void loadKeymapping (std::string path);
 		void saveKeymapping (std::string path);
 
+		void setMouseCallback(void*, void(*)(void*,int,int,bool));
+
+		unsigned short getMouseX ();
+		unsigned short getMouseY ();
+
 	private:
 		std::map<std::string, unsigned int> keymap;
 		//std::bitset<sizeof(char16_t) * 8> keystate;
@@ -106,6 +112,9 @@ class Input
 		SDL_Event event;
 		//unsigned char* keystate;
 		//#endif
+		//void (*mousecallback)(int, int, bool); //meh..
+		std::function< void (void*, int, int, bool) > mousecallback;
+		void * inst;
 };
 
 

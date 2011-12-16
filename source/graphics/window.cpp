@@ -30,8 +30,8 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	/*SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 ) ;
 	SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 2 ) ;*/
 
-	screen = SDL_SetVideoMode(width, height, 0, SDL_RESIZABLE | SDL_OPENGL);
-	//screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);	
+	//screen = SDL_SetVideoMode(width, height, 0, SDL_RESIZABLE | SDL_OPENGL);
+	screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);	
 
 	//glEnable(GL_MULTISAMPLE);
 	//glEnable(GL_MULTISAMPLE_ARB);
@@ -80,6 +80,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		exit(-1);
 	}
 
+	/*
 #if defined linux || __GNUC__
 	if(glx::glxewIsSupported("GLX_MESA_swap_control")) //linux - X11 maybe also MacOSX?
 	{
@@ -105,6 +106,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		//clog << glXQueryExtensionsString(glXGetCurrentDisplay(), 0);
 		clog << ")\n";
 	}
+	*/
 
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 	ortho_projection = glm::ortho(0.0f, float(width), float(height), 0.0f, -1.0f, 1.0f);
