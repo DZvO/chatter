@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os;
 env = Environment(CXX = 'g++', CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
-#env = Environment(CXXFLAGS='--std=c++0x', LIBPATH='.', CPPPATH='.')
+#env = Environment(CXX = 'i486-mingw32-g++', CXXFLAGS='--std=c++0x', LIBPATH='.', CPPPATH='.')
 conf = Configure(env)
 
 if not conf.CheckLib('GL'):
@@ -21,7 +21,7 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window image shaderHelper camera spriteBatch guimanager") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
+libgraphics.Library('graphics', splitter("graphics/", "window image shaderHelper camera spritebatch guimanager") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))

@@ -6,14 +6,14 @@
 #include <string>
 #include <iostream>
 #include "math/rectangle.hpp"
-#include "graphics/spriteBatch.hpp"
+#include "graphics/spritebatch.hpp"
 #include "graphics/image.hpp"
 
 class GuiManager
 {
 	public:
 		GuiManager ();
-		void addButton (std::string text, Rectangle dest, void(*event)(void));
+		void addButton (std::string text, Rectangle dest, Rectangle hitbox, void(*event)(void));
 		void draw (SpriteBatch * sb, int mouseX, int mouseY);
 
 		static void mouseCallback (void * instance, int x, int y, bool pressed);
@@ -22,11 +22,13 @@ class GuiManager
 		{
 			std::string text;
 			Rectangle rectangle;
+			Rectangle hitbox;
 			bool isPressed;
 			void(*callback)(void);
 		};
 		std::vector <Button> buttons;
-		Image * cubetex;
+		Image * guiset;
+		Image * font;
 };
 
 #endif

@@ -18,14 +18,13 @@ using namespace motor;
 #include "helper.hpp"
 
 #include "graphics/camera.hpp"
-#include "graphics/spriteBatch.hpp"
+#include "graphics/spritebatch.hpp"
 #include "graphics/guimanager.hpp"
 
 enum STATE { ADDRESS_ENTRY, ACK_WAIT, NAME_ENTRY, NORMAL} state = ADDRESS_ENTRY;
 
 void buttonPressed ()
 {
-	exit(0);
 }
 
 int main (int argc, char * argv[])
@@ -33,7 +32,7 @@ int main (int argc, char * argv[])
 	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
 	StopWatch * stopwatch = new StopWatch();
 	SpriteBatch * sb = new SpriteBatch();
-	Image cubetex ("data/cubetex.png");
+	Image guiset ("data/guiset.png");
 	GuiManager guimanager;// = new GuiManager();
 	unsigned int time = SDL_GetTicks();
 
@@ -50,7 +49,7 @@ int main (int argc, char * argv[])
 	}
 
 	input->setMouseCallback(&guimanager, GuiManager::mouseCallback);
-	guimanager.addButton("Button Text", Rectangle(100, 100, 50, 50), buttonPressed);
+	guimanager.addButton("Button 1", Rectangle(100, 100, 128, 42), Rectangle(100, 100, 128, 42), buttonPressed);
 
 	while(input->closeRequested() == false)
 	{
@@ -69,6 +68,7 @@ int main (int argc, char * argv[])
 		//for(int i = 0; i < 100; i++)
 			//sb->draw(cubetex, Rectangle(100, 100, 50, 50), Rectangle(0, 0, cubetex.getWidth(), cubetex.getHeight()), Vector4(1, 1, 1, 1));
 		guimanager.draw(sb, input->getMouseX(), input->getMouseY());
+		//sb->draw(guiset, Rectangle(100, 100, 512, 170), Rectangle(0, 2*170, 512, 170));
 		sb->end();
 
 		stopwatch->stop();

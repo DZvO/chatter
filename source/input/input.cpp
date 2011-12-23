@@ -84,11 +84,14 @@ int Input::refresh()
 		}
 		else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
 		{
-			int x = 0, y = 0;
-			SDL_GetMouseState(&x, &y);
-			//if(mousecallback != nullptr)
+			if(mousecallback)
+			{
+				int x = 0, y = 0;
+				SDL_GetMouseState(&x, &y);
+				//if(mousecallback != nullptr)
 				//(*mousecallback)(x, y, (event.type == SDL_MOUSEBUTTONDOWN ? true : false));
-			mousecallback(inst, x, y, (event.type == SDL_MOUSEBUTTONDOWN ? true : false));
+				mousecallback(inst, x, y, (event.type == SDL_MOUSEBUTTONDOWN ? true : false));
+			}
 		}
 	}
 	return rv;

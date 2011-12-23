@@ -2,6 +2,7 @@
 #define _SPRITEBATCH_HPP
 
 #include <iostream>
+#include <string>
 #include <map>
 #include <list>
 #include "graphics/image.hpp"
@@ -20,6 +21,7 @@ class SpriteBatch
 		void begin ();
 		void draw (const Image & texture, const Vector2 & position);
 		void draw (const Image & texture, const Rectangle & destination, const Rectangle & uv = Rectangle(0.0, 0.0, 0.0, 0.0), const Vector4 & color = Vector4(1.0, 1.0, 1.0, 1.0), const float & rotation = 0.0, const Vector2 & origin = Vector2(0.0, 0.0), float scale = 1.0, const float & layerDepth = float(0.0));
+		void drawString (const Image & font, const std::string & str, const Vector2 & pos, bool useKerning);
 		void end ();
 
 	private:
@@ -39,6 +41,8 @@ class SpriteBatch
 		static unsigned int programPointer, positionAttrib, texcoordAttrib, colorAttrib, projectionUniform, viewUniform, modelUniform, texUniform;
 		static unsigned int mvpUniform;
 		bool beginCalled;
+
+		static std::map<unsigned int, unsigned char[]> kerning;
 };
 
 

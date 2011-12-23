@@ -3,14 +3,16 @@
 
 GuiManager::GuiManager ()
 {
-	cubetex = new Image("data/cubetex.png");
+	guiset = new Image("data/guiset.png");
+	font = new Image("data/font.png");
 }
 
-void GuiManager::addButton (std::string text, Rectangle dest, void(*event)(void))
+void GuiManager::addButton (std::string text, Rectangle dest, Rectangle hitbox, void(*event)(void))
 {
 	Button btn;
 	btn.text = text;
 	btn.rectangle = dest;
+	btn.hitbox = hitbox;
 	btn.callback = event;
 	//btn.isHighlighted = false;
 	btn.isPressed = false;
@@ -19,23 +21,36 @@ void GuiManager::addButton (std::string text, Rectangle dest, void(*event)(void)
 
 void GuiManager::draw (SpriteBatch * sb, int mouseX, int mouseY)
 {
-	for(auto btn : buttons)
+	for(auto & btn : buttons)
 	{
+		Rectangle uv;
 		if(btn.isPressed)
 		{
-			sb->draw(*cubetex, Rectangle(100, 100, 50, 50), Rectangle(0, 0, cubetex->getWidth(), cubetex->getHeight()), Vector4(1, 0, 0, 1));
-			//std::cout << " 1 \n";
+			//sb->draw(*guiset, Rectangle(btn.rectangle.x, btn.rectangle.y, btn.rectangle.width, btn.rectangle.height), Rectangle(0, 0, guiset->getWidth(), 170), Vector4(1, 1, 1, 1));
+			uv.x = 0;
+			uv.y = 0;
+			uv.width = guiset->getWidth();
+			uv.height = 170;
 		}
-		else if(btn.rectangle.isInside(mouseX, mouseY))
+		else if(btn.hitbox.isInside(mouseX, mouseY))
 		{
-			sb->draw(*cubetex, Rectangle(100, 100, 50, 50), Rectangle(0, 0, cubetex->getWidth(), cubetex->getHeight()), Vector4(1, 1, 0, 1));
-			//std::cout << " 2 \n";
+			//sb->draw(*guiset, Rectangle(btn.rectangle.x, btn.rectangle.y, btn.rectangle.width, btn.rectangle.height), Rectangle(0, 170, guiset->getWidth(), 170), Vector4(1, 1, 1, 1));
+			uv.x = 0;
+			uv.y = 170;
+			uv.width = guiset->getWidth();
+			uv.height = 170;
 		}
 		else
 		{
-			sb->draw(*cubetex, Rectangle(100, 100, 50, 50), Rectangle(0, 0, cubetex->getWidth(), cubetex->getHeight()), Vector4(1, 1, 1, 1));
-			//std::cout << " 3 \n";
+			//sb->draw(*guiset, Rectangle(btn.rectangle.x, btn.rectangle.y, btn.rectangle.width, btn.rectangle.height), Rectangle(0, 170*2, guiset->getWidth(), 170), Vector4(1, 1, 1, 1));
+			uv.x = 0;
+			uv.y = 170*2;
+			uv.width = guiset->getWidth();
+			uv.height = 170;
 		}
+
+		sb->draw(*guiset, Rectangle(btn.rectangle.x, btn.rectangle.y, btn.rectangle.width, btn.rectangle.height), uv);
+		sb->drawString(*font, btn.text, Vector2(btn.rectangle.x + 10, btn.rectangle.y + 10), true);
 	}
 }
 
@@ -45,14 +60,15 @@ void GuiManager::mouseCallback (void * instance, int x, int y, bool pressed)
 	//std::cout << "mouse called back: " << x << " " << y << " " << pressed << '\n';
 
 		//std::vector <Button> buttons;
-	for(auto itr = ((GuiManager*)instance)->buttons.begin(); itr != ((GuiManager*)instance)->buttons.end(); ++itr)
+	//for(auto itr = ((GuiManager*)instance)->buttons.begin(); itr != ((GuiManager*)instance)->buttons.end(); ++itr)
+	for(auto & btn : ((GuiManager*)instance)->buttons)
 	{
 		if(pressed == false)
-			itr->isPressed = false;
-		else if(itr->rectangle.isInside(x, y))
+			btn.isPressed = false;
+		else if(btn.hitbox.isInside(x, y))
 		{
-			itr->isPressed = true;
-			(*(itr->callback))();
+			btn.isPressed = true;
+			(*(btn.callback))();
 		}
 	}
 }

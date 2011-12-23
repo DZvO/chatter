@@ -1,4 +1,4 @@
-#include "spriteBatch.hpp"
+#include "spritebatch.hpp"
 unsigned int SpriteBatch::programPointer = 0;
 unsigned int SpriteBatch::positionAttrib = 0;
 unsigned int SpriteBatch::texcoordAttrib = 0;
@@ -93,6 +93,7 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 	//addVertex(texid, destination.x, destination.y, uvxmin, uvymin, packed_color);//1
 	//addVertex(texid, destination.x, destination.y + destination.height, uvxmin, uvymax, packed_color);//2
 	
+	//save two vertices and hope that it improves performance :)
 	/*  0----3
 	 *  |    |
 	 *  |    |
@@ -113,7 +114,6 @@ void SpriteBatch::end ()
 	//glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
 	glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getOrthoProjection()) * glm::mat4(1.0) * glm::mat4(1.0)));
 
-	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 
 	for(auto vertices_iterator : vertices)
 	{
@@ -122,9 +122,10 @@ void SpriteBatch::end ()
 
 		//use vertex arrays instead of gl managed vbos since we are using the vertices directly of the ram
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //tell gl specificly that we want vertex arrays
+	glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
 		glVertexAttribPointer(positionAttrib, 2, GL_SHORT, GL_FALSE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].position));
 		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].uv));
-		glVertexAttribPointer(colorAttrib, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].color));
+		glVertexAttribPointer(colorAttrib, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].color));
 
 		//glDrawArrays(GL_TRIANGLES, 0, vertices_iterator.second.vertexCount);
 		glDrawArrays(GL_QUADS, 0, vertices_iterator.second.vertexCount);
@@ -134,4 +135,22 @@ void SpriteBatch::end ()
 
 	vertices.clear();
 	beginCalled = false;
+}
+
+void SpriteBatch::drawString (const Image & font, const std::string & str, const Vector2 & pos, bool useKerning)
+{
+	/*if(useKerning)
+	{
+		if(kerning.find(font.getId()) == kerning.end()) // couldn't find kerning, create it here
+		{
+			kerning[font.getId] = new unsigned char[0xff * 2]; // left and right kerning for every char in the font-file
+			for(int i = 0; i < (0xff); i++)
+			{
+				//load kerning
+			}
+		}
+	}
+	else
+	{
+	}*/
 }
