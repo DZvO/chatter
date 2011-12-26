@@ -19,7 +19,7 @@ class Image
 	void upload (bool smooth = true);
 
 	unsigned int getGlPointer();
-	unsigned int getPixel(unsigned int x, unsigned int y);
+	unsigned int getPixel(unsigned int x, unsigned int y) const;
 
 	unsigned int * pixels;
 

@@ -36,8 +36,8 @@ libchat.Library('chat', splitter("chat/", "message"))
 #libstuff.Library('stuff', splitter("graphics/", "cube"))
 # -- ---- --
 
-guiclient = env.Clone()
-guiclient.Program('guiclient.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
+main = env.Clone()
+main.Program('main.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
 server.Program('server.cpp', LIBS=['network'])

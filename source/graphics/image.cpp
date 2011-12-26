@@ -76,7 +76,7 @@ unsigned int Image::getGlPointer()
 	return gl_pointer;
 }
 
-unsigned int Image::getPixel(unsigned int x, unsigned int y)
+unsigned int Image::getPixel(unsigned int x, unsigned int y) const
 {
 	if(x > width || y > height)
 	{

@@ -24,6 +24,11 @@ class Rectangle
 			}
 			return false;
 		}
+		friend std::ostream & operator << (std::ostream & os, const Rectangle & r)
+		{
+			os << "R(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
+			return os;
+		}
 };
 
 #endif
