@@ -5,7 +5,7 @@ Input::Input()
 	//keystate = SDL_GetKeyState(NULL);
 	close_requested = false;
 	textmode = false;
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1);
 	//mousecallback = nullptr;
 }
 
@@ -50,9 +50,19 @@ bool Input::isPressed (Input::Key k)
 	return false;
 }
 
+bool Input::isPressed (const std::string & str)
+{
+	return isPressed(getMapping(str));
+}
+
 bool Input::isPressedSym (Input::Key k)
 {
 	return SDL_GetKeyState(NULL)[k];
+}
+
+bool Input::isPressedSym (const std::string & str)
+{
+	return SDL_GetKeyState(NULL)[getMapping(str)];
 }
 
 void Input::requestClose()

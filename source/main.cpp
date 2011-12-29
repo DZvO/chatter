@@ -21,57 +21,47 @@ using namespace motor;
 #include "graphics/spritebatch.hpp"
 #include "graphics/guimanager.hpp"
 
+#include "statemanager.hpp"
+#include "state.hpp"
+#include "gamestate.hpp"
+
 int main (int argc, char * argv[])
 {
 	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
-	StopWatch * stopwatch = new StopWatch();
-	SpriteBatch * sb = new SpriteBatch();
-	unsigned int time = SDL_GetTicks();
 
-	bool enable_textinput = false;
-	Input * input = new Input();
+	Input * input = Input::getInstance();
 	if(ifstream("data/preferences.ini"))
 		input->loadKeymapping("data/preferences.ini");
 	else
 	{
 		input->addMapping("escape", SDLK_ESCAPE);
+		input->addMapping("up", SDLK_UP);
+		input->addMapping("down", SDLK_DOWN);
+		input->addMapping("left", SDLK_LEFT);
+		input->addMapping("right", SDLK_RIGHT);
 		input->saveKeymapping("data/preferences.ini");
 	}
 
-	/*while(input->closeRequested() == false)
+	StateManager * stateman = StateManager::getInstance();
+	stateman->changeState(new state::GameState());
+	while(stateman->isRunning())
 	{
-		while(input->refresh() != 0) // pump events like crazy!
-		{
-			if(input->isPressed(input->getMapping("escape")))
-				return 0; //os will free memory anyways, so omit it here
-		}
-
-		Window::getInstance()->clear();
-		stopwatch->start();
-
-		state->run();
-
-		stopwatch->stop();
-		Window::getInstance()->swap();
-
-		if(time < SDL_GetTicks())
-		{
-			time = SDL_GetTicks() + 500;
-
-			std::cout.setf(ios::fixed, ios::floatfield);
-			std::cout.setf(ios::showpoint);
-			std::cout.width(6);
-			std::cout.precision(3);
-			std::cout << stopwatch->get() << " ms"<< '\n';
-		}
+		stateman->run();
 	}
-	Window::getInstance()->close();*/
 
-	
+	/*Image background = Image("data/cubetex.png");
+	while(input->closeRequested() == false)
+	{
+		while(input->refresh()){}
+		Window::getInstance()->clear();
+		SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
+		sb->begin();
+		sb->draw(background, Rectangle(100, 100, 512, 512), Rectangle(0, 0, 512, 512));
+		sb->end();
+		Window::getInstance()->swap();
+	}*/
 
-	delete input;
-	delete sb;
-	delete stopwatch;
+	//man i sure do like singletons!
 	return 0;
 }
 

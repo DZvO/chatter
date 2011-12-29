@@ -20,7 +20,15 @@ class SpriteBatch
 		SpriteBatch ();
 		void begin ();
 		void draw (const Image & texture, const Vector2 & position);
-		void draw (const Image & texture, const Rectangle & destination, const Rectangle & uv = Rectangle(0.0, 0.0, 0.0, 0.0), const Vector4 & color = Vector4(1.0, 1.0, 1.0, 1.0), const float & rotation = 0.0, const Vector2 & origin = Vector2(0.0, 0.0), float scale = 1.0, const short layer = 0);
+		void draw (const Image & texture,
+				const Rectangle & destination,
+				const Rectangle & uv = Rectangle(0.0, 0.0, 0.0, 0.0),
+				const Vector4 & color = Vector4(1.0, 1.0, 1.0, 1.0),
+				const float & rotation = 0.0,
+				const Vector2 & origin = Vector2(0.0, 0.0),
+				float scale = 1.0,
+				const short layer = 0);
+
 		void drawString (const Image & font, const std::string & str, const Vector2 & pos, bool useKerning = true, float scale = 1.0, const short layer = 0);
 		void drawDebug();
 		void end ();

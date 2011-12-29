@@ -68,8 +68,11 @@ class Input
 			kArrowDown = SDLK_DOWN
 		};
 	public:
-		Input();
-		~Input();
+		static Input * getInstance ()
+		{
+			static Input instance;
+			return &instance;
+		}
 
 		/* Text mode stuff */
 		void enableTextmode();	//keyboard layout translation for example from standard QWERTY to DVORAK, so the user can type in his favourite layout
@@ -82,7 +85,9 @@ class Input
 		int refresh();
 
 		bool isPressed (Key k);
+		bool isPressed (const std::string &);
 		bool isPressedSym (Key k);
+		bool isPressedSym (const std::string &);
 
 		bool isReleased (Key k);
 		bool isReleasedSym (Key k);
@@ -103,6 +108,11 @@ class Input
 		unsigned short getMouseY ();
 
 	private:
+		Input();
+		~Input();
+		Input(Input const&);
+		void operator=(Input const &);
+
 		std::map<std::string, unsigned int> keymap;
 		//std::bitset<sizeof(char16_t) * 8> keystate;
 		bool close_requested;

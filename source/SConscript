@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 import os;
-env = Environment(CXX = 'g++', CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
+env = Environment(CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.')
+env.ParseConfig("pkg-config sdl --cflags --libs")
+env.ParseConfig("pkg-config gl --cflags --libs")
+#env = Environment(CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
 #env = Environment(CXX = 'i486-mingw32-g++', CXXFLAGS='--std=c++0x', LIBPATH='.', CPPPATH='.')
-conf = Configure(env)
-
-if not conf.CheckLib('GL'):
-	print("Please install (lib)gl, by either:\
-			Linux:\
-				getting mesa -> http://mesa3d.org and a fitting driver for your video card, or by directly downloading a driver from your graphics card vendor.\
-			Windows:\
-				downloading a driver from your video cards vendor.")
-	Exit(1)
-env = conf.Finish()
 
 def splitter(folder, files):
 	return map(lambda x: folder + x + ".cpp", files.split())
@@ -21,7 +14,7 @@ libnetwork = env.Clone()
 libnetwork.Library('network', splitter("network/", "address sendbuffer receivebuffer receivebuffermanager socket"))
 
 libgraphics = env.Clone()
-libgraphics.Library('graphics', splitter("graphics/", "window image shaderHelper camera spritebatch guimanager") + ["lib/glew/glew.c"], LIBS=['GL', 'SDL', 'SDL_image'])
+libgraphics.Library('graphics', splitter("graphics/", "window image shaderHelper camera spritebatch guimanager") + ["lib/glew/glew.c"], LIBS=['SDL_image'])
 
 libinput = env.Clone()
 libinput.Library('input', splitter("input/", "input"))
@@ -34,10 +27,13 @@ libchat.Library('chat', splitter("chat/", "message"))
 
 #libstuff = env.Clone()
 #libstuff.Library('stuff', splitter("graphics/", "cube"))
+
+libstate = env.Clone()
+libstate.Library('state', splitter("./", "gamestate state statemanager"))
 # -- ---- --
 
 main = env.Clone()
-main.Program('main.cpp', LIBS=['network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
+main.Program('main.cpp', LIBS=['state', 'network', 'graphics', 'GL', 'SDL', 'SDL_image', 'input', 'time', 'chat'])
 
 server = env.Clone()
 server.Program('server.cpp', LIBS=['network'])

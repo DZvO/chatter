@@ -94,23 +94,60 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 	//addVertex(texid, destination.x + destination.width, destination.y, uvxmax, uvymin, packed_color); //0
 	//addVertex(texid, destination.x, destination.y, uvxmin, uvymin, packed_color);//1
 	//addVertex(texid, destination.x, destination.y + destination.height, uvxmin, uvymax, packed_color);//2
-	
+
 	//save two vertices and hope that it improves performance :)
 	/*  0----3
 	 *  |    |
 	 *  |    |
 	 *  1----2
 	 */
-	addVertex(texid, destination.x, destination.y, uvxmin, uvymin, packed_color, depth);
-	addVertex(texid, destination.x, destination.y + destination.height, uvxmin, uvymax, packed_color, depth);
-	addVertex(texid, destination.x + destination.width, destination.y + destination.height, uvxmax, uvymax, packed_color, depth);
-	addVertex(texid, destination.x + destination.width, destination.y, uvxmax, uvymin, packed_color, depth);
+	if(rotation != 0.0)
+	{
+
+		glm::mat3 tm = glm::mat3(1.0);
+		tm[0].x = cos(rotation);
+		tm[0].y = sin(rotation);
+		tm[1].x = -sin(rotation);
+		tm[1].y = cos(rotation);
+
+		glm::vec3 v0 = glm::vec3(destination.x, destination.y, 0);
+		v0 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v0 = v0 * tm;
+		v0 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+
+		glm::vec3 v1 = glm::vec3(destination.x, destination.y + destination.height, 0);
+		v1 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v1 = v1 * tm;
+		v1 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+
+		glm::vec3 v2 = glm::vec3(destination.x + destination.width, destination.y + destination.height, 0);
+		v2 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v2 = v2 * tm;
+		v2 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+
+		glm::vec3 v3 = glm::vec3(destination.x + destination.width, destination.y, 0);
+		v3 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v3 = v3 * tm;
+		v3 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+
+		addVertex(texid, v0.x, v0.y, uvxmin, uvymin, packed_color, depth);
+		addVertex(texid, v1.x, v1.y, uvxmin, uvymax, packed_color, depth);
+		addVertex(texid, v2.x, v2.y, uvxmax, uvymax, packed_color, depth);
+		addVertex(texid, v3.x, v3.y, uvxmax, uvymin, packed_color, depth);
+	}
+	else
+	{
+		addVertex(texid, destination.x, destination.y, uvxmin, uvymin, packed_color, depth);
+		addVertex(texid, destination.x, destination.y + destination.height, uvxmin, uvymax, packed_color, depth);
+		addVertex(texid, destination.x + destination.width, destination.y + destination.height, uvxmax, uvymax, packed_color, depth);
+		addVertex(texid, destination.x + destination.width, destination.y, uvxmax, uvymin, packed_color, depth);
+	}
 }
 
 void SpriteBatch::end ()
 {
 	glUseProgram(programPointer);
-	
+
 	//glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getOrthoProjection())));
 	//glUniformMatrix4fv(viewUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
 	//glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
