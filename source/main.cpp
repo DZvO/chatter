@@ -24,6 +24,7 @@ using namespace motor;
 #include "statemanager.hpp"
 #include "state.hpp"
 #include "gamestate.hpp"
+#include "menustate.hpp"
 
 int main (int argc, char * argv[])
 {
@@ -43,25 +44,10 @@ int main (int argc, char * argv[])
 	}
 
 	StateManager * stateman = StateManager::getInstance();
-	stateman->changeState(new state::GameState());
-	while(stateman->isRunning())
-	{
-		stateman->run();
-	}
+	stateman->changeState(new state::MenuState());
+	stateman->run();
 
-	/*Image background = Image("data/cubetex.png");
-	while(input->closeRequested() == false)
-	{
-		while(input->refresh()){}
-		Window::getInstance()->clear();
-		SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
-		sb->begin();
-		sb->draw(background, Rectangle(100, 100, 512, 512), Rectangle(0, 0, 512, 512));
-		sb->end();
-		Window::getInstance()->swap();
-	}*/
-
-	//man i sure do like singletons!
+	std::cout << "bye\n";
 	return 0;
 }
 

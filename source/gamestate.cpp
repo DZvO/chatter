@@ -1,17 +1,32 @@
 #include "gamestate.hpp"
-motor::state::GameState::GameState () : player_acceleration(Vector2(1.0))
+motor::state::GameState::GameState ()
 {
 	background = new Image("data/background.png");
 	tiles = new Image("data/tiles.png");
-	player_position = Vector2(0.0);
-	player_velocity = Vector2(0.0);
+	spaceship.hitbox.width = 12;
+	spaceship.hitbox.height = 12;
+
+	Entity beacon;
+	beacon.position = Vector2(100, 100);
+	beacon.id = MANA_POTION;
+	beacon.hitbox = Rectangle(0, 0, 9, 13);
+	entitys.push_back(beacon);
+
+	beacon.position = Vector2(200, 100);
+	entitys.push_back(beacon);
+	std::cout << "created GameState" << '\n';
 }
 
-void motor::state::GameState::init ()
+motor::state::GameState::~GameState ()
+{
+	std::cout << "deleted GameState" << '\n';
+}
+
+void motor::state::GameState::init (const motor::StateManager * st)
 {
 }
 
-void motor::state::GameState::update ()
+void motor::state::GameState::update (const motor::StateManager * st)
 {
 	Input * input = Input::getInstance();
 	if(input->closeRequested())
@@ -23,55 +38,65 @@ void motor::state::GameState::update ()
 	}
 
 	if(input->isPressedSym("left"))
-		player_velocity.x -= player_acceleration.x * (Window::getInstance()->getFrametime() / 10);
+		spaceship.velocity.x -= 1.0 * (Window::getInstance()->getFrametime() / 10);
 	if(input->isPressedSym("right"))
-		player_velocity.x += player_acceleration.x * (Window::getInstance()->getFrametime() / 10);
+		spaceship.velocity.x += 1.0 * (Window::getInstance()->getFrametime() / 10);
 	if(input->isPressedSym("up"))
-		player_velocity.y -= player_acceleration.y * (Window::getInstance()->getFrametime() / 10);
+		spaceship.velocity.y -= 1.0 * (Window::getInstance()->getFrametime() / 10);
 	if(input->isPressedSym("down"))
-		player_velocity.y += player_acceleration.y * (Window::getInstance()->getFrametime() / 10);
-	if(input->isPressedSym(Input::kEnter))
-		shootLazorBEAM(Vector2(0,0));
-
-	player_position += player_velocity;
-	if(glm::length(player_velocity) < 0.001)
-		player_velocity = Vector2(0,0);
-	else
-		player_velocity *= 0.8;
-
-	if(player_velocity != Vector2(0,0))
+		spaceship.velocity.y += 1.0 * (Window::getInstance()->getFrametime() / 10);
+	if(input->isPressedSym(Input::kEnter) && spaceship.laser_cooldown <= 0.0)
 	{
-		Vector2 nv = glm::normalize(player_velocity);
-		Vector2 dir = glm::normalize(Vector2(0, -1));
-		player_rotation = -(glm::atan(nv.y, nv.x) - glm::atan(dir.y, dir.x));
-		if(player_rotation != player_rotation) //check for NaN
-			player_rotation = 0;
+		shootLazorBEAM(spaceship);
 	}
-	cout << player_rotation << '\n';
 
 	for(auto & blt : bullets)
 	{
 		blt.position += blt.velocity;
 		blt.velocity += glm::normalize(blt.velocity);
 	}
+	if(spaceship.laser_cooldown > 0.0)
+	{
+		spaceship.laser_cooldown -= Window::getInstance()->getFrametime() / 1000.0;
+	}
+	spaceship.update();
+
+	for(auto itr = entitys.begin(); itr != entitys.end(); itr++)
+	{
+		auto & ent = *itr;
+		if(spaceship.hitbox.collides(Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height)))
+		{
+			if(ent == DEBUG_POTION)
+				cout << " debug potion \n";
+			else if (ent == MANA_POTION)
+			{
+				spaceship.position += Vector2(100, 100);
+			}
+
+			itr = entitys.erase(itr);
+		}
+	}
 }
 
-void motor::state::GameState::draw ()
+void motor::state::GameState::draw (const motor::StateManager * st)
 {
 	Window::getInstance()->clear();
-	SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
+	//SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
+	SpriteBatch * sb = const_cast<motor::StateManager *> (st)->getSpriteBatch();
 	sb->begin();
 
 	sb->draw(*background,
 			Rectangle(-Window::getInstance()->getWidth(), -Window::getInstance()->getHeight(), Window::getInstance()->getWidth() * 2, Window::getInstance()->getHeight() * 2),
-			Rectangle(player_position.x, player_position.y, Window::getInstance()->getWidth() * 3, Window::getInstance()->getHeight() * 3),
+			Rectangle(spaceship.position.x, spaceship.position.y, Window::getInstance()->getWidth() * 3, Window::getInstance()->getHeight() * 3),
 			Vector4(1.0),
 			0.0,
 			Vector2(0.0),
 			1.0,
 			1);
 
-	sb->draw(*tiles, Rectangle(player_position.x, player_position.y, 12, 12), Rectangle(0, 0, 12, 12), Vector4(1.0), (player_rotation), Vector2(6, 6), 1.0, 2);
+	sb->draw(*tiles, Rectangle(spaceship.position.x, spaceship.position.y, 12, 12), Rectangle(0, 0, 12, 12), Vector4(1.0), (spaceship.rotation), Vector2(6, 6), 1.0, 2);
+	for(Entity & ent : entitys)
+		sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(18, 0, 9, 13), Vector4(1.0), 0.0, Vector2(0, 0), 1.0, 2);
 
 	for(auto itr = bullets.begin(); itr != bullets.end(); itr++)
 	{
@@ -97,12 +122,13 @@ void motor::state::GameState::draw ()
 	Window::getInstance()->swap();
 }
 
-void motor::state::GameState::shootLazorBEAM (Vector2 nDirection)
+void motor::state::GameState::shootLazorBEAM (SpaceShip & spaceship)
 {
+	spaceship.laser_cooldown = 0.3;
 	bullet blt;
-	blt.position = player_position + Vector2(6,0) + (glm::normalize(player_velocity) * Vector2(20,20));
-	blt.velocity = player_velocity;
-	Vector2 nv = glm::normalize(blt.velocity);
+	blt.position = spaceship.position + Vector2(6,0) + (spaceship.direction * Vector2(20,20));
+	blt.velocity = spaceship.direction * Vector2(10, 10);
+	Vector2 nv = spaceship.direction;
 	Vector2 dir = glm::normalize(Vector2(0, -1));
 	blt.rotation = -(glm::atan(nv.y, nv.x) - glm::atan(dir.y, dir.x));
 	bullets.push_back(blt);

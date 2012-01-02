@@ -205,9 +205,12 @@ void SpriteBatch::drawString (const Image & font, const std::string & str, const
 						}
 					}
 
-					for(int x = col*8+8-1; x > col*8; x--)
+					//unsigned short array_pos = col + (col*row);
+					unsigned short array_pos = (row*16) + col;
+
+					for(int x = col*8+8-1; x >= col*8; x--)
 					{
-						for(int y = row*8+8-1; y > row*8; y--)
+						for(int y = row*8+8-1; y >= row*8; y--)
 						{
 							if(font.getPixel(x, y) != 0x00)
 							{
@@ -219,13 +222,11 @@ void SpriteBatch::drawString (const Image & font, const std::string & str, const
 						}
 					}
 
-					//unsigned short array_pos = col + (col*row);
-					unsigned short array_pos = (row*16) + col;
 
 					kerning[font.getId()][array_pos] = left;
 					kerning[font.getId()][array_pos + 0xff] = right;
-					//cout << "char (" << col << "|" << row << ") is \"" << (char)array_pos<< "\". left is: " << left << " right is: " << right << '\n';
-					//cout << "width is " << right - left << "\n\n";
+						//cout << "char (" << col << "|" << row << ") is \"" << (char)array_pos<< "\". left is: " << left << " right is: " << right << '\n';
+						//cout << "width is " << right - left << "\n\n";
 
 				}
 			}

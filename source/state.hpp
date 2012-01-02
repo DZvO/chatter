@@ -5,6 +5,7 @@
 
 namespace motor
 {
+	class StateManager;
 	namespace state
 	{
 		class State
@@ -13,10 +14,15 @@ namespace motor
 				State ()
 				{
 					active = true;
+					std::cout << "created state\n";
 				}
-				virtual void init () = 0;
-				virtual void update () = 0;
-				virtual void draw () = 0;
+				virtual ~State ()
+				{
+					std::cout << "destroyed state\n";
+				}
+				virtual void init (const motor::StateManager * st) = 0;
+				virtual void update (const motor::StateManager * st) = 0;
+				virtual void draw (const motor::StateManager * st) = 0;
 				bool active;
 		};
 	}

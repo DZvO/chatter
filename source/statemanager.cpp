@@ -10,7 +10,7 @@ void motor::StateManager::changeState (motor::state::State * newState)
 {
 	delete currentState;
 	currentState = newState;
-	currentState->init();
+	currentState->init(this);
 }
 
 bool motor::StateManager::isRunning ()
@@ -25,10 +25,13 @@ void motor::StateManager::stop ()
 
 void motor::StateManager::run ()
 {
-	if(currentState != nullptr)
+	while(running)
 	{
-		currentState->update();
-		currentState->draw();
+		if(currentState != nullptr)
+		{
+			currentState->update(this);
+			currentState->draw(this);
+		}
 	}
 }
 

@@ -2,12 +2,15 @@
 #define _GAMESTATE_HPP
 
 #include "state.hpp"
+#include "statemanager.hpp"
 #include "math/vector.hpp"
 #include "input/input.hpp"
 #include "statemanager.hpp"
 #include "keyboardsettingsstate.hpp"
 #include "lib/glm/gtx/vector_angle.hpp"
 #include <list>
+#include "spaceship.hpp"
+#include "entity.hpp"
 
 namespace motor
 {
@@ -17,21 +20,20 @@ namespace motor
 		{
 			public:
 				GameState();
+				~GameState();
 			private:
-				virtual void init ();
-				virtual void update ();
-				virtual void draw ();
+				virtual void init (const motor::StateManager * st);
+				virtual void update (const motor::StateManager * st);
+				virtual void draw (const motor::StateManager * st);
 
-				Vector2 player_position;
-				Vector2 player_velocity;
-				const Vector2 player_acceleration;
-				Vector2 player_direction;
-				float player_rotation;
+				SpaceShip spaceship;
+				std::list<Entity> entitys;
+
 				Image * background;
 				Image * tiles;
 
-				float weaponCooldown;
-				void shootLazorBEAM (Vector2 normalized_direction);
+				void shootLazorBEAM (SpaceShip &);
+
 				struct bullet
 				{
 					Vector2 position;

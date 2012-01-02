@@ -1,6 +1,7 @@
 #ifndef _RECTANGLE_HPP
 #define _RECTANGLE_HPP
 
+#include <iostream>
 #include "lib/glm/glm.hpp"
 
 class Rectangle
@@ -24,6 +25,17 @@ class Rectangle
 			}
 			return false;
 		}
+
+		bool collides (const Rectangle & r)
+		{
+			if(	isInside(r.x, r.y) ||
+					isInside(r.x + r.width, r.y) ||
+					isInside(r.x, r.y + r.height) ||
+					isInside(r.x + r.width, r.y + r.height))
+				return true;
+			return false;
+		}
+
 		friend std::ostream & operator << (std::ostream & os, const Rectangle & r)
 		{
 			os << "R(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
