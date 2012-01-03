@@ -176,7 +176,7 @@ void SpriteBatch::end ()
 	beginCalled = false;
 }
 
-void SpriteBatch::drawString (const Image & font, const std::string & str, const Vector2 & pos, bool useKerning, float scale, const short layer)
+void SpriteBatch::drawString (const Image & font, const std::string & str, const Vector2 & pos, const Vector4 & color, bool useKerning, float scale, const short layer)
 {
 	if(useKerning)
 	{
@@ -250,7 +250,7 @@ void SpriteBatch::drawString (const Image & font, const std::string & str, const
 				this->draw(font, 
 						Rectangle(pos.x + x, pos.y, width*scale, 8*scale),
 						Rectangle(kerning[font.getId()][c], c_row*8, width, 8),
-						Vector4(1.0, 1.0, 1.0, 1.0),
+						color,
 						0.0, Vector2(0.0), 1.0,
 						layer
 						);

@@ -39,6 +39,7 @@ namespace motor
 					Vector2 position;
 					Vector2 velocity;
 					float rotation;
+					Rectangle hitbox;
 				};
 				std::list<bullet> bullets;
 		};

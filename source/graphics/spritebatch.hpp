@@ -29,7 +29,7 @@ class SpriteBatch
 				float scale = 1.0,
 				const short layer = 0);
 
-		void drawString (const Image & font, const std::string & str, const Vector2 & pos, bool useKerning = true, float scale = 1.0, const short layer = 0);
+		void drawString (const Image & font, const std::string & str, const Vector2 & pos, const Vector4 & color = Vector4(1), bool useKerning = true, float scale = 1.0, const short layer = 0);
 		void drawDebug();
 		void end ();
 

@@ -50,7 +50,7 @@ void GuiManager::draw (SpriteBatch * sb, int mouseX, int mouseY)
 		}
 
 		sb->draw(*guiset, Rectangle(btn.rectangle.x, btn.rectangle.y, btn.rectangle.width, btn.rectangle.height), uv, Vector4(1.0), 0.0, Vector2(0.0, 0.0), 1.0, 0);
-		sb->drawString(*font, btn.text, Vector2(btn.rectangle.x, btn.rectangle.y), true, 1.0, 1);
+		sb->drawString(*font, btn.text, Vector2(btn.rectangle.x, btn.rectangle.y), Vector4(1), true, 1.0, 1);
 	}
 }
 

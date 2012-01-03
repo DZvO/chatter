@@ -53,6 +53,8 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	for(auto & blt : bullets)
 	{
 		blt.position += blt.velocity;
+		blt.hitbox.x += blt.velocity.x;
+		blt.hitbox.y += blt.velocity.y;
 		blt.velocity += glm::normalize(blt.velocity);
 	}
 	if(spaceship.laser_cooldown > 0.0)
@@ -64,6 +66,15 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	for(auto itr = entitys.begin(); itr != entitys.end(); itr++)
 	{
 		auto & ent = *itr;
+
+		for(auto & blt : bullets)
+		{
+			if(blt.hitbox.collides(Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height)))
+			{
+				cout << "AAHHH IM HIT!\n";
+			}
+		}
+
 		if(spaceship.hitbox.collides(Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height)))
 		{
 			if(ent == DEBUG_POTION)
@@ -72,7 +83,6 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			{
 				spaceship.position += Vector2(100, 100);
 			}
-
 			itr = entitys.erase(itr);
 		}
 	}
@@ -107,6 +117,7 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 		}
 		else
 		{
+			sb->draw(*tiles, Rectangle(itr->hitbox.x, itr->hitbox.y, 3, 3), Rectangle(0, 12, 3, 3), Vector4(1.0), 0.0, Vector2(0), 1.0, 4);
 			sb->draw(*tiles,
 					Rectangle(itr->position.x, itr->position.y, 3, 13),
 					Rectangle(13, 0, 3, 13),
@@ -131,5 +142,9 @@ void motor::state::GameState::shootLazorBEAM (SpaceShip & spaceship)
 	Vector2 nv = spaceship.direction;
 	Vector2 dir = glm::normalize(Vector2(0, -1));
 	blt.rotation = -(glm::atan(nv.y, nv.x) - glm::atan(dir.y, dir.x));
+	blt.hitbox.x = blt.position.x + blt.velocity.x;
+	blt.hitbox.y = blt.position.y + blt.velocity.y;
+	blt.hitbox.width = 3;
+	blt.hitbox.height = 3;
 	bullets.push_back(blt);
 }

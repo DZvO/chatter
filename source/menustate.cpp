@@ -42,9 +42,9 @@ void motor::state::MenuState::draw (const motor::StateManager * state)
 	SpriteBatch * sb = const_cast<motor::StateManager*>(state)->getSpriteBatch();
 	Window::getInstance()->clear();
 	sb->begin();
-	sb->drawString(*font, "SPACE!",  Vector2(100, 100), true, 4.0, 1);
-	sb->drawString(*font, "Press Enter to continue!",  Vector2(100, 140), true, 2.0, 1);
-	sb->drawString(*font, "or press escape to configure the keyboardlayout!",  Vector2(100, 160), true, 2.0, 1);
+	sb->drawString(*font, "SPACE!",  Vector2(100, 100), Vector4(0.2, 0.2, 0.6, 1.0), true, 4.0, 1);
+	sb->drawString(*font, "Press Enter to continue!",  Vector2(100, 140), Vector4(1), true, 2.0, 1);
+	sb->drawString(*font, "or press escape to configure the keyboardlayout!",  Vector2(100, 160), Vector4(1), true, 2.0, 1);
 	sb->end();
 	Window::getInstance()->swap();
 }

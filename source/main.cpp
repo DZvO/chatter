@@ -36,6 +36,7 @@ int main (int argc, char * argv[])
 	else
 	{
 		input->addMapping("escape", SDLK_ESCAPE);
+		input->addMapping("enter", SDLK_RETURN);
 		input->addMapping("up", SDLK_UP);
 		input->addMapping("down", SDLK_DOWN);
 		input->addMapping("left", SDLK_LEFT);
