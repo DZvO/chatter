@@ -1,4 +1,10 @@
 #include "spaceship.hpp"
+SpaceShip::SpaceShip ()
+{
+	rotation = 0;
+	direction = Vector2(0, -1);
+}
+
 void SpaceShip::update ()
 {
 	//velocity = (acceleration * Vector2(Window::getInstance()->getFrametime() / 10)) + velocity;
@@ -10,9 +16,9 @@ void SpaceShip::update ()
 	else
 		velocity *= 0.8;
 
+	direction = glm::normalize(direction);
 	if(velocity != Vector2(0,0))
 	{
-		direction = glm::normalize(velocity);
 		Vector2 up = glm::normalize(Vector2(0, -1));
 		rotation = -(glm::atan(direction.y, direction.x) - glm::atan(up.y, up.x));
 		if(rotation != rotation) //check for NaN

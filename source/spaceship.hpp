@@ -18,6 +18,7 @@ class SpaceShip
 		float laser_cooldown;
 		Rectangle hitbox;
 
+		SpaceShip();
 		void update();
 };
 
