@@ -45,7 +45,7 @@ int main (int argc, char * argv[])
 	}
 
 	StateManager * stateman = StateManager::getInstance();
-	stateman->changeState(new state::MenuState());
+	stateman->changeState(new state::GameState());
 	stateman->run();
 
 	std::cout << "bye\n";

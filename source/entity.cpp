@@ -9,3 +9,8 @@ bool Entity::operator==(const Entity & ent)
 	std::cout << "checking: " << ret << '\n';
 	return ret;
 }
+
+const Rectangle Entity::getHitbox () const
+{
+	return Rectangle(position.x, position.y, hitbox.width, hitbox.height);
+}

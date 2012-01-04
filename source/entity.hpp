@@ -19,6 +19,7 @@ class Entity
 		Rectangle hitbox;
 		bool operator==(const EntityType & tp);
 		bool operator==(const Entity & ent);
+		const Rectangle getHitbox() const;
 };
 
 #endif
