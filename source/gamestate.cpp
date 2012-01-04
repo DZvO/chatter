@@ -68,9 +68,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	for(auto & blt : bullets)
 	{
 		bullet prev(blt);
-		blt.position += blt.velocity;
-		//cout << blt << '\n';
-		//blt.velocity += glm::normalize(blt.velocity) * Vector2(0.5, 0.5);
+		blt.position += blt.velocity * Vector2(Window::getInstance()->getFrametime() / 10.0f, Window::getInstance()->getFrametime() / 10.0f);
 		bullet now(blt);
 
 		for(auto itr = entitys.begin(); itr != entitys.end(); )
@@ -78,13 +76,6 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			auto & ent = *itr;
 			if(ent.getHitbox().intersectsline(prev.getHitbox().getCenter(), now.getHitbox().getCenter()))
 			{
-				//cout << ent.getHitbox() << '\n';
-				//cout << prev.hitbox.getCenter().x << " " << prev.hitbox.getCenter().y << '\n';
-				//cout << prev << '\n';
-				//cout << now.hitbox.getCenter().x << " " << now.hitbox.getCenter().y << '\n';
-				//cout << now << '\n';
-				//cout << "ENTITY HIT!\n\n";
-				//cout << (ent.id == LIFE_POTION ? "life" : "mana") << '\n';
 				itr = entitys.erase(itr);
 			}
 			else
@@ -165,8 +156,7 @@ void motor::state::GameState::shootLazorBEAM (SpaceShip & spaceship)
 	spaceship.laser_cooldown = 0.3;
 	bullet blt;
 	blt.hitbox.width = blt.hitbox.height = 4;
-	blt.position = spaceship.position + Vector2(spaceship.hitbox.width / 2, spaceship.hitbox.height / 2) - Vector2(4/2, 4/2);// + Vector2(6,3) + (spaceship.direction * Vector2(0.5,0.5));
-	//blt.velocity = spaceship.direction * Vector2(10, 10);
-	blt.velocity = glm::normalize(spaceship.direction);
+	blt.position = spaceship.hitbox.getCenter() - Vector2(4/2, 4/2);// + Vector2(6,3) + (spaceship.direction * Vector2(0.5,0.5));
+	blt.velocity = glm::normalize(spaceship.direction) * Vector2(1,1);
 	bullets.push_back(blt);
 }
