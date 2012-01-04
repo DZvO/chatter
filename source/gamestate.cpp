@@ -42,22 +42,22 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	if(input->isPressedSym("left"))
 	{
 		spaceship.velocity.x -= 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.x -= 1.0 * (Window::getInstance()->getFrametime());
+		spaceship.direction.x -= 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("right"))
 	{
 		spaceship.velocity.x += 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.x += 1.0 * (Window::getInstance()->getFrametime());
+		spaceship.direction.x += 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("up"))
 	{
 		spaceship.velocity.y -= 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.y -= 1.0 * (Window::getInstance()->getFrametime());
+		spaceship.direction.y -= 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("down"))
 	{
 		spaceship.velocity.y += 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.y += 1.0 * (Window::getInstance()->getFrametime());
+		spaceship.direction.y += 10.0;// * (Window::getInstance()->getFrametime());
 	}
 
 	if(input->isPressedSym(Input::kEnter) && spaceship.laser_cooldown <= 0.0)
