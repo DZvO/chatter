@@ -3,18 +3,19 @@ motor::state::GameState::GameState ()
 {
 	background = new Image("data/background.png");
 	tiles = new Image("data/tiles.png");
-	spaceship.hitbox.width = 12;
-	spaceship.hitbox.height = 12;
+	player.position = Vector2(0, 0);
+	player.hitbox.width = 8;
+	player.hitbox.height = 8;
 
-	Entity beacon;
-	beacon.position = Vector2(100, 100);
-	beacon.id = MANA_POTION;
-	beacon.hitbox = Rectangle(0, 0, 9, 13);
-	entitys.push_back(beacon);
+	Item item;
+	item.position = Vector2(100, 100);
+	item.id = MANA_POTION;
+	item.hitbox = Rectangle(0, 0, 6, 6);
+	items.push_back(item);
 
-	beacon.position = Vector2(200, 100);
-	beacon.id = LIFE_POTION;
-	entitys.push_back(beacon);
+	item.position = Vector2(200, 100);
+	item.id = LIFE_POTION;
+	items.push_back(item);
 	std::cout << "created GameState" << '\n';
 }
 
@@ -38,45 +39,45 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			StateManager::getInstance()->stop();
 	}
 
-	spaceship.update();
+	player.update();
 	if(input->isPressedSym("left"))
 	{
-		spaceship.velocity.x -= 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.x -= 10.0;// * (Window::getInstance()->getFrametime());
+		player.velocity.x -= 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.direction.x -= 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("right"))
 	{
-		spaceship.velocity.x += 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.x += 10.0;// * (Window::getInstance()->getFrametime());
+		player.velocity.x += 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.direction.x += 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("up"))
 	{
-		spaceship.velocity.y -= 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.y -= 10.0;// * (Window::getInstance()->getFrametime());
+		player.velocity.y -= 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.direction.y -= 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("down"))
 	{
-		spaceship.velocity.y += 1.0 * (Window::getInstance()->getFrametime() / 10);
-		spaceship.direction.y += 10.0;// * (Window::getInstance()->getFrametime());
+		player.velocity.y += 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.direction.y += 10.0;// * (Window::getInstance()->getFrametime());
 	}
 
-	if(input->isPressedSym(Input::kEnter) && spaceship.laser_cooldown <= 0.0)
+	if(input->isPressedSym(Input::kEnter) && player.laser_cooldown <= 0.0)
 	{
-		shootLazorBEAM(spaceship);
+		shootLazorBEAM(player);
 	}
 
 	for(auto & blt : bullets)
 	{
-		bullet prev(blt);
+		Bullet prev(blt);
 		blt.position += blt.velocity * Vector2(Window::getInstance()->getFrametime() / 10.0f, Window::getInstance()->getFrametime() / 10.0f);
-		bullet now(blt);
+		Bullet now(blt);
 
-		for(auto itr = entitys.begin(); itr != entitys.end(); )
+		for(auto itr = items.begin(); itr != items.end(); )
 		{
-			auto & ent = *itr;
-			if(ent.getHitbox().intersectsline(prev.getHitbox().getCenter(), now.getHitbox().getCenter()))
+			auto & item = *itr;
+			if(item.getHitbox().intersectsline(prev.getHitbox().getCenter(), now.getHitbox().getCenter()))
 			{
-				itr = entitys.erase(itr);
+				itr = items.erase(itr);
 			}
 			else
 			{
@@ -85,9 +86,9 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		}
 	}
 
-	if(spaceship.laser_cooldown > 0.0)
+	if(player.laser_cooldown > 0.0)
 	{
-		spaceship.laser_cooldown -= Window::getInstance()->getFrametime() / 1000.0;
+		player.laser_cooldown -= Window::getInstance()->getFrametime() / 1000.0;
 	}
 
 	/*for(auto itr = entitys.begin(); itr != entitys.end(); itr++)
@@ -113,18 +114,20 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	SpriteBatch * sb = const_cast<motor::StateManager *> (st)->getSpriteBatch();
 	sb->begin();
 
-	sb->draw(*background,
-			Rectangle(-Window::getInstance()->getWidth(), -Window::getInstance()->getHeight(), Window::getInstance()->getWidth() * 2, Window::getInstance()->getHeight() * 2),
-			Rectangle(spaceship.position.x, spaceship.position.y, Window::getInstance()->getWidth() * 3, Window::getInstance()->getHeight() * 3),
-			Vector4(1.0),
-			0.0,
-			Vector2(0.0),
-			1.0,
-			1);
+	sb->draw(*tiles, Rectangle(0, Window::getInstance()->getHeight() - 7, 7 * 2, 7), Rectangle(0, 10, 7, 7), Vector4(1.0), 0.0, Vector2(0), 1, 3);
 
-	sb->draw(*tiles, Rectangle(spaceship.position.x, spaceship.position.y, 12, 12), Rectangle(0, 0, 12, 12), Vector4(1.0), (spaceship.rotation), Vector2(6, 6), 1.0, 2);
-	for(Entity & ent : entitys)
-		sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(18, 0, 9, 13), Vector4(1.0), 0.0, Vector2(0, 0), 1.0, 2);
+	for(Item & ent : items)
+	{
+		if(ent == LIFE_POTION)
+		{
+			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(0, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 2);
+		}
+		if(ent == MANA_POTION)
+		{
+			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(7, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 2);
+		}
+	}
+	sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(4, 7), 4.0, 3);
 
 	for(auto itr = bullets.begin(); itr != bullets.end(); itr++)
 	{
@@ -151,12 +154,12 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	Window::getInstance()->swap();
 }
 
-void motor::state::GameState::shootLazorBEAM (SpaceShip & spaceship)
+void motor::state::GameState::shootLazorBEAM (Player & player)
 {
-	spaceship.laser_cooldown = 0.3;
-	bullet blt;
+	player.laser_cooldown = 0.3;
+	Bullet blt;
 	blt.hitbox.width = blt.hitbox.height = 4;
-	blt.position = spaceship.hitbox.getCenter() - Vector2(4/2, 4/2);// + Vector2(6,3) + (spaceship.direction * Vector2(0.5,0.5));
-	blt.velocity = glm::normalize(spaceship.direction) * Vector2(1,1);
+	blt.position = player.hitbox.getCenter() - Vector2(4/2, 4/2);// + Vector2(6,3) + (player.direction * Vector2(0.5,0.5));
+	blt.velocity = glm::normalize(player.direction) * Vector2(1,1);
 	bullets.push_back(blt);
 }

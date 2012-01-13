@@ -10,8 +10,8 @@
 #include "keyboardsettingsstate.hpp"
 #include "lib/glm/gtx/vector_angle.hpp"
 #include <list>
-#include "spaceship.hpp"
-#include "entity.hpp"
+#include "player.hpp"
+#include "item.hpp"
 
 namespace motor
 {
@@ -27,34 +27,35 @@ namespace motor
 				virtual void update (const motor::StateManager * st);
 				virtual void draw (const motor::StateManager * st);
 
-				SpaceShip spaceship;
-				std::list<Entity> entitys;
+				Player player;
+				std::list<Item> items;
 
 				Image * background;
 				Image * tiles;
 
-				void shootLazorBEAM (SpaceShip &);
+				void shootLazorBEAM (Player &);
 
-				struct bullet
+				struct Bullet
 				{
 					Vector2 position;
 					Vector2 velocity;
-					float rotation;
 					Rectangle hitbox;
-					friend std::ostream & operator<<(std::ostream & os, const bullet & blt)
+					friend std::ostream & operator<<(std::ostream & os, const Bullet & blt)
 					{
-						os << "Bullet(pos(" << blt.position.x << '|' << blt.position.y << "), vel(" << blt.velocity.x << '|' << blt.velocity.y << "), rotation(" << blt.rotation << "), hitbox(" << blt.hitbox << ')';
+						os << "Bullet(pos(" << blt.position.x << '|' << blt.position.y << "), vel(" << blt.velocity.x << '|' << blt.velocity.y << "), hitbox(" << blt.hitbox << ')';
 						return os;
 					}
-					bullet():position(0,0), velocity(0,0), rotation(0), hitbox(0,0,0,0)
+
+					Bullet():position(0,0), velocity(0,0), hitbox(0,0,0,0)
 					{
 					}
+
 					Rectangle getHitbox ()
 					{
 						return Rectangle(position.x, position.y, hitbox.width, hitbox.height);
 					}
 				};
-				std::list<bullet> bullets;
+				std::list<Bullet> bullets;
 		};
 	}
 }

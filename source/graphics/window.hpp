@@ -87,6 +87,11 @@ namespace motor
 				return frametime;
 			}
 
+			float getElapsedTime ()
+			{
+				return SDL_GetTicks();
+			}
+
 		private:
 			bool block;
 

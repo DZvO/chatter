@@ -1,24 +1,24 @@
-#ifndef _ENTITY_HPP
-#define _ENTITY_HPP
+#ifndef _Item_HPP
+#define _Item_HPP
 
 #include <iostream>
 #include "lib/glm/glm.hpp"
 #include "math/vector.hpp"
 #include "math/rectangle.hpp"
 
-enum EntityType
+enum ItemType
 {
 	LIFE_POTION, MANA_POTION, DEBUG_POTION
 };
 
-class Entity
+class Item
 {
 	public:
-		EntityType id;
+		ItemType id;
 		Vector2 position;
 		Rectangle hitbox;
-		bool operator==(const EntityType & tp);
-		bool operator==(const Entity & ent);
+		bool operator==(const ItemType & tp);
+		bool operator==(const Item & ent);
 		const Rectangle getHitbox() const;
 };
 

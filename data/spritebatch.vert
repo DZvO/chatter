@@ -16,5 +16,5 @@ void main()
 	fragTexcoord = texcoord;
 	fragColor = color;
 	//gl_Position = projection * view * model * vec4(position.x, position.y, 0.0f, 1.0f);
-	gl_Position = mvp * vec4(position, 1.0f);
+	gl_Position = mvp * vec4(position.x, position.y, position.z, 1.0f);
 }

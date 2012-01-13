@@ -7,7 +7,7 @@
 #include "graphics/window.hpp"
 using namespace motor;
 
-class SpaceShip
+class Player
 {
 	public:
 		Vector2 position;
@@ -18,7 +18,7 @@ class SpaceShip
 		float laser_cooldown;
 		Rectangle hitbox;
 
-		SpaceShip();
+		Player();
 		void update();
 };
 

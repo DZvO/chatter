@@ -59,6 +59,12 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 	if(it == vertices.end()) //element doesn't exist yet
 		vertices[texid].vertexCount = 0; // -> create it!
 
+	Rectangle realdest = destination;
+	realdest.x -= origin.x * scale;
+	realdest.y -= origin.y * scale;
+	realdest.width *= scale;
+	realdest.height *= scale;
+
 	Rectangle realuv = uv;
 	if(realuv.x == 0 && realuv.y == 0 && realuv.width == 0 && realuv.height == 0)
 	{
@@ -110,25 +116,26 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 		tm[1].x = -sin(rotation);
 		tm[1].y = cos(rotation);
 
-		glm::vec3 v0 = glm::vec3(destination.x, destination.y, 0);
-		v0 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		glm::vec3 v0 = glm::vec3(realdest.x, realdest.y, 0);
+		glm::vec3 v1 = glm::vec3(realdest.x, realdest.y + realdest.height, 0);
+		glm::vec3 v2 = glm::vec3(realdest.x + realdest.width, realdest.y + realdest.height, 0);
+		glm::vec3 v3 = glm::vec3(realdest.x + realdest.width, realdest.y, 0);
+
+		v0 -= glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 		v0 = v0 * tm;
-		v0 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v0 += glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 
-		glm::vec3 v1 = glm::vec3(destination.x, destination.y + destination.height, 0);
-		v1 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v1 -= glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 		v1 = v1 * tm;
-		v1 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v1 += glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 
-		glm::vec3 v2 = glm::vec3(destination.x + destination.width, destination.y + destination.height, 0);
-		v2 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v2 -= glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 		v2 = v2 * tm;
-		v2 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v2 += glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 
-		glm::vec3 v3 = glm::vec3(destination.x + destination.width, destination.y, 0);
-		v3 -= glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v3 -= glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 		v3 = v3 * tm;
-		v3 += glm::vec3(destination.x + origin.x, destination.y + origin.y, 0);
+		v3 += glm::vec3(realdest.x + origin.x*scale, realdest.y + origin.y*scale, 0);
 
 		addVertex(texid, v0.x, v0.y, uvxmin, uvymin, packed_color, depth);
 		addVertex(texid, v1.x, v1.y, uvxmin, uvymax, packed_color, depth);
@@ -137,10 +144,10 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 	}
 	else
 	{
-		addVertex(texid, destination.x, destination.y, uvxmin, uvymin, packed_color, depth);
-		addVertex(texid, destination.x, destination.y + destination.height, uvxmin, uvymax, packed_color, depth);
-		addVertex(texid, destination.x + destination.width, destination.y + destination.height, uvxmax, uvymax, packed_color, depth);
-		addVertex(texid, destination.x + destination.width, destination.y, uvxmax, uvymin, packed_color, depth);
+		addVertex(texid, realdest.x, realdest.y, uvxmin, uvymin, packed_color, depth);
+		addVertex(texid, realdest.x, realdest.y + realdest.height, uvxmin, uvymax, packed_color, depth);
+		addVertex(texid, realdest.x + realdest.width, realdest.y + realdest.height, uvxmax, uvymax, packed_color, depth);
+		addVertex(texid, realdest.x + realdest.width, realdest.y, uvxmax, uvymin, packed_color, depth);
 	}
 }
 

@@ -53,7 +53,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	/* OpenGL stuff */
 	//const float ftobconst = 1.0f / 255.0f;
 	//glClearColor(ftobconst * 146.f, ftobconst * 161.f, ftobconst * 207.f, 0);
-	glClearColor(0, 0, 0, 0);
+	glClearColor(255, 255, 255, 255);
 
 	glViewport(0, 0, width, height);
 

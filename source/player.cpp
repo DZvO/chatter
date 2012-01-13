@@ -1,11 +1,11 @@
-#include "spaceship.hpp"
-SpaceShip::SpaceShip ()
+#include "player.hpp"
+Player::Player ()
 {
 	rotation = 0;
 	direction = Vector2(0, -1);
 }
 
-void SpaceShip::update ()
+void Player::update ()
 {
 	//velocity = (acceleration * Vector2(Window::getInstance()->getFrametime() / 10)) + velocity;
 	//position = (Vector2(0.5) * acceleration * (Vector2(Window::getInstance()->getFrametime() / 10) * Vector2(Window::getInstance()->getFrametime() / 10))) + position;

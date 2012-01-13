@@ -29,7 +29,7 @@ libchat.Library('chat', splitter("chat/", "message"))
 #libstuff.Library('stuff', splitter("graphics/", "cube"))
 
 libstate = env.Clone()
-libstate.Library('state', splitter("./", "menustate keyboardsettingsstate gamestate state statemanager spaceship entity"))
+libstate.Library('state', splitter("./", "menustate keyboardsettingsstate gamestate state statemanager player item"))
 # -- ---- --
 
 main = env.Clone()
