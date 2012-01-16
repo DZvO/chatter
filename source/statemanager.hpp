@@ -25,6 +25,7 @@ namespace motor
 			StateManager();
 			motor::state::State * currentState;
 			bool running;
+			unsigned int ticks;
 	};
 }
 

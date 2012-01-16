@@ -12,6 +12,8 @@
 #include <list>
 #include "player.hpp"
 #include "item.hpp"
+#include "level.hpp"
+#include "time/stopwatch.hpp"
 
 namespace motor
 {
@@ -27,6 +29,7 @@ namespace motor
 				virtual void update (const motor::StateManager * st);
 				virtual void draw (const motor::StateManager * st);
 
+				Level level;
 				Player player;
 				std::list<Item> items;
 

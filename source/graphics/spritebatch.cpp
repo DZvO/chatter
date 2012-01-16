@@ -24,12 +24,15 @@ SpriteBatch::SpriteBatch ()
 	mvpUniform = glGetUniformLocation(programPointer, "mvp");
 	texUniform = glGetUniformLocation(programPointer, "texture");
 	beginCalled = false;
+	sort = false;
+	MAX_VERTICES = 400;
 }
 
-void SpriteBatch::begin ()
+void SpriteBatch::begin (bool sort)
 {
 	//TODO set stuff like alpha blending or sort-mode, texture -repeat/wrap, transform-matrix, and so on...
 	beginCalled = true;
+	this->sort = sort;
 }
 
 inline void SpriteBatch::addVertex (unsigned int & texId, const short & x, const short & y, const float & texX, const float & texY, unsigned int & color, short depth)
@@ -81,6 +84,17 @@ void SpriteBatch::draw (const Image & texture, const Rectangle & destination, co
 	//abgr
 	unsigned int packed_color = ((unsigned char)(color.a * 255.0f) << 24) | ((unsigned char)(color.b * 255.0f) << 16) | ((unsigned char)(color.g * 255.0f) << 8) | (unsigned char)(color.r * 255.0f);
 
+	if(vertices[texid].vertexCount == 0)
+	{
+		vertices[texid].vertices.reserve(MAX_VERTICES);
+	}
+	if(vertices[texid].vertexCount >= MAX_VERTICES-4)
+	{
+		MAX_VERTICES *= 2;
+		vertices[texid].vertices.reserve(MAX_VERTICES);
+		cout << "reallocation to " << MAX_VERTICES << "!" << '\n';
+	}
+	
 	/*
 	 *			/2
 	 *		 / |
@@ -161,17 +175,18 @@ void SpriteBatch::end ()
 	glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, glm::value_ptr(*(Window::getInstance()->getOrthoProjection()) * glm::mat4(1.0) * glm::mat4(1.0)));
 
 
-	for(auto vertices_iterator : vertices)
+	for(auto & vertices_iterator : vertices)
 	{
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, vertices_iterator.first);
 
+		vertex_t * vert = &(vertices_iterator.second.vertices[0]);
 		//use vertex arrays instead of gl managed vbos since we are using the vertices directly of the ram
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //tell gl specificly that we want vertex arrays
 		glEnableVertexAttribArray(positionAttrib); glEnableVertexAttribArray(texcoordAttrib); glEnableVertexAttribArray(colorAttrib);
-		glVertexAttribPointer(positionAttrib, 3, GL_SHORT, GL_FALSE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].position));
-		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].uv));
-		glVertexAttribPointer(colorAttrib, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(vertex_t), &(vertices_iterator.second.vertices[0].color));
+		glVertexAttribPointer(positionAttrib, 3, GL_SHORT, GL_FALSE, sizeof(vertex_t), &(vert->position));
+		glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), &(vert->uv));
+		glVertexAttribPointer(colorAttrib, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(vertex_t), &(vert->color));
 
 		//glDrawArrays(GL_TRIANGLES, 0, vertices_iterator.second.vertexCount);
 		glDrawArrays(GL_QUADS, 0, vertices_iterator.second.vertexCount);

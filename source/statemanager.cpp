@@ -32,6 +32,12 @@ void motor::StateManager::run ()
 			currentState->update(this);
 			currentState->draw(this);
 		}
+		ticks++;
+		if(ticks % 100 == 0)
+		{
+			cout << "elapsed time: " << Window::getInstance()->getElapsedTime() << " ms\n";
+			cout << "frametime: " << Window::getInstance()->getFrametime() << " ms\n";
+		}
 	}
 }
 

@@ -3,6 +3,9 @@ Player::Player ()
 {
 	rotation = 0;
 	direction = Vector2(0, -1);
+	flying = false;
+	laser_cooldown = 0.0f;
+	jump_cooldown = 0.0f;
 }
 
 void Player::update ()
@@ -10,12 +13,19 @@ void Player::update ()
 	//velocity = (acceleration * Vector2(Window::getInstance()->getFrametime() / 10)) + velocity;
 	//position = (Vector2(0.5) * acceleration * (Vector2(Window::getInstance()->getFrametime() / 10) * Vector2(Window::getInstance()->getFrametime() / 10))) + position;
 	//acceleration *= 0.99;
-	position += velocity;
-	if(glm::length(velocity) < 0.001)
-		velocity = Vector2(0,0);
-	else
-		velocity *= 0.8;
+	float delta = position.y;
+	position += velocity * Vector2(Window::getInstance()->getFrametime() / 20);
+	delta = position.y - delta;
 
+	//cout << "delta: " << delta << "\n";
+	//cout << "vely: " << velocity.y << "\n\n";
+
+	if(glm::abs(velocity.x) < 0.001)
+		velocity.x = 0.0f;
+	else
+		velocity.x *= 0.8;
+
+	/*
 	direction = glm::normalize(direction);
 	if(velocity != Vector2(0,0))
 	{
@@ -23,7 +33,14 @@ void Player::update ()
 		rotation = -(glm::atan(direction.y, direction.x) - glm::atan(up.y, up.x));
 		if(rotation != rotation) //check for NaN
 			rotation = 0;
+	}*/
+
+	if(laser_cooldown > 0.0)
+	{
+		laser_cooldown -= Window::getInstance()->getFrametime() / 1000.0f;
 	}
-	hitbox.x = position.x;
-	hitbox.y = position.y;
+	if(jump_cooldown > 0.0)
+	{
+		jump_cooldown -= Window::getInstance()->getFrametime() / 1000.0f;
+	}
 }

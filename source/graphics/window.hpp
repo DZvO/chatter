@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SDL/SDL.h>
 #include <ctime>
+#include "time/stopwatch.hpp"
 using namespace std;
 
 #include "lib/glew/glew.h"
@@ -98,6 +99,7 @@ namespace motor
 			unsigned int getticks, frametimedelta, frametimelast;
 			float last;
 			float alpha, frametime, framespersecond;
+			StopWatch sw;
 
 			unsigned short width, height;
 			SDL_Surface *screen;

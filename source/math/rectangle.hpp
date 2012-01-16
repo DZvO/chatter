@@ -56,6 +56,26 @@ class Rectangle
 			return Vector2(x + width/2, y + height/2);
 		}
 
+		Vector2 getUpperLeft ()
+		{
+			return Vector2(x,y);
+		}
+
+		Vector2 getUpperRight ()
+		{
+			return Vector2(x+width, y);
+		}
+
+		Vector2 getLowerLeft ()
+		{
+			return Vector2(x, y+height);
+		}
+
+		Vector2 getLowerRight ()
+		{
+			return Vector2(x+width, y+height);
+		}
+
 		bool operator== (const Rectangle & r)
 		{
 			if(x == r.x && y == r.y && width == r.width && height == r.height)

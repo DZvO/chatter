@@ -16,10 +16,16 @@ class Player
 		Vector2 direction;
 		float rotation;
 		float laser_cooldown;
+		float jump_cooldown;
 		Rectangle hitbox;
+		bool flying;
 
 		Player();
 		void update();
+		Rectangle getHitbox ()
+		{
+			return Rectangle(position.x, position.y, hitbox.width, hitbox.height);
+		}
 };
 
 #endif

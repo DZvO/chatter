@@ -1,10 +1,10 @@
 #include "gamestate.hpp"
-motor::state::GameState::GameState ()
+motor::state::GameState::GameState (): level(Vector2(800, 600))
 {
 	background = new Image("data/background.png");
 	tiles = new Image("data/tiles.png");
-	player.position = Vector2(0, 0);
-	player.hitbox.width = 8;
+	player.position = Vector2(0, 200);
+	player.hitbox.width = 9;
 	player.hitbox.height = 8;
 
 	Item item;
@@ -39,26 +39,56 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			StateManager::getInstance()->stop();
 	}
 
+	Rectangle prev = player.getHitbox();
 	player.update();
+	float xSpeed = 0.1, ySpeed = 8.0;
 	if(input->isPressedSym("left"))
 	{
-		player.velocity.x -= 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.velocity.x -= xSpeed * (Window::getInstance()->getFrametime() / 10);
 		player.direction.x -= 10.0;// * (Window::getInstance()->getFrametime());
 	}
 	if(input->isPressedSym("right"))
 	{
-		player.velocity.x += 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.velocity.x += xSpeed * (Window::getInstance()->getFrametime() / 10);
 		player.direction.x += 10.0;// * (Window::getInstance()->getFrametime());
 	}
-	if(input->isPressedSym("up"))
+	if(input->isPressedSym("up") && player.flying == false && player.jump_cooldown <= 0.0)
 	{
-		player.velocity.y -= 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.velocity.y -= ySpeed * 1.2;//* (Window::getInstance()->getFrametime() / 10);
 		player.direction.y -= 10.0;// * (Window::getInstance()->getFrametime());
+		player.jump_cooldown = 0.5f;
+		cout << "jump" << "\n";
 	}
 	if(input->isPressedSym("down"))
 	{
-		player.velocity.y += 1.0 * (Window::getInstance()->getFrametime() / 10);
+		player.velocity.y += ySpeed * (Window::getInstance()->getFrametime() / 10);
 		player.direction.y += 10.0;// * (Window::getInstance()->getFrametime());
+	}
+	
+
+	//collision detection
+	{
+		Rectangle staticGeom = Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2, 8*2);
+		//clipping
+		if(staticGeom.intersectsline(prev.getLowerLeft(), player.getHitbox().getLowerLeft()) ||
+				staticGeom.intersectsline(prev.getLowerRight(), player.getHitbox().getLowerRight()))
+		{
+			if(player.velocity.y > 0.0)
+			{
+				player.velocity.y = 0;
+				player.position.y = staticGeom.y;
+				player.flying = false;
+				cout << "collides" << '\n';
+			}
+		}
+		//flying
+		else
+		{
+			if(player.velocity.y < 6.0)
+				player.velocity.y += 0.80;
+				//player.velocity.y += 0.4;
+			player.flying = true;
+		}
 	}
 
 	if(input->isPressedSym(Input::kEnter) && player.laser_cooldown <= 0.0)
@@ -85,26 +115,6 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			}
 		}
 	}
-
-	if(player.laser_cooldown > 0.0)
-	{
-		player.laser_cooldown -= Window::getInstance()->getFrametime() / 1000.0;
-	}
-
-	/*for(auto itr = entitys.begin(); itr != entitys.end(); itr++)
-	{
-		auto & ent = *itr;
-		if(spaceship.hitbox.collides(Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height)))
-		{
-			if(ent == DEBUG_POTION)
-				cout << " debug potion \n";
-			else if (ent == MANA_POTION)
-			{
-				spaceship.position += Vector2(100, 100);
-			}
-			itr = entitys.erase(itr);
-		}
-	}*/
 }
 
 void motor::state::GameState::draw (const motor::StateManager * st)
@@ -113,21 +123,23 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	//SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
 	SpriteBatch * sb = const_cast<motor::StateManager *> (st)->getSpriteBatch();
 	sb->begin();
+	//level.draw(sb, tiles);
+	
+	sb->draw(*tiles, Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2, 8*2), Rectangle(0,16,8,8));
 
-	sb->draw(*tiles, Rectangle(0, Window::getInstance()->getHeight() - 7, 7 * 2, 7), Rectangle(0, 10, 7, 7), Vector4(1.0), 0.0, Vector2(0), 1, 3);
-
+	sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(4+1, 7+1), 4.0, 4);
+	//sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(0, 0), 4.0, 4);
 	for(Item & ent : items)
 	{
 		if(ent == LIFE_POTION)
 		{
-			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(0, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 2);
+			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(0, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 3);
 		}
 		if(ent == MANA_POTION)
 		{
-			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(7, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 2);
+			sb->draw(*tiles, Rectangle(ent.position.x, ent.position.y, ent.hitbox.width, ent.hitbox.height), Rectangle(7, 9, 6, 6), Vector4(1.0), 0.0, Vector2(0, 0), 3.0, 3);
 		}
 	}
-	sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(4, 7), 4.0, 3);
 
 	for(auto itr = bullets.begin(); itr != bullets.end(); itr++)
 	{
@@ -139,14 +151,6 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 		else
 		{
 			sb->draw(*tiles, Rectangle(itr->position.x, itr->position.y, itr->hitbox.width, itr->hitbox.height), Rectangle(0, 12, 4, 4), Vector4(1.0), 0.0, Vector2(0), 1.0, 4);
-			/*sb->draw(*tiles,
-					Rectangle(itr->position.x, itr->position.y, 3, 13),
-					Rectangle(13, 0, 3, 13),
-					Vector4(1.0),
-					itr->rotation,
-					Vector2(3/2, 13/2),
-					1.0,
-					3);*/
 		}
 	}
 

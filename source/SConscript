@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os;
-env = Environment(CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.')
+env = Environment(CXXFLAGS = '-O2 -Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.')
 env.ParseConfig("pkg-config sdl --cflags --libs")
 env.ParseConfig("pkg-config gl --cflags --libs")
 #env = Environment(CXXFLAGS = '-Wall -g --std=c++0x', LIBPATH='.', CPPPATH='.', ENV = {'PATH' : os.environ['PATH'], 'TERM' : os.environ['TERM'], 'HOME' : os.environ['HOME']})
@@ -29,7 +29,7 @@ libchat.Library('chat', splitter("chat/", "message"))
 #libstuff.Library('stuff', splitter("graphics/", "cube"))
 
 libstate = env.Clone()
-libstate.Library('state', splitter("./", "menustate keyboardsettingsstate gamestate state statemanager player item"))
+libstate.Library('state', splitter("./", "menustate keyboardsettingsstate gamestate state statemanager player item level"))
 # -- ---- --
 
 main = env.Clone()

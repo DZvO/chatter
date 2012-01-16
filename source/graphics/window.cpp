@@ -64,21 +64,22 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 	glFrontFace(GL_CCW);		//in which direction are the vertices of front facing faces arranged? --> CCW
 	glCullFace(GL_BACK);		//cull back
 
-	glEnable(GL_DEPTH_TEST); //enable depth testing, this prevents stuff being drawn over things that are nearer to the camera
+	glEnable(GL_DEPTH_TEST);
 
 	//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); //should be enabled by default on modern hardware
 
 	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
 	glewInit();
 	if(!GLEW_VERSION_2_0)
 	{
-		std::cout << "Your graphics card doesn't support Opengl 2.x, and I need it to run properly. Therefore i will now exit in peace." << std::endl;
+		std::cout << "Your graphics card doesn't support Opengl 2.x, and I need it to run properly. Therefore I will now exit in peace." << std::endl;
 		std::cout << "(Or there was an error initializing glew, which is equally bad!)" << std::endl;
 		exit(-1);
 	}
@@ -108,8 +109,7 @@ void motor::Window::create (const unsigned short width, const unsigned short hei
 		clog << "\n---\n";
 		//clog << glXQueryExtensionsString(glXGetCurrentDisplay(), 0);
 		clog << ")\n";
-	}
-	*/
+	}*/
 
 	//projection = glm::perspective(80.0, double(width) / double(height), 0.1, 1000.0);
 	ortho_projection = glm::ortho(0.0f, float(width), float(height), 0.0f, -10.0f, 1.0f);
@@ -136,21 +136,15 @@ void motor::Window::resize (const unsigned short width, const unsigned short hei
 void motor::Window::clear ()
 {
 	glClear(GL_COLOR_BUFFER_BIT |	GL_DEPTH_BUFFER_BIT |	GL_STENCIL_BUFFER_BIT);
+	//frametimelast = SDL_GetTicks();
 }
 
 void motor::Window::swap()
 {
-	getticks = SDL_GetTicks();
-	frametimedelta = getticks - frametimelast;
-	frametimelast = getticks;
-	frametime = alpha * frametimedelta + (1.0 - alpha) * frametime;
-	//framespersecond = 1000.0 / frametime;
-
-	//cout << frametime << '\n';
-	//cout << framespersecond << '\n';
-	//cout << endl;
-	//if((int)framespersecond >= 120-1)
-		//SDL_Delay(8);
+	sw.stop();
+	frametime = sw.get();
+	//cout << "frametime is " << frametime << '\n';
+	sw.start();
 
 	SDL_GL_SwapBuffers();
 }

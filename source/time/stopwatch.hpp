@@ -1,6 +1,7 @@
 #ifndef _STOPWATCH_HPP
 #define _STOPWATCH_HPP
 
+#include <iostream>
 #include <sys/time.h>
 
 class StopWatch
@@ -11,9 +12,13 @@ class StopWatch
 		void start ();
 		void stop ();
 		double get ();
+		bool isRunning ();
 
 	private:
-		timeval tv;
+		timeval tv1;
+		timeval tv2;
+		bool running;
+		bool started;
 		unsigned long long delta;
 };
 

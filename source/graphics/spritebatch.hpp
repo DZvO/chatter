@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <vector>
 #include "graphics/image.hpp"
 #include "math/vector.hpp"
 #include "math/rectangle.hpp"
@@ -12,13 +13,11 @@
 #include "graphics/window.hpp"
 using namespace motor;
 
-#define MAX_VERTICES 100000
-
 class SpriteBatch
 {
 	public:
 		SpriteBatch ();
-		void begin ();
+		void begin (bool sort = false);
 		void draw (const Image & texture, const Vector2 & position);
 		void draw (const Image & texture,
 				const Rectangle & destination,
@@ -39,18 +38,27 @@ class SpriteBatch
 			short position [3];
 			float uv [2];
 			unsigned int color;
+			vertex_t ()
+			{
+				position[0] = position[1] = position[2] = 0;
+				uv[0] = uv[1] = 0;
+				color = 0;
+			}
 		};
 		struct vertex_info
 		{
-			vertex_t vertices [MAX_VERTICES]; //TODO use an std::vector or something else, because allocating MAX_VERTICES for maybe just one texture is a bit overkill ~~
+			//vertex_t vertices [MAX_VERTICES]; //TODO use an std::vector or something else, because allocating MAX_VERTICES for maybe just one texture is a bit overkill ~~
+			std::vector<vertex_t> vertices;
 			int vertexCount; //shows how many actual elements are in the vertex array
 		};
 		inline void addVertex (unsigned int & texId, const short & x, const short & y, const float & texX, const float & texY, unsigned int & color, short depth);
 		std::map<unsigned int /*texid*/, vertex_info /*vertexdata*/> vertices;
+		unsigned int MAX_VERTICES;
 
 		static unsigned int programPointer, positionAttrib, texcoordAttrib, colorAttrib, projectionUniform, viewUniform, modelUniform, texUniform;
 		static unsigned int mvpUniform;
 		bool beginCalled;
+		bool sort;
 
 		static std::map<unsigned int, unsigned char*> kerning;
 };

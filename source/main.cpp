@@ -28,7 +28,7 @@ using namespace motor;
 
 int main (int argc, char * argv[])
 {
-	Window::getInstance()->create(1366, 768, "inspector gadget!", true);
+	Window::getInstance()->create(800, 600, "inspector gadget!", true);
 
 	Input * input = Input::getInstance();
 	if(ifstream("data/preferences.ini"))
