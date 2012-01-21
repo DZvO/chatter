@@ -33,6 +33,9 @@ namespace motor
 	class Window
 	{
 		public:
+			/**
+			 * Returns a/the Window instance, singleton.
+			 */
 			static Window * getInstance ()
 			{
 				static Window instance;
@@ -47,34 +50,68 @@ namespace motor
 
 		public:
 
+			/**
+			 * Creates a new Window
+			 * @param width The width, in pixels
+			 * @param height The height in pixels
+			 * @param window_title The window title displayed in the window manager of the user
+			 * @param smooth_shading Enable or Disable smooth shading, currently not functional TODO
+			 */
 			void create (const unsigned short width = 800, const unsigned short height = 600, const char* window_title = "WUB WUB WUB", bool smooth_shading = false);
+			/**
+			 * Resizes the window to the given dimensions
+			 */
 			void resize (const unsigned short width, const unsigned short height);
 
+			/**
+			 * Clears the window content
+			 */
 			void clear();
+			/**
+			 * Swaps the buffers
+			 */
 			void swap();
 
+			/**
+			 * Closes the window, and quits the application
+			 */
 			void close ();
 
+			/**
+			 * Returns the current window width
+			 */
 			unsigned short getWidth()
 			{
 				return width;
 			}
 
+			/**
+			 * Returns the current window height
+			 */
 			unsigned short getHeight()
 			{
 				return height;
 			}
 
+			/**
+			 * Returns a glm::mat4 pointer to the current Orthographic projection matrix
+			 */
 			glm::mat4 * getOrthoProjection()
 			{
 				return &ortho_projection;
 			}
 
+			/**
+			 * Returns a glm::mat4 pointer to the current Perspective projection matrix
+			 */
 			glm::mat4 * getPerspectiveProjection ()
 			{
 				return &perspective_projection;
 			}
 
+			/**
+			 * Enable or disable blocking of Window::swap
+			 */
 			void setBlock (bool b)
 			{
 				block = b;
@@ -88,6 +125,9 @@ namespace motor
 				return frametime;
 			}
 
+			/**
+			 * Returns the total running time of the application in milliseconds
+			 */
 			float getElapsedTime ()
 			{
 				return SDL_GetTicks();

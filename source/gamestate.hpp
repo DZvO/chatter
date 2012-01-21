@@ -35,6 +35,9 @@ namespace motor
 
 				Image * background;
 				Image * tiles;
+				Image * chars;
+
+				unsigned long long ticks;
 
 				void shootLazorBEAM (Player &);
 

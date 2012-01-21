@@ -1,11 +1,12 @@
 #include "gamestate.hpp"
-motor::state::GameState::GameState (): level(Vector2(800, 600))
+motor::state::GameState::GameState (): level(Vector2(400, 400))
 {
 	background = new Image("data/background.png");
 	tiles = new Image("data/tiles.png");
+	chars = new Image("data/char.png");
 	player.position = Vector2(0, 200);
-	player.hitbox.width = 9;
-	player.hitbox.height = 8;
+	player.hitbox.width = 16;
+	player.hitbox.height = 16;
 
 	Item item;
 	item.position = Vector2(100, 100);
@@ -26,6 +27,11 @@ motor::state::GameState::~GameState ()
 
 void motor::state::GameState::init (const motor::StateManager * st)
 {
+	level.add(Vector2(0,0), 1);
+	level.add(Vector2(2,0), 1);
+	level.add(Vector2(4,0), 1);
+
+	level.add(Vector2(0, (int)(Window::getInstance()->getHeight() / 16)), 1);
 }
 
 void motor::state::GameState::update (const motor::StateManager * st)
@@ -37,27 +43,31 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	{
 		if(input->isPressed("escape"))
 			StateManager::getInstance()->stop();
+		if(input->isPressed(Input::kBackspace))
+		{
+			player.position = Vector2(100, 200);
+		}
 	}
 
 	Rectangle prev = player.getHitbox();
 	player.update();
-	float xSpeed = 0.1, ySpeed = 8.0;
+	float xSpeed = 1.00, ySpeed = 8.0;
 	if(input->isPressedSym("left"))
 	{
 		player.velocity.x -= xSpeed * (Window::getInstance()->getFrametime() / 10);
-		player.direction.x -= 10.0;// * (Window::getInstance()->getFrametime());
+		player.direction.x = -1.0;
 	}
 	if(input->isPressedSym("right"))
 	{
 		player.velocity.x += xSpeed * (Window::getInstance()->getFrametime() / 10);
-		player.direction.x += 10.0;// * (Window::getInstance()->getFrametime());
+		player.direction.x = +1.0;
 	}
 	if(input->isPressedSym("up") && player.flying == false && player.jump_cooldown <= 0.0)
 	{
 		player.velocity.y -= ySpeed * 1.2;//* (Window::getInstance()->getFrametime() / 10);
 		player.direction.y -= 10.0;// * (Window::getInstance()->getFrametime());
 		player.jump_cooldown = 0.5f;
-		cout << "jump" << "\n";
+		//cout << "jump" << "\n";
 	}
 	if(input->isPressedSym("down"))
 	{
@@ -68,24 +78,39 @@ void motor::state::GameState::update (const motor::StateManager * st)
 
 	//collision detection
 	{
-		Rectangle staticGeom = Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2, 8*2);
+		Rectangle staticGeom = Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2*10, 8*2);
+		Rectangle prevPlayer = prev;
+		prevPlayer.width *= 4.0;
+		prevPlayer.height *= 4.0;
+		prevPlayer.x += (7*4) + (0.5*4);
+		prevPlayer.width -= (5*4) + (0.5*4);
+		Rectangle currPlayer = player.getHitbox();
+		currPlayer.width *= 4.0;
+		currPlayer.height *= 4.0;
+		currPlayer.x += (7*4) + (0.5*4);
+		currPlayer.width -= (5*4) + (0.5*4);
+
 		//clipping
-		if(staticGeom.intersectsline(prev.getLowerLeft(), player.getHitbox().getLowerLeft()) ||
-				staticGeom.intersectsline(prev.getLowerRight(), player.getHitbox().getLowerRight()))
+		//TODO only do collision for top face of staticGeom, so the player cannot jump while the players lower face touches the sides -> else there would be some kind of wall jumping
+		if(staticGeom.intersectsline(prevPlayer.getLowerLeft(), currPlayer.getLowerLeft()) ||
+				staticGeom.intersectsline(prevPlayer.getLowerRight(), currPlayer.getLowerRight()) ||
+				staticGeom.intersectsline(prevPlayer.getCenter(), currPlayer.getCenter()) ||
+				staticGeom.collides(currPlayer))
 		{
 			if(player.velocity.y > 0.0)
 			{
 				player.velocity.y = 0;
-				player.position.y = staticGeom.y;
+				player.position.y = staticGeom.y - player.hitbox.height*4;
 				player.flying = false;
-				cout << "collides" << '\n';
+				//cout << "collides" << '\n';
 			}
 		}
 		//flying
 		else
 		{
-			if(player.velocity.y < 6.0)
+			if(player.velocity.y < 7.0)
 				player.velocity.y += 0.80;
+				
 				//player.velocity.y += 0.4;
 			player.flying = true;
 		}
@@ -123,12 +148,59 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	//SpriteBatch * sb = StateManager::getInstance()->getSpriteBatch();
 	SpriteBatch * sb = const_cast<motor::StateManager *> (st)->getSpriteBatch();
 	sb->begin();
-	//level.draw(sb, tiles);
+	level.draw(sb, tiles);
+	//
 	
-	sb->draw(*tiles, Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2, 8*2), Rectangle(0,16,8,8));
+	ticks++;
+	Rectangle playerTexRect;
+	int switchTime = 6;
+	//int yCoord = 213;
+	int yCoord = 230;
 
-	sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(4+1, 7+1), 4.0, 4);
-	//sb->draw(*tiles, Rectangle(player.position.x, player.position.y, 9, 8), Rectangle(0, 0, 9, 8), Vector4(1.0), 0, Vector2(0, 0), 4.0, 4);
+	//messy animation code :3
+	if(player.velocity.x > 0.5)
+	{
+		if(ticks < switchTime)
+			playerTexRect = Rectangle(18, yCoord, 16, 16);
+		else if (ticks < switchTime*2)
+			playerTexRect = Rectangle(35, yCoord, 16, 16);
+		else if(ticks < switchTime*3)
+			playerTexRect = Rectangle(52, yCoord, 16, 16);
+		else if (ticks < switchTime*4)
+			playerTexRect = Rectangle(69, yCoord, 16, 16);
+		else
+		{
+			ticks = 0;
+			playerTexRect = Rectangle(18, yCoord, 16, 16);
+		}
+	}
+	else if(player.velocity.x < -0.5)
+	{
+		if(ticks < switchTime)
+			playerTexRect = Rectangle(138, yCoord, 16, 16);
+		else if (ticks < switchTime*2)
+			playerTexRect = Rectangle(121, yCoord, 16, 16);
+		else if(ticks < switchTime*3)
+			playerTexRect = Rectangle(104, yCoord, 16, 16);
+		else if (ticks < switchTime*4)
+			playerTexRect = Rectangle(87, yCoord, 16, 16);
+		else
+		{
+			ticks = 0;
+			playerTexRect = Rectangle(138, yCoord, 16, 16);
+		}
+	}
+	else
+	{
+		if(player.direction.x > 0) //looking to the right
+			playerTexRect = Rectangle(1, yCoord, 16, 16);
+		else // looking to the left
+			playerTexRect = Rectangle(155, yCoord, 16, 16);
+	}
+
+	sb->draw(*chars, Rectangle(player.position.x, player.position.y, 16, 16), playerTexRect, Vector4(1), 0, Vector2(0), 4, 4);
+
+	//sb->draw(*tiles, Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2*10, 8*2), Rectangle(0,16,8,8));
 	for(Item & ent : items)
 	{
 		if(ent == LIFE_POTION)

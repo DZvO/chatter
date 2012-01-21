@@ -2,7 +2,7 @@
 Player::Player ()
 {
 	rotation = 0;
-	direction = Vector2(0, -1);
+	direction = Vector2(1, -1);
 	flying = false;
 	laser_cooldown = 0.0f;
 	jump_cooldown = 0.0f;
@@ -23,7 +23,7 @@ void Player::update ()
 	if(glm::abs(velocity.x) < 0.001)
 		velocity.x = 0.0f;
 	else
-		velocity.x *= 0.8;
+		velocity.x *= 0.4;
 
 	/*
 	direction = glm::normalize(direction);
