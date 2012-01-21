@@ -4,7 +4,7 @@ motor::state::GameState::GameState (): level(Vector2(400, 400))
 	background = new Image("data/background.png");
 	tiles = new Image("data/tiles.png");
 	chars = new Image("data/char.png");
-	player.position = Vector2(0, 200);
+	player.position = Vector2(20, 200);
 	player.hitbox.width = 16;
 	player.hitbox.height = 16;
 
@@ -82,37 +82,57 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		Rectangle prevPlayer = prev;
 		prevPlayer.width *= 4.0;
 		prevPlayer.height *= 4.0;
-		prevPlayer.x += (7*4) + (0.5*4);
-		prevPlayer.width -= (5*4) + (0.5*4);
+		//prevPlayer.x += (7*4) + (0.5*4);
+		//prevPlayer.width -= (5*4) + (0.5*4);
 		Rectangle currPlayer = player.getHitbox();
 		currPlayer.width *= 4.0;
 		currPlayer.height *= 4.0;
-		currPlayer.x += (7*4) + (0.5*4);
-		currPlayer.width -= (5*4) + (0.5*4);
+		//currPlayer.x += (7*4) + (0.5*4);
+		//currPlayer.width -= (5*4) + (0.5*4);
 
 		//clipping
 		//TODO only do collision for top face of staticGeom, so the player cannot jump while the players lower face touches the sides -> else there would be some kind of wall jumping
-		if(staticGeom.intersectsline(prevPlayer.getLowerLeft(), currPlayer.getLowerLeft()) ||
-				staticGeom.intersectsline(prevPlayer.getLowerRight(), currPlayer.getLowerRight()) ||
-				staticGeom.intersectsline(prevPlayer.getCenter(), currPlayer.getCenter()) ||
-				staticGeom.collides(currPlayer))
+		if(
+				(staticGeom.intersectslineTop(prevPlayer.getLowerLeft(), currPlayer.getLowerLeft()) ||
+				 staticGeom.intersectslineTop(prevPlayer.getLowerRight(), currPlayer.getLowerRight()) ||
+				 staticGeom.intersectslineTop(prevPlayer.getCenter(), currPlayer.getCenter()))
+			)
 		{
 			if(player.velocity.y > 0.0)
 			{
 				player.velocity.y = 0;
 				player.position.y = staticGeom.y - player.hitbox.height*4;
 				player.flying = false;
-				//cout << "collides" << '\n';
+				cout << "collides" << '\n';
 			}
 		}
 		//flying
 		else
 		{
-			if(player.velocity.y < 7.0)
-				player.velocity.y += 0.80;
-				
-				//player.velocity.y += 0.4;
-			player.flying = true;
+			if(currPlayer.y != (staticGeom.y - player.hitbox.height*4))
+			{
+				if(player.velocity.y < 7.0)
+					player.velocity.y += 0.80;
+					//player.velocity.y += 0.4;
+				player.flying = true;
+			}
+		}
+
+		staticGeom = Rectangle(0, 0, 5, 600);
+		if(staticGeom.intersectslineRight(prevPlayer.getLowerLeft(), currPlayer.getLowerLeft()) ||
+				staticGeom.intersectslineRight(prevPlayer.getUpperLeft(), currPlayer.getUpperLeft()) ||
+				staticGeom.intersectslineRight(prevPlayer.getCenter(), currPlayer.getCenter()))
+			//staticGeom.collides(currPlayer))
+		{
+			if(player.velocity.x < 0.0)
+			{
+				player.velocity.x = 0;
+				player.position.x = staticGeom.x + staticGeom.width;// - (player.hitbox.width * 4);
+				cout << "xcollides" << '\n';
+			}
+		}
+		else
+		{
 		}
 	}
 
@@ -150,7 +170,7 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	sb->begin();
 	level.draw(sb, tiles);
 	//
-	
+
 	ticks++;
 	Rectangle playerTexRect;
 	int switchTime = 6;
@@ -160,42 +180,90 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	//messy animation code :3
 	if(player.velocity.x > 0.5)
 	{
-		if(ticks < switchTime)
-			playerTexRect = Rectangle(18, yCoord, 16, 16);
-		else if (ticks < switchTime*2)
-			playerTexRect = Rectangle(35, yCoord, 16, 16);
-		else if(ticks < switchTime*3)
-			playerTexRect = Rectangle(52, yCoord, 16, 16);
-		else if (ticks < switchTime*4)
-			playerTexRect = Rectangle(69, yCoord, 16, 16);
+		if(player.velocity.y != 0)
+		{
+			if(player.velocity.y < -2.2)
+				playerTexRect = Rectangle(1, 264, 16, 16);
+			else if(player.velocity.y > 2.2)
+				playerTexRect = Rectangle(35, 264, 16, 16);
+			else
+				playerTexRect = Rectangle(18, 264, 16, 16);
+		}
 		else
 		{
-			ticks = 0;
-			playerTexRect = Rectangle(18, yCoord, 16, 16);
+			if(ticks < switchTime)
+				playerTexRect = Rectangle(18, yCoord, 16, 16);
+			else if (ticks < switchTime*2)
+				playerTexRect = Rectangle(35, yCoord, 16, 16);
+			else if(ticks < switchTime*3)
+				playerTexRect = Rectangle(52, yCoord, 16, 16);
+			else if (ticks < switchTime*4)
+				playerTexRect = Rectangle(69, yCoord, 16, 16);
+			else
+			{
+				ticks = 0;
+				playerTexRect = Rectangle(18, yCoord, 16, 16);
+			}
 		}
 	}
 	else if(player.velocity.x < -0.5)
 	{
-		if(ticks < switchTime)
-			playerTexRect = Rectangle(138, yCoord, 16, 16);
-		else if (ticks < switchTime*2)
-			playerTexRect = Rectangle(121, yCoord, 16, 16);
-		else if(ticks < switchTime*3)
-			playerTexRect = Rectangle(104, yCoord, 16, 16);
-		else if (ticks < switchTime*4)
-			playerTexRect = Rectangle(87, yCoord, 16, 16);
+		if(player.velocity.y != 0)
+		{
+			if(player.velocity.y < -2.2)
+				playerTexRect = Rectangle(155, 264, 16, 16);
+			else if(player.velocity.y > 2.2)
+				playerTexRect = Rectangle(121, 264, 16, 16);
+			else
+				playerTexRect = Rectangle(138, 264, 16, 16);
+		}
 		else
 		{
-			ticks = 0;
-			playerTexRect = Rectangle(138, yCoord, 16, 16);
+			if(ticks < switchTime)
+				playerTexRect = Rectangle(138, yCoord, 16, 16);
+			else if (ticks < switchTime*2)
+				playerTexRect = Rectangle(121, yCoord, 16, 16);
+			else if(ticks < switchTime*3)
+				playerTexRect = Rectangle(104, yCoord, 16, 16);
+			else if (ticks < switchTime*4)
+				playerTexRect = Rectangle(87, yCoord, 16, 16);
+			else
+			{
+				ticks = 0;
+				playerTexRect = Rectangle(138, yCoord, 16, 16);
+			}
 		}
 	}
 	else
 	{
 		if(player.direction.x > 0) //looking to the right
-			playerTexRect = Rectangle(1, yCoord, 16, 16);
+		{
+			if(player.velocity.y != 0)
+			{
+				if(player.velocity.y < -2.2)
+					playerTexRect = Rectangle(1, 264, 16, 16);
+				else if(player.velocity.y > 2.2)
+					playerTexRect = Rectangle(35, 264, 16, 16);
+				else
+					playerTexRect = Rectangle(18, 264, 16, 16);
+			}
+			else
+				playerTexRect = Rectangle(1, yCoord, 16, 16);
+		}
 		else // looking to the left
-			playerTexRect = Rectangle(155, yCoord, 16, 16);
+		{
+			if(player.velocity.y != 0)
+			{
+				if(player.velocity.y < -2.2)
+					playerTexRect = Rectangle(155, 264, 16, 16);
+				else if(player.velocity.y > 2.2)
+					playerTexRect = Rectangle(121, 264, 16, 16);
+				else
+					playerTexRect = Rectangle(138, 264, 16, 16);
+			}
+			else
+				playerTexRect = Rectangle(155, yCoord, 16, 16);
+		}
 	}
 
 	sb->draw(*chars, Rectangle(player.position.x, player.position.y, 16, 16), playerTexRect, Vector4(1), 0, Vector2(0), 4, 4);

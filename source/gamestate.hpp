@@ -14,6 +14,7 @@
 #include "item.hpp"
 #include "level.hpp"
 #include "time/stopwatch.hpp"
+#include "math/line.hpp"
 
 namespace motor
 {

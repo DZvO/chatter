@@ -4,6 +4,7 @@
 #include <iostream>
 #include "lib/glm/glm.hpp"
 #include "math/vector.hpp"
+#include "math/line.hpp"
 
 class Rectangle
 {
@@ -41,9 +42,54 @@ class Rectangle
 		{
 			if
 				(
-				 ((x > b.x && x > a.x) || (y > b.y && y > a.y))
+				 (
+					(x > b.x && x > a.x)
+					||
+					(y > b.y && y > a.y)
+				 )
+				 or
+				 (
+					(x+width < a.x && x+width < b.x)
+					||
+					(y+height < a.y && y+height < b.y)
+				 )
+				)
+			{
+				return false;
+			}
+			return true;
+		}
+
+		bool intersectslineTop (const Vector2 & a, const Vector2 & b)
+		{
+			if(
+					Line::intersects(Line(getUpperLeft(), getUpperRight()), Line(a,b))
+				)
+			{
+				return true;
+			}
+			return false;
+
+		}
+		
+		bool intersectslineRight (const Vector2 & a, const Vector2 & b)
+		{
+			if(
+					Line::intersects(Line(getUpperRight(), getLowerRight()), Line(a,b))
+				)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		bool intersectsline (const Line & line) const
+		{
+			if
+				(
+				 ((x > line.b.x && x > line.a.x) || (y > line.b.y && y > line.a.y))
 				 ||
-				 ((x+width < a.x && x+width < b.x) || (y+height < a.y && y+height < b.y))
+				 ((x+width < line.a.x && x+width < line.b.x) || (y+height < line.a.y && y+height < line.b.y))
 				)
 			{
 				return false;
@@ -74,6 +120,26 @@ class Rectangle
 		Vector2 getLowerRight ()
 		{
 			return Vector2(x+width, y+height);
+		}
+
+		Line getTop ()
+		{
+			return Line(Vector2(x,y), Vector2(x+width, y));
+		}
+
+		Line getBottom ()
+		{
+			return Line(Vector2(x,y+height), Vector2(x+width,y+height));
+		}
+
+		Line getLeft ()
+		{
+			return Line(Vector2(x,y), Vector2(x,y+height));
+		}
+
+		Line getRight ()
+		{
+			return Line(Vector2(x+width,y), Vector2(x+width,y+height));
 		}
 
 		bool operator== (const Rectangle & r)
