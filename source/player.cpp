@@ -6,6 +6,10 @@ Player::Player ()
 	flying = false;
 	laser_cooldown = 0.0f;
 	jump_cooldown = 0.0f;
+	acceleration = Vector2(0, 0);
+	gravity = Vector2(0, +1);
+	jumping = false;
+	jump_duration = 0;
 }
 
 void Player::update ()
@@ -15,6 +19,10 @@ void Player::update ()
 	//acceleration *= 0.99;
 	float delta = position.y;
 	position += velocity * Vector2(Window::getInstance()->getFrametime() / 20);
+	velocity.y += gravity.y;
+	velocity.y += jump.y;
+	velocity.x += acceleration.x;
+
 	delta = position.y - delta;
 
 	//cout << "delta: " << delta << "\n";
@@ -42,5 +50,9 @@ void Player::update ()
 	if(jump_cooldown > 0.0)
 	{
 		jump_cooldown -= Window::getInstance()->getFrametime() / 1000.0f;
+	}
+	if(jumping)
+	{
+		jump_duration += Window::getInstance()->getFrametime() / 1000.0f;
 	}
 }

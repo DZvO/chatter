@@ -13,12 +13,16 @@ class Player
 		Vector2 position;
 		Vector2 velocity;
 		Vector2 acceleration;
+		Vector2 jump;
+		Vector2 gravity;
 		Vector2 direction;
 		float rotation;
 		float laser_cooldown;
 		float jump_cooldown;
 		Rectangle hitbox;
 		bool flying;
+		bool jumping;
+		float jump_duration;
 
 		Player();
 		void update();

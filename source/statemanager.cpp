@@ -35,8 +35,8 @@ void motor::StateManager::run ()
 		ticks++;
 		if(ticks % 100 == 0)
 		{
-			cout << "elapsed time: " << Window::getInstance()->getElapsedTime() << " ms\n";
-			cout << "frametime: " << Window::getInstance()->getFrametime() << " ms\n";
+			cout << "[" << Window::getInstance()->getElapsedTime() << "] " << "gametime : \t" << Window::getInstance()->getElapsedTime() << " ms\n";
+			cout << "[" << Window::getInstance()->getElapsedTime() << "] " << "frametime: \t" << Window::getInstance()->getFrametime() << " ms\n";
 		}
 	}
 }

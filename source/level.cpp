@@ -37,7 +37,8 @@ void Level::add (const Vector2 & pos, unsigned char type)
 	unsigned int index = (int)pos.x + ((int)pos.y * WIDTH);
 	if(index >= WIDTH * HEIGHT)
 	{
-		cout << " TT " << '\n';
+		//cout << "Bad access" << '\n';
+		return;
 	}
 	blocks[index] = type;
 }
@@ -47,12 +48,13 @@ unsigned char Level::get (const Vector2 & pos)
 	unsigned int index = (int)pos.x + ((int)pos.y * WIDTH);
 	if(index >= WIDTH * HEIGHT)
 	{
-		cout << " TT " << '\n';
+		//cout << "Bad access" << '\n';
+		return 0;
 	}
 	return blocks[index];
 }
 
 Rectangle Level::getBB (const Vector2 & pos)
 {
-	return Rectangle((int)pos.x, (int)pos.y, 1, 1);
+	return Rectangle(((int)pos.x / 16) * 16, ((int)pos.y / 16) * 16, 16, 16);
 }

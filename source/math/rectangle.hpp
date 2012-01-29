@@ -18,9 +18,9 @@ class Rectangle
 		bool isInside(float x, float y) const
 		{
 			if(
-					(this->x <= x) && (this->x + this->width >= x)
+					(this->x < x) && (this->x + this->width > x)
 				&&	
-					(this->y <= y) && (this->y + this->height >= y)
+					(this->y < y) && (this->y + this->height > y)
 				)
 			{
 				return true;
@@ -42,59 +42,38 @@ class Rectangle
 		{
 			if
 				(
-				 (
-					(x > b.x && x > a.x)
-					||
-					(y > b.y && y > a.y)
-				 )
+				 ((x > b.x && x > a.x) ||	(y > b.y && y > a.y))
 				 or
-				 (
-					(x+width < a.x && x+width < b.x)
-					||
-					(y+height < a.y && y+height < b.y)
-				 )
+				 ((x+width < a.x && x+width < b.x) ||	(y+height < a.y && y+height < b.y))
 				)
-			{
 				return false;
-			}
 			return true;
 		}
 
-		bool intersectslineTop (const Vector2 & a, const Vector2 & b)
+		bool intersectslineTop (const Line & line)
 		{
-			if(
-					Line::intersects(Line(getUpperLeft(), getUpperRight()), Line(a,b))
-				)
-			{
-				return true;
-			}
-			return false;
+			return Line::intersects(Line(getUpperLeft(), getUpperRight()), line);
 
 		}
-		
-		bool intersectslineRight (const Vector2 & a, const Vector2 & b)
+
+		bool intersectslineBottom (const Line & line)
 		{
-			if(
-					Line::intersects(Line(getUpperRight(), getLowerRight()), Line(a,b))
-				)
-			{
-				return true;
-			}
-			return false;
+			return Line::intersects(Line(getLowerLeft(), getLowerRight()), line);
+		}
+		
+		bool intersectslineRight (const Line & line)
+		{
+			return Line::intersects(Line(getUpperRight(), getLowerRight()), line);
+		}
+
+		bool intersectslineLeft (const Line & line)
+		{
+			return Line::intersects(Line(getUpperLeft(), getLowerLeft()), line);
 		}
 
 		bool intersectsline (const Line & line) const
 		{
-			if
-				(
-				 ((x > line.b.x && x > line.a.x) || (y > line.b.y && y > line.a.y))
-				 ||
-				 ((x+width < line.a.x && x+width < line.b.x) || (y+height < line.a.y && y+height < line.b.y))
-				)
-			{
-				return false;
-			}
-			return true;
+			return (intersectsline(line.a, line.b));
 		}
 
 		Vector2 getCenter ()
@@ -151,7 +130,7 @@ class Rectangle
 
 		friend std::ostream & operator << (std::ostream & os, const Rectangle & r)
 		{
-			os << "R(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
+			os << "Rect(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
 			return os;
 		}
 };
