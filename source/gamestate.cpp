@@ -139,18 +139,18 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	//collision detection
 	if(true)
 	{
-		Rectangle staticGeom = Rectangle(0, Window::getInstance()->getHeight() - 8*2, 8*4*2, 8*2);
+		Rectangle staticGeom = Rectangle(0,0,0,0);
 		Rectangle prevPlayerHitbox = prev;
-		prevPlayerHitbox.width *= 4.0;
-		prevPlayerHitbox.x += 6.0*4.0;
-		prevPlayerHitbox.width -= 6.0*4.0 + 5.0*4.0;
-		prevPlayerHitbox.height *= 4.0;
+		prevPlayerHitbox.width *= 3.0;
+		prevPlayerHitbox.x += 7.0*3.0;
+		prevPlayerHitbox.width -= 7.0*3.0 + 6.0*3.0;
+		prevPlayerHitbox.height *= 3.0;
 
 		Rectangle currPlayerHitbox = player.getHitbox();
-		currPlayerHitbox.width *= 4.0;
-		currPlayerHitbox.x += 6.0*4.0;
-		currPlayerHitbox.width -= 6.0*4.0 + 5.0*4.0;
-		currPlayerHitbox.height *= 4.0;
+		currPlayerHitbox.width *= 3.0;
+		currPlayerHitbox.x += 7.0*3.0;
+		currPlayerHitbox.width -= 7.0*3.0 + 6.0*3.0;
+		currPlayerHitbox.height *= 3.0;
 
 		//--------------------------------------------------------
 		bool collidedLeft = false;
@@ -183,9 +183,9 @@ void motor::state::GameState::update (const motor::StateManager * st)
 					if(player.velocity.y > 0.0)
 					{
 						if(newYLeft == 0)
-							newYLeft = staticGeom.y - player.hitbox.height*4;
-						if((staticGeom.y - player.hitbox.height*4) > newYLeft)
-							newYLeft = staticGeom.y - player.hitbox.height*4;
+							newYLeft = staticGeom.y - player.hitbox.height*3;
+						if((staticGeom.y - player.hitbox.height*3) > newYLeft)
+							newYLeft = staticGeom.y - player.hitbox.height*3;
 
 						//cout << "[" << Window::getInstance()->getElapsedTime() << "] " << "collides y on the left" << '\n';
 						collidedLeft = true;
@@ -213,9 +213,9 @@ void motor::state::GameState::update (const motor::StateManager * st)
 					if(player.velocity.y > 0.0)
 					{
 						if(newYRight == 0)
-							newYRight = staticGeom.y - player.hitbox.height*4;
-						if((staticGeom.y - player.hitbox.height*4) > newYRight)
-							newYRight = staticGeom.y - player.hitbox.height*4;
+							newYRight = staticGeom.y - player.hitbox.height*3;
+						if((staticGeom.y - player.hitbox.height*3) > newYRight)
+							newYRight = staticGeom.y - player.hitbox.height*3;
 
 						//cout << "[" << Window::getInstance()->getElapsedTime() << "] " << "collides y on the right" << '\n';
 						collidedRight = true;
@@ -230,9 +230,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		else
 			directionY = -1;
 
-		float newXRight = 0;
-
-		
+		float newLowerXRight = 0;
 		for(int y = (int)prevPlayerHitbox.getLowerRight().y-1;
 				y <= (int)currPlayerHitbox.getLowerRight().y-1; y++)
 		{
@@ -247,18 +245,48 @@ void motor::state::GameState::update (const motor::StateManager * st)
 							Line(prevPlayerHitbox.getLowerRight(), currPlayerHitbox.getLowerRight()))
 					)
 				{
-					if(newXRight == 0 || (staticGeom.x - player.getHitbox().width*4) < newXRight)
-						newXRight = staticGeom.x + 16 - player.getHitbox().width*4;
+					if(newLowerXRight == 0 || (staticGeom.x - ((5*3)+(5*3))) < newLowerXRight)
+						newLowerXRight = staticGeom.x - ((5*3)+(6*3));
 					cout << "collide x\n";
 				}
 			}
 		}
-		if(newXRight != 0.0)
+		float newLowerXLeft = 0;
+		for(int y = (int)prevPlayerHitbox.getLowerLeft().y-1;
+				y <= (int)currPlayerHitbox.getLowerLeft().y-1; y++)
 		{
-			player.position.x = newXRight;
+			for(int x = (int)prevPlayerHitbox.getLowerLeft().x;
+					x != (int)currPlayerHitbox.getLowerLeft().x+directionX; x+=directionX)
+			{
+				if(level.get(Vector2(x/16,y/16)) == 0)
+					continue;
+
+				staticGeom = level.getBB(Vector2(x,y));
+				if(staticGeom.intersectslineLeft(
+							Line(prevPlayerHitbox.getLowerLeft(), currPlayerHitbox.getLowerLeft()))
+					)
+				{
+					if(newLowerXLeft == 0 || (staticGeom.x + staticGeom.width - 5*3) > newLowerXLeft)
+						newLowerXLeft = staticGeom.x + staticGeom.width - 5*3;
+					cout << "collide x\n";
+				}
+			}
+		}
+
+		if(newLowerXRight != 0.0)
+		{
+			player.position.x = newLowerXRight;
 			player.velocity.x = 0;
 			player.acceleration.x = 0;
 		}
+
+		if(newLowerXLeft != 0.0)
+		{
+			player.position.x = newLowerXLeft;
+			player.velocity.x = 0;
+			player.acceleration.x = 0;
+		}
+
 		//--------------------------------------------------------
 		if(collidedLeft || collidedRight)
 		{
@@ -278,33 +306,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				//cout << "enabled gravity!" << '\n';
 			}
 		}
-		//--------------------------------------------------------
-
-		/*
-			 staticGeom = Rectangle(0, 0, 5, 600);
-			 if(staticGeom.intersectslineRight(Line(prevPlayerHitbox.getLowerLeft(), currPlayerHitbox.getLowerLeft())) ||
-			 staticGeom.intersectslineRight(Line(prevPlayerHitbox.getUpperLeft(), currPlayerHitbox.getUpperLeft())) ||
-			 staticGeom.intersectslineRight(Line(prevPlayerHitbox.getCenter(), currPlayerHitbox.getCenter())))
-		//staticGeom.collides(currPlayerHitbox))
-		{
-		if(player.velocity.x < 0.0)
-		{
-		player.velocity.x = 0;
-		player.acceleration.x = 0;
-		player.position.x = staticGeom.x + staticGeom.width;// - (player.hitbox.width * 4);
-		cout << "[" << Window::getInstance()->getElapsedTime() << "] " << "xcollides" << '\n';
-		}
-		}
-		else
-		{
-		}
-		*/
 	}
-
-	//if(input->isPressedSym(Input::kEnter) && player.laser_cooldown <= 0.0)
-	//{
-	//shootLazorBEAM(player);
-	//}
 
 	/*for(auto & blt : bullets)
 		{
@@ -432,7 +434,7 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 		}
 	}
 
-	sb->draw(*chars, Rectangle(player.position.x, player.position.y, 16, 16), playerTexRect, Vector4(1), 0, Vector2(0), 4, 4);
+	sb->draw(*chars, Rectangle(player.position.x, player.position.y, 16, 16), playerTexRect, Vector4(1), 0, Vector2(0), 3, 4);
 	
 	/*
 	Rectangle phitb = Rectangle(player.getHitbox().x, player.getHitbox().y, player.getHitbox().width*4, player.getHitbox().height*4);
