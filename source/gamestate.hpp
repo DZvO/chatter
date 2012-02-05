@@ -38,7 +38,10 @@ namespace motor
 				Image * tiles;
 				Image * chars;
 
+				std::vector<Rectangle> checked_red;
+
 				unsigned long long ticks;
+				float playerScale;
 
 				void shootLazorBEAM (Player &);
 
