@@ -31,6 +31,17 @@ void motor::state::GameState::init (const motor::StateManager * st)
 	for(int x = 0; x < (int)(Window::getInstance()->getWidth() / 16); x++)
 		level.add(Vector2(x, (int)(Window::getInstance()->getHeight() / 16)), 1);
 
+	level.add(Vector2(6, (int)(Window::getInstance()->getHeight()/16)-1), 1);
+	level.add(Vector2(6, (int)(Window::getInstance()->getHeight()/16)-2), 1);
+	level.add(Vector2(6, (int)(Window::getInstance()->getHeight()/16)-3), 1);
+
+	level.add(Vector2(8, (int)(Window::getInstance()->getHeight()/16)-1), 1);
+	level.add(Vector2(8, (int)(Window::getInstance()->getHeight()/16)-2), 1);
+	level.add(Vector2(8, (int)(Window::getInstance()->getHeight()/16)-3), 1);
+
+	level.add(Vector2(9, (int)(Window::getInstance()->getHeight()/16)-1), 1);
+	level.add(Vector2(10, (int)(Window::getInstance()->getHeight()/16)-1), 1);
+	level.add(Vector2(11, (int)(Window::getInstance()->getHeight()/16)-1), 1);
 
 	level.add(Vector2(17, (int)(Window::getInstance()->getHeight()/16)-2), 1);
 	level.add(Vector2(18, (int)(Window::getInstance()->getHeight()/16)-2), 1);
@@ -237,157 +248,56 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			}
 		}
 
-		if(directionX > 0) //going right
+		Rectangle phb = currPlayerHitbox;
+		//if(directionX > 0) //going right
+		if(player.direction.x == +1)
 		{
-			cout << "going right!\n";
-			for(int x = (int)prevPlayerHitbox.getLowerRight().x;
-					x <= (int)currPlayerHitbox.getLowerRight().x+16; x++)
+			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x <= ((int)(phb.x+phb.width) / 16 + 1) * 16; x += 16)
 			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerRight().y)/16-1)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbRight = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerRight().y/16-1)*16, 16, 16);
-				//checked_red.push_back(bbRight);
-				if(bbRight.intersectslineLeft(
-							Line(
-								prevPlayerHitbox.getLowerRight(), 
-								currPlayerHitbox.getLowerRight())))
+				for(int y = ((int)phb.y / 16) * 16; y <= ((int)(phb.y+phb.height) / 16 - (player.flying ? 0 : 1)) * 16; y += 16)
 				{
-					if(player.velocity.x > 0)
+					if(level.get(Vector2(x/16,y/16)) == 0)
+					{
+						checked_red.push_back(Rectangle(x, y, 16, 16));
+						continue;
+					}
+					else
+					{
+						checked_blue.push_back(Rectangle(x,y,16,16));
+					}
+
+					if(phb.collides(Rectangle(x,y,16,16)))
 					{
 						player.velocity.x = 0;
 						player.acceleration.x = 0;
-						player.position.x = bbRight.x - (7*playerScale + currPlayerHitbox.width);
+						player.position.x = Rectangle(x,y,16,16).x - (7*playerScale + phb.width);
 					}
-					break;
-				}
-			}
-			prevPlayerHitbox.x += 1*playerScale;
-			currPlayerHitbox.x += 1*playerScale;
-			for(int x = (int)prevPlayerHitbox.getLowerRight().x;
-					x <= (int)currPlayerHitbox.getLowerRight().x+16; x++)
-			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerRight().y)/16-2)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbRight = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerRight().y/16-2)*16, 16, 16);
-				checked_red.push_back(bbRight);
-				if(bbRight.intersectslineLeft(
-							Line(
-								Vector2(prevPlayerHitbox.getLowerRight().x, prevPlayerHitbox.getLowerRight().y - 8*playerScale),
-								Vector2(currPlayerHitbox.getLowerRight().x, prevPlayerHitbox.getLowerRight().y - 8*playerScale))
-							))
-				{
-					if(player.velocity.x > 0)
-					{
-						player.velocity.x = 0;
-						player.acceleration.x = 0;
-						player.position.x = bbRight.x - (7*playerScale + currPlayerHitbox.width) - 1*playerScale; //the 1 pixel is for the head
-					}
-					break;
-				}
-			}
-			for(int x = (int)prevPlayerHitbox.getLowerRight().x;
-					x <= (int)currPlayerHitbox.getLowerRight().x+16; x++)
-			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerRight().y)/16-3)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbRight = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerRight().y/16-3)*16, 16, 16);
-				checked_red.push_back(bbRight);
-				if(bbRight.intersectslineLeft(
-							Line(
-								Vector2(prevPlayerHitbox.getLowerRight().x, prevPlayerHitbox.getLowerRight().y - 12*playerScale),
-								Vector2(currPlayerHitbox.getLowerRight().x, prevPlayerHitbox.getLowerRight().y - 12*playerScale))
-							))
-				{
-					if(player.velocity.x > 0)
-					{
-						player.velocity.x = 0;
-						player.acceleration.x = 0;
-						player.position.x = bbRight.x - (7*playerScale + currPlayerHitbox.width) - 1*playerScale; //the 1 pixel is for the head
-					}
-					break;
 				}
 			}
 		}
-		else if(directionX < 0) //going left
+		//else if(directionX < 0) //going left
+		else if(player.direction.x == -1)
 		{
-			cout << "going left!\n";
-			for(int x = (int)prevPlayerHitbox.getLowerLeft().x;
-					x >= (int)currPlayerHitbox.getLowerLeft().x-16; x--)
+			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x >= ((int)(phb.x) / 16 - 1) * 16; x -= 16)
 			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerLeft().y)/16-1)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbLeft = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerLeft().y/16-1)*16, 16, 16);
-				checked_red.push_back(bbLeft);
-				if(bbLeft.intersectslineRight(
-							Line(
-								prevPlayerHitbox.getLowerLeft(), 
-								currPlayerHitbox.getLowerLeft())))
+				for(int y = ((int)phb.y / 16) * 16; y <= ((int)(phb.y+phb.height) / 16 - (player.flying ? 0 : 1)) * 16; y += 16)
 				{
-					if(player.velocity.x < 0)
+					if(level.get(Vector2(x/16,y/16)) == 0)
+					{
+						checked_red.push_back(Rectangle(x, y, 16, 16));
+						continue;
+					}
+					else
+					{
+						checked_blue.push_back(Rectangle(x,y,16,16));
+					}
+
+					if(phb.collides(Rectangle(x,y,16,16)))
 					{
 						player.velocity.x = 0;
 						player.acceleration.x = 0;
-						player.position.x = bbLeft.x + bbLeft.width - 7*playerScale;
+						player.position.x = Rectangle(x,y,16,16).x + Rectangle(x,y,16,16).width - 7*playerScale;
 					}
-					break;
-				}
-			}
-			prevPlayerHitbox.x -= 1*playerScale;
-			currPlayerHitbox.x -= 1*playerScale;
-			for(int x = (int)prevPlayerHitbox.getLowerLeft().x;
-					x >= (int)currPlayerHitbox.getLowerLeft().x-16; x--)
-			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerLeft().y)/16-2)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbLeft = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerLeft().y/16-2)*16, 16, 16);
-				checked_red.push_back(bbLeft);
-				if(bbLeft.intersectslineRight(
-							Line(
-								Vector2(prevPlayerHitbox.getLowerLeft().x, prevPlayerHitbox.getLowerLeft().y - 8*playerScale),
-								Vector2(currPlayerHitbox.getLowerLeft().x, prevPlayerHitbox.getLowerLeft().y - 8*playerScale))
-							))
-				{
-					if(player.velocity.x < 0)
-					{
-						player.velocity.x = 0;
-						player.acceleration.x = 0;
-						player.position.x = bbLeft.x + bbLeft.width - 7*playerScale + 1*playerScale;
-					}
-					break;
-				}
-			}
-			for(int x = (int)prevPlayerHitbox.getLowerLeft().x;
-					x >= (int)currPlayerHitbox.getLowerLeft().x-16; x--)
-			{
-				if(level.get(Vector2(x/16, ((int)currPlayerHitbox.getLowerLeft().y)/16-3)) == 0)
-					continue;
-				//checked_red.push_back(Rectangle(((int)x / 16) * 16, ((int)prevPlayerHitbox.getLowerRight().y/16-1) * 16, 16, 16));
-				Rectangle bbLeft = 
-					Rectangle(((int)x/16)*16, ((int)prevPlayerHitbox.getLowerLeft().y/16-3)*16, 16, 16);
-				checked_red.push_back(bbLeft);
-				if(bbLeft.intersectslineRight(
-							Line(
-								Vector2(prevPlayerHitbox.getLowerLeft().x, prevPlayerHitbox.getLowerLeft().y - 12*playerScale),
-								Vector2(currPlayerHitbox.getLowerLeft().x, prevPlayerHitbox.getLowerLeft().y - 12*playerScale))
-							))
-				{
-					if(player.velocity.x < 0)
-					{
-						player.velocity.x = 0;
-						player.acceleration.x = 0;
-						player.position.x = bbLeft.x + bbLeft.width - 7*playerScale + 1*playerScale;
-					}
-					break;
 				}
 			}
 		}
@@ -531,9 +441,15 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	Rectangle phitb = currPlayerHitbox;
 	for(auto & rec : checked_red)
 	{
-		sb->draw(*tiles, rec, Rectangle(0,0,8,8), Vector4(1), 0, Vector2(0), 1, 10);
+		sb->draw(*tiles, rec, Rectangle(0,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
 	}
 	checked_red.clear();
+
+	for(auto & rec : checked_blue)
+	{
+		sb->draw(*tiles, rec, Rectangle(8,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
+	}
+	checked_blue.clear();
 	//sb->draw(*tiles, Rectangle(
 	//(((int)phitb.getLowerRight().x/16)) *16,
 	//(((int)phitb.getLowerRight().y/16)-1) *16,

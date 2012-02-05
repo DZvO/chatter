@@ -39,6 +39,7 @@ namespace motor
 				Image * chars;
 
 				std::vector<Rectangle> checked_red;
+				std::vector<Rectangle> checked_blue;
 
 				unsigned long long ticks;
 				float playerScale;
