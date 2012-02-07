@@ -3,11 +3,11 @@ Player::Player ()
 {
 	rotation = 0;
 	direction = Vector2(1, -1);
-	flying = false;
+	flying = true;
 	laser_cooldown = 0.0f;
 	jump_cooldown = 0.0f;
 	acceleration = Vector2(0, 0);
-	gravity = Vector2(0, +1);
+	gravity = Vector2(0, +1.8);
 	jumping = false;
 	jump_duration = 0;
 }
@@ -19,7 +19,8 @@ void Player::update ()
 	//acceleration *= 0.99;
 	float delta = position.y;
 	position += velocity * Vector2(Window::getInstance()->getFrametime() / 20);
-	velocity.y += gravity.y;
+	//if(flying) 
+		velocity.y += gravity.y;
 	velocity.y += jump.y;
 	velocity.x += acceleration.x;
 

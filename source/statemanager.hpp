@@ -18,8 +18,12 @@ namespace motor
 			void stop ();
 			void run ();
 
-			SpriteBatch * getSpriteBatch ();
+		public: SpriteBatch * getSpriteBatch ();
 		private: SpriteBatch spritebatch;
+
+		public: bool isDebug() { return debug; };
+		private:	bool debug;
+
 
 		private:
 			StateManager();

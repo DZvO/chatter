@@ -135,77 +135,102 @@ class Rectangle
 		}
 };
 
-/*
-class AABB //the same as rectangle, but the x,y coordinates are now the center point instead of the upper left corner
+class Quad
 {
 	public:
-		float x, y;
-		float width, height;
-		AABB(const float & x, const float & y, const float & width, const float & height) : x(x), y(y), width(width), height(height)
-		{};
-		AABB(): x(0), y(0), width(0), height(0)
-		{};
-
-		bool isInside(float x, float y) const
+		Vector2 vertices [4];
+		bool isInside (Vector2 point)
 		{
-			//TODO
-			if(
-					(this->x <= x) && (this->x + this->width >= x)
-				&&	
-					(this->y <= y) && (this->y + this->height >= y)
-				)
+			int j = 4 - 1;
+			bool oddNodes = false;
+			for (int i = 0; i < 4; i++)
 			{
-				return true;
+				if ((vertices[i].y < point.y && vertices[j].y >= point.y) ||
+						(vertices[j].y < point.y && vertices[i].y >= point.y))
+				{
+					if (vertices[i].x +
+							(point.y - vertices[i].y)/(vertices[j].y - vertices[i].y)*(vertices[j].y - vertices[i].x) < point.x)
+					{
+						oddNodes = !oddNodes;
+					}
+				}
+				j = i;
 			}
-			return false;
+			return oddNodes;
 		}
+};
 
-		bool collides (const Rectangle & r) const
-		{
-			//TODO
-			if(	isInside(r.x, r.y) ||
-					isInside(r.x + r.width, r.y) ||
-					isInside(r.x, r.y + r.height) ||
-					isInside(r.x + r.width, r.y + r.height))
-				return true;
-			return false;
-		}
+/*
+	 class AABB //the same as rectangle, but the x,y coordinates are now the center point instead of the upper left corner
+	 {
+	 public:
+	 float x, y;
+	 float width, height;
+	 AABB(const float & x, const float & y, const float & width, const float & height) : x(x), y(y), width(width), height(height)
+	 {};
+	 AABB(): x(0), y(0), width(0), height(0)
+	 {};
 
-		bool intersectsline (const Vector2 & a, const Vector2 & b) const
-		{
-			//TODO
-			if
-				(
-				 ((x > b.x && x > a.x) || (y > b.y && y > a.y))
-				 ||
-				 ((x+width < a.x && x+width < b.x) || (y+height < a.y && y+height < b.y))
-				)
-			{
-				return false;
-			}
-			return true;
-		}
+	 bool isInside(float x, float y) const
+	 {
+//TODO
+if(
+(this->x <= x) && (this->x + this->width >= x)
+&&	
+(this->y <= y) && (this->y + this->height >= y)
+)
+{
+return true;
+}
+return false;
+}
 
-		Vector2 getCenter ()
-		{
-			//TODO
-			return Vector2(x + width/2, y + height/2);
-		}
+bool collides (const Rectangle & r) const
+{
+//TODO
+if(	isInside(r.x, r.y) ||
+isInside(r.x + r.width, r.y) ||
+isInside(r.x, r.y + r.height) ||
+isInside(r.x + r.width, r.y + r.height))
+return true;
+return false;
+}
 
-		bool operator== (const Rectangle & r)
-		{
-			//TODO
-			if(x == r.x && y == r.y && width == r.width && height == r.height)
-				return true;
-			return false;
-		}
+bool intersectsline (const Vector2 & a, const Vector2 & b) const
+{
+//TODO
+if
+(
+((x > b.x && x > a.x) || (y > b.y && y > a.y))
+||
+((x+width < a.x && x+width < b.x) || (y+height < a.y && y+height < b.y))
+)
+{
+return false;
+}
+return true;
+}
 
-		friend std::ostream & operator << (std::ostream & os, const Rectangle & r)
-		{
-			//TODO
-			os << "R(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
-			return os;
-		}
+Vector2 getCenter ()
+{
+//TODO
+return Vector2(x + width/2, y + height/2);
+}
+
+bool operator== (const Rectangle & r)
+{
+//TODO
+if(x == r.x && y == r.y && width == r.width && height == r.height)
+return true;
+return false;
+}
+
+friend std::ostream & operator << (std::ostream & os, const Rectangle & r)
+{
+//TODO
+os << "R(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
+return os;
+}
 };
 */
 

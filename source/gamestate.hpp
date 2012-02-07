@@ -40,6 +40,8 @@ namespace motor
 
 				std::vector<Rectangle> checked_red;
 				std::vector<Rectangle> checked_blue;
+				Rectangle deb1;
+				Rectangle deb2;
 
 				unsigned long long ticks;
 				float playerScale;

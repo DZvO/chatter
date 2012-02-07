@@ -50,4 +50,5 @@ motor::StateManager::StateManager ()
 {
 	currentState = nullptr;
 	running = true;
+	debug = false;
 }

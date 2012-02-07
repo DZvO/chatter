@@ -80,7 +80,8 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			StateManager::getInstance()->stop();
 		if(input->isPressed(Input::kBackspace))
 		{
-			player.position = Vector2(100, 200);
+			player.position = Vector2(34, 200);
+			player.velocity = Vector2(0);
 		}
 	}
 
@@ -101,7 +102,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				player.acceleration.x = 0;
 
 			if(player.acceleration.x > -8)
-				player.acceleration.x -= xSpeed / (Window::getInstance()->getFrametime() / 10);
+				player.acceleration.x -= xSpeed;// / (Window::getInstance()->getFrametime() / 10);
 			player.direction.x = -1.0;
 		}
 		if(input->isPressedSym("right"))
@@ -112,7 +113,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				player.acceleration.x = 0;
 
 			if(player.acceleration.x < 8)
-				player.acceleration.x += xSpeed / (Window::getInstance()->getFrametime() / 10);
+				player.acceleration.x += xSpeed;// / (Window::getInstance()->getFrametime() / 10);
 			player.direction.x = +1.0;
 		}
 	}
@@ -123,7 +124,7 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		else
 			player.acceleration.x *= 0.6;
 	}
-	if(input->isPressedSym("up") && player.flying == false && player.jump_cooldown <= 0.0)
+	if(input->isPressedSym("up") && player.flying == false)// && player.jump_cooldown <= 0.0)
 	{
 		player.velocity.y = -6.2;
 		player.jump.y = -(0.6);//* (Window::getInstance()->getFrametime() / 10);
@@ -150,106 +151,48 @@ void motor::state::GameState::update (const motor::StateManager * st)
 	if(true)
 	{
 		Rectangle staticGeom = Rectangle(0,0,0,0);
+
 		Rectangle prevPlayerHitbox = prev;
-		prevPlayerHitbox.width *= playerScale;
-		prevPlayerHitbox.x += 7.0*playerScale;;
-		prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-		prevPlayerHitbox.height *= playerScale;
-
 		Rectangle currPlayerHitbox = player.getHitbox();
-		currPlayerHitbox.width *= playerScale;
-		currPlayerHitbox.x += 7.0*playerScale;
-		currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-		currPlayerHitbox.height *= playerScale;
 
-		//--------------------------------------------------------
-		bool collidedLeft = false;
-		bool collidedRight = false;
-		bool solidBlockInRange = false;
-		float newYLeft = 0.0;
-		float newYRight = 0.0;
-		int directionX = 0;
-		if(prevPlayerHitbox.getCenter().x < currPlayerHitbox.getCenter().x)
-			directionX = +1;
-		else
-			directionX = -1;
-
-		for(int y = (int)prevPlayerHitbox.getLowerLeft().y;		//don't use a direction variable here because
-				y <= (int)currPlayerHitbox.getLowerLeft().y; y++) //this automatically skips checking while in air
+		if(player.direction.x == +1)
 		{
-			for(int x = (int)prevPlayerHitbox.getLowerLeft().x;
-					x != (int)currPlayerHitbox.getLowerLeft().x+directionX; x += directionX)
-			{
-				if(level.get(Vector2(x/16,y/16)) == 0)
-					continue;
-				solidBlockInRange = true;
+			prevPlayerHitbox = prev;
+			prevPlayerHitbox.width *= playerScale;
+			prevPlayerHitbox.x += 7.0*playerScale;;
+			//prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+			prevPlayerHitbox.width = 3*playerScale;
+			prevPlayerHitbox.height *= playerScale;
 
-				staticGeom = level.getBB(Vector2(x,y));
-				if(staticGeom.intersectslineTop(
-							Line(prevPlayerHitbox.getLowerLeft(), currPlayerHitbox.getLowerLeft()))
-					)
-				{
-					if(player.velocity.y > 0.0)
-					{
-						if(newYLeft == 0)
-							newYLeft = staticGeom.y - player.hitbox.height*playerScale;
-						if((staticGeom.y - player.hitbox.height*playerScale) > newYLeft)
-							newYLeft = staticGeom.y - player.hitbox.height*playerScale;
-						collidedLeft = true;
-					}
-				}
-			}
-		}
-		//--------------------------------------------------------
-		for(int y = (int)prevPlayerHitbox.getLowerRight().y;
-				y <= (int)currPlayerHitbox.getLowerRight().y; y++)
-		{
-			for(int x = (int)prevPlayerHitbox.getLowerRight().x;
-					x != (int)currPlayerHitbox.getLowerRight().x+directionX; x += directionX)
-			{
-				if(level.get(Vector2(x/16,y/16)) == 0)
-					continue;
-				solidBlockInRange = true;
-
-				staticGeom = level.getBB(Vector2(x,y));
-				if(staticGeom.intersectslineTop(
-							Line(prevPlayerHitbox.getLowerRight(), currPlayerHitbox.getLowerRight()))
-					)
-				{
-					if(player.velocity.y > 0.0)
-					{
-						if(newYRight == 0)
-							newYRight = staticGeom.y - player.hitbox.height*playerScale;
-						if((staticGeom.y - player.hitbox.height*playerScale) > newYRight)
-							newYRight = staticGeom.y - player.hitbox.height*playerScale;
-						collidedRight = true;
-					}
-				}
-			}
-		}
-
-		//--------------------------------------------------------
-		if(collidedLeft || collidedRight)
-		{
-			player.velocity.y = 0;
-			player.gravity.y = 0;
-			player.acceleration.y = 0;
-			player.jump.y = 0;
-			player.position.y = (newYLeft < newYRight ? newYRight : newYLeft); //use the value that is smaller/is higher
-			player.flying = false;
+			currPlayerHitbox = player.getHitbox();
+			currPlayerHitbox.width *= playerScale;
+			currPlayerHitbox.x += 7.0*playerScale;
+			//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+			currPlayerHitbox.width = 3*playerScale;
+			currPlayerHitbox.height *= playerScale;
 		}
 		else
 		{
-			if(!solidBlockInRange)
-			{
-				player.gravity.y = 1;
-				player.flying = true;
-				//cout << "enabled gravity!" << '\n';
-			}
+			prevPlayerHitbox = prev;
+			prevPlayerHitbox.width *= playerScale;
+			prevPlayerHitbox.x += 7.0*playerScale;;
+			//prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+			prevPlayerHitbox.width = 3*playerScale;
+			prevPlayerHitbox.height *= playerScale;
+
+			currPlayerHitbox = player.getHitbox();
+			currPlayerHitbox.width *= playerScale;
+			currPlayerHitbox.x += 7.0*playerScale;
+			//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+			currPlayerHitbox.width = 3*playerScale;
+			currPlayerHitbox.height *= playerScale;
 		}
+
+		deb1 = prevPlayerHitbox;
+		deb2 = currPlayerHitbox;
 
 		Rectangle phb = currPlayerHitbox;
-		//if(directionX > 0) //going right
+
 		if(player.direction.x == +1)
 		{
 			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x <= ((int)(phb.x+phb.width) / 16 + 1) * 16; x += 16)
@@ -257,17 +200,13 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				for(int y = ((int)phb.y / 16) * 16; y <= ((int)(phb.y+phb.height) / 16 - (player.flying ? 0 : 1)) * 16; y += 16)
 				{
 					if(level.get(Vector2(x/16,y/16)) == 0)
-					{
-						checked_red.push_back(Rectangle(x, y, 16, 16));
 						continue;
-					}
-					else
-					{
-						checked_blue.push_back(Rectangle(x,y,16,16));
-					}
 
-					if(phb.collides(Rectangle(x,y,16,16)))
+					Rectangle object = Rectangle(x,y,16,16);
+					if(phb.collides(object) || 
+							object.intersectslineLeft(Line(Vector2(prevPlayerHitbox.x, prevPlayerHitbox.y-0.01),Vector2(currPlayerHitbox.x, currPlayerHitbox.y-0.01))))
 					{
+						cout << "colliding right\n";
 						player.velocity.x = 0;
 						player.acceleration.x = 0;
 						player.position.x = Rectangle(x,y,16,16).x - (7*playerScale + phb.width);
@@ -275,7 +214,6 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				}
 			}
 		}
-		//else if(directionX < 0) //going left
 		else if(player.direction.x == -1)
 		{
 			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x >= ((int)(phb.x) / 16 - 1) * 16; x -= 16)
@@ -283,17 +221,11 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				for(int y = ((int)phb.y / 16) * 16; y <= ((int)(phb.y+phb.height) / 16 - (player.flying ? 0 : 1)) * 16; y += 16)
 				{
 					if(level.get(Vector2(x/16,y/16)) == 0)
-					{
-						checked_red.push_back(Rectangle(x, y, 16, 16));
 						continue;
-					}
-					else
-					{
-						checked_blue.push_back(Rectangle(x,y,16,16));
-					}
 
 					if(phb.collides(Rectangle(x,y,16,16)))
 					{
+						cout << "colliding left\n";
 						player.velocity.x = 0;
 						player.acceleration.x = 0;
 						player.position.x = Rectangle(x,y,16,16).x + Rectangle(x,y,16,16).width - 7*playerScale;
@@ -301,27 +233,62 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				}
 			}
 		}
+
+		if(player.velocity.y > 0) //player is falling
+		{
+			bool collided = false;
+			float newy = 0;
+			Quad q;
+			q.vertices[0] = prevPlayerHitbox.getLowerLeft();
+			q.vertices[1] = prevPlayerHitbox.getLowerRight();
+			q.vertices[2] = currPlayerHitbox.getLowerLeft();
+			q.vertices[3] = currPlayerHitbox.getLowerRight();
+
+			//this is actually kinda stupid because it won't detect collision for tiles that are outside these for loops, because of the high velocity
+			for(int x = ((int)(phb.x) / 16 - 1) * 16; x <= ((int)(phb.x+phb.width) / 16 + 1) * 16; x += 16)
+			{
+				//for(int y = (((int)phb.y) / 16 + 2) * 16; y <= ((int)(phb.y+phb.height) / 16 + 1)* 16; y += 16)
+				for(int y = (((int)prevPlayerHitbox.y) / 16) * 16; y <= ((int)(currPlayerHitbox.y + currPlayerHitbox.height) / 16 + 1) * 16;
+						y += 16)
+				{
+					//checked_red.push_back(Rectangle(x,y,16,16));
+					if(level.get(Vector2(x/16,y/16)) == 0)
+						continue;
+
+					Rectangle b = Rectangle(x,y,16,16);
+					if(b.intersectslineTop(Line(q.vertices[0], q.vertices[2])) || b.intersectslineTop(Line(q.vertices[1], q.vertices[3])))
+					{
+						//checked_blue.push_back(Rectangle(x,y,16,16));
+						//cout << "RAINBOWCASTING FTW!\n";
+						collided = true;
+						if((b.y - player.hitbox.height*playerScale) < newy or newy == 0)
+							newy = (b.y - player.hitbox.height * playerScale);
+						break;
+					}
+				}
+			}
+
+			if(collided)
+			{
+				if(player.flying == true && player.velocity.y > 0)
+				{
+					cout << "collided\n";
+					player.flying = false;
+					player.velocity.y = 0;
+					player.acceleration.y = 0;
+					player.position.y = newy;
+				}
+			}
+			else
+			{
+				player.flying = true;
+			}
+		}
+		else //player is jumping up
+		{
+		}
+
 	}
-
-	/*for(auto & blt : bullets)
-		{
-		Bullet prev(blt);
-		blt.position += blt.velocity * Vector2(Window::getInstance()->getFrametime() / 10.0f, Window::getInstance()->getFrametime() / 10.0f);
-		Bullet now(blt);
-
-		for(auto itr = items.begin(); itr != items.end(); )
-		{
-		auto & item = *itr;
-		if(item.getHitbox().intersectsline(prev.getHitbox().getCenter(), now.getHitbox().getCenter()))
-		{
-		itr = items.erase(itr);
-		}
-		else
-		{
-		itr++;
-		}
-		}
-		}*/
 }
 
 void motor::state::GameState::draw (const motor::StateManager * st)
@@ -434,21 +401,31 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	Rectangle currPlayerHitbox = player.getHitbox();
 	currPlayerHitbox.width *= playerScale;
 	currPlayerHitbox.x += 7.0*playerScale;
-	currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+	//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+	currPlayerHitbox.width = 3*playerScale;
 	currPlayerHitbox.height *= playerScale;
 
 	//Rectangle phitb = Rectangle(player.getHitbox().x, player.getHitbox().y, player.getHitbox().width*4, player.getHitbox().height*4);
-	Rectangle phitb = currPlayerHitbox;
-	for(auto & rec : checked_red)
-	{
-		sb->draw(*tiles, rec, Rectangle(0,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
-	}
-	checked_red.clear();
+	//Rectangle phitb = currPlayerHitbox;
+	//sb->draw(*chars, phitb, Rectangle(0,0,1,1), Vector4(1), 0, Vector2(0), 1, 5);
+	bool drawDebug = true;
 
-	for(auto & rec : checked_blue)
+	if(drawDebug)
 	{
-		sb->draw(*tiles, rec, Rectangle(8,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
+		sb->draw(*chars, deb1, Rectangle(0,0,1,1), Vector4(1), 0, Vector2(0), 1, 5);
+		sb->draw(*chars, deb2, Rectangle(1,0,1,1), Vector4(1), 0, Vector2(0), 1, 5);
+		for(auto & rec : checked_red)
+		{
+			sb->draw(*tiles, rec, Rectangle(0,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
+		}
+
+		for(auto & rec : checked_blue)
+		{
+			sb->draw(*tiles, rec, Rectangle(8,0,8,8), Vector4(1), 0, Vector2(0), 1, 3);
+		}
 	}
+
+	checked_red.clear();
 	checked_blue.clear();
 	//sb->draw(*tiles, Rectangle(
 	//(((int)phitb.getLowerRight().x/16)) *16,
