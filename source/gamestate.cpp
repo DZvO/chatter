@@ -54,19 +54,19 @@ void motor::state::GameState::init (const motor::StateManager * st)
 	level.add(Vector2(27, (int)(Window::getInstance()->getHeight()/16)-3), 1);
 
 	/*level.add(Vector2(21, (int)(Window::getInstance()->getHeight()/16)-3), 1);
-	level.add(Vector2(22, (int)(Window::getInstance()->getHeight()/16)-3), 1);
-	level.add(Vector2(23, (int)(Window::getInstance()->getHeight()/16)-3), 1);
-	level.add(Vector2(24, (int)(Window::getInstance()->getHeight()/16)-3), 1);
+		level.add(Vector2(22, (int)(Window::getInstance()->getHeight()/16)-3), 1);
+		level.add(Vector2(23, (int)(Window::getInstance()->getHeight()/16)-3), 1);
+		level.add(Vector2(24, (int)(Window::getInstance()->getHeight()/16)-3), 1);
 
-	level.add(Vector2(25, (int)(Window::getInstance()->getHeight()/16)-4), 1);
-	level.add(Vector2(26, (int)(Window::getInstance()->getHeight()/16)-4), 1);
-	level.add(Vector2(27, (int)(Window::getInstance()->getHeight()/16)-4), 1);
-	level.add(Vector2(28, (int)(Window::getInstance()->getHeight()/16)-4), 1);
+		level.add(Vector2(25, (int)(Window::getInstance()->getHeight()/16)-4), 1);
+		level.add(Vector2(26, (int)(Window::getInstance()->getHeight()/16)-4), 1);
+		level.add(Vector2(27, (int)(Window::getInstance()->getHeight()/16)-4), 1);
+		level.add(Vector2(28, (int)(Window::getInstance()->getHeight()/16)-4), 1);
 
-	level.add(Vector2(29, (int)(Window::getInstance()->getHeight()/16)-5), 1);
-	level.add(Vector2(30, (int)(Window::getInstance()->getHeight()/16)-5), 1);
-	level.add(Vector2(31, (int)(Window::getInstance()->getHeight()/16)-5), 1);
-	level.add(Vector2(32, (int)(Window::getInstance()->getHeight()/16)-5), 1);*/
+		level.add(Vector2(29, (int)(Window::getInstance()->getHeight()/16)-5), 1);
+		level.add(Vector2(30, (int)(Window::getInstance()->getHeight()/16)-5), 1);
+		level.add(Vector2(31, (int)(Window::getInstance()->getHeight()/16)-5), 1);
+		level.add(Vector2(32, (int)(Window::getInstance()->getHeight()/16)-5), 1);*/
 }
 
 void motor::state::GameState::update (const motor::StateManager * st)
@@ -139,15 +139,9 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		player.jump_duration = 0;
 		player.jumping = false;
 	}
-	//if(input->isPressedSym("down"))
-	//{
-		//player.velocity.y += ySpeed * (Window::getInstance()->getFrametime() / 10);
-		//player.direction.y = +1;// * (Window::getInstance()->getFrametime());
-	//}
-
 	player.update();
 
-	//collision detection
+	//collision detection {{{
 	if(true)
 	{
 		Rectangle staticGeom = Rectangle(0,0,0,0);
@@ -155,44 +149,26 @@ void motor::state::GameState::update (const motor::StateManager * st)
 		Rectangle prevPlayerHitbox = prev;
 		Rectangle currPlayerHitbox = player.getHitbox();
 
-		if(player.direction.x == +1)
-		{
-			prevPlayerHitbox = prev;
-			prevPlayerHitbox.width *= playerScale;
-			prevPlayerHitbox.x += 7.0*playerScale;;
-			//prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-			prevPlayerHitbox.width = 3*playerScale;
-			prevPlayerHitbox.height *= playerScale;
+		prevPlayerHitbox = prev;
+		prevPlayerHitbox.width *= playerScale;
+		prevPlayerHitbox.x += 7.0*playerScale;;
+		//prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+		prevPlayerHitbox.width = 3*playerScale;
+		prevPlayerHitbox.height *= playerScale;
 
-			currPlayerHitbox = player.getHitbox();
-			currPlayerHitbox.width *= playerScale;
-			currPlayerHitbox.x += 7.0*playerScale;
-			//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-			currPlayerHitbox.width = 3*playerScale;
-			currPlayerHitbox.height *= playerScale;
-		}
-		else
-		{
-			prevPlayerHitbox = prev;
-			prevPlayerHitbox.width *= playerScale;
-			prevPlayerHitbox.x += 7.0*playerScale;;
-			//prevPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-			prevPlayerHitbox.width = 3*playerScale;
-			prevPlayerHitbox.height *= playerScale;
-
-			currPlayerHitbox = player.getHitbox();
-			currPlayerHitbox.width *= playerScale;
-			currPlayerHitbox.x += 7.0*playerScale;
-			//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
-			currPlayerHitbox.width = 3*playerScale;
-			currPlayerHitbox.height *= playerScale;
-		}
+		currPlayerHitbox = player.getHitbox();
+		currPlayerHitbox.width *= playerScale;
+		currPlayerHitbox.x += 7.0*playerScale;
+		//currPlayerHitbox.width -= 7.0*playerScale + 6.0*playerScale;
+		currPlayerHitbox.width = 3*playerScale;
+		currPlayerHitbox.height *= playerScale;
 
 		deb1 = prevPlayerHitbox;
 		deb2 = currPlayerHitbox;
 
 		Rectangle phb = currPlayerHitbox;
 
+		/* x collision when going right {{{*/
 		if(player.direction.x == +1)
 		{
 			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x <= ((int)(phb.x+phb.width) / 16 + 1) * 16; x += 16)
@@ -213,7 +189,8 @@ void motor::state::GameState::update (const motor::StateManager * st)
 					}
 				}
 			}
-		}
+		}//}}}
+		/* x collision when going left {{{*/
 		else if(player.direction.x == -1)
 		{
 			for(int x = ((int)(phb.x+phb.width) / 16) * 16; x >= ((int)(phb.x) / 16 - 1) * 16; x -= 16)
@@ -232,8 +209,9 @@ void motor::state::GameState::update (const motor::StateManager * st)
 					}
 				}
 			}
-		}
+		}//}}}
 
+		/* y collision when falling -> going down {{{*/
 		if(player.velocity.y > 0) //player is falling
 		{
 			bool collided = false;
@@ -251,7 +229,6 @@ void motor::state::GameState::update (const motor::StateManager * st)
 				for(int y = (((int)prevPlayerHitbox.y) / 16) * 16; y <= ((int)(currPlayerHitbox.y + currPlayerHitbox.height) / 16 + 1) * 16;
 						y += 16)
 				{
-					//checked_red.push_back(Rectangle(x,y,16,16));
 					if(level.get(Vector2(x/16,y/16)) == 0)
 						continue;
 
@@ -283,12 +260,13 @@ void motor::state::GameState::update (const motor::StateManager * st)
 			{
 				player.flying = true;
 			}
-		}
+		}//}}}
+		/* y collision when jumping -> going up {{{*/
 		else //player is jumping up
 		{
-		}
+		}//}}}
 
-	}
+	}//}}}
 }
 
 void motor::state::GameState::draw (const motor::StateManager * st)
@@ -307,7 +285,7 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 	int yCoord = 230;
 
 	playerTexRect = Rectangle(18, yCoord, 16, 16);
-	//messy animation code :3
+	//messy animation code :3 {{{
 	if(player.direction.x == 1 && player.velocity.x > 0.5)
 	{
 		if(player.velocity.y != 0)
@@ -394,8 +372,7 @@ void motor::state::GameState::draw (const motor::StateManager * st)
 			else
 				playerTexRect = Rectangle(155, yCoord, 16, 16);
 		}
-	}
-
+	}//}}}
 	sb->draw(*chars, Rectangle(player.position.x, player.position.y, 16, 16), playerTexRect, Vector4(1), 0, Vector2(0), playerScale, 4);
 
 	Rectangle currPlayerHitbox = player.getHitbox();
