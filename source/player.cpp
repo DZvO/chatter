@@ -19,7 +19,7 @@ void Player::update ()
 	//acceleration *= 0.99;
 	float delta = position.y;
 	position += velocity * Vector2(Window::getInstance()->getFrametime() / 20);
-	//if(flying) 
+	if(flying) 
 		velocity.y += gravity.y;
 	velocity.y += jump.y;
 	velocity.x += acceleration.x;
